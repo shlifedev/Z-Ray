@@ -1,0 +1,22 @@
+# .NET 빌드 결과
+bin/
+obj/
+*.user
+
+# Unity 임시 프로젝트가 만드는 폴더와 파일
+unity/*/[Ll]ibrary/
+unity/*/[Tt]emp/
+unity/*/[Oo]bj/
+unity/*/[Ll]ogs/
+unity/*/[Uu]ser[Ss]ettings/
+unity/*/[Bb]uild/
+unity/*/[Bb]uilds/
+unity/*/*.csproj
+unity/*/*.sln
+unity/*/*.slnx
+
+# OS와 IDE
+.DS_Store
+.idea/
+.vs/
+.vscode/

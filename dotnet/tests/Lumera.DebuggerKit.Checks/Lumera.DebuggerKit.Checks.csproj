@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Core(파서, 자동완성, 실행, 화면이 쓰는 모델)를 Unity 없이 검사한다. 검사용 치트는 TestCheats에 있다. -->
+    <ProjectReference Include="../../Lumera.DebuggerKit/Lumera.DebuggerKit.csproj" />
+  </ItemGroup>
+</Project>
