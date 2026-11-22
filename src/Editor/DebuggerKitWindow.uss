@@ -1,0 +1,438 @@
+/* 디버거 킷 에디터 창. 다크 슬레이트 터미널 톤으로 콘솔과 치트 메뉴의 가독성과 계층을 명확하게 잡는다. */
+.kit {
+    flex-grow: 1;
+    min-height: 0;
+    font-size: 12px;
+    background-color: rgb(22, 25, 33);
+    color: rgb(236, 240, 247);
+    --kit-surface: rgb(15, 18, 24);
+    --kit-elevated: rgb(28, 33, 44);
+    --kit-sidebar: rgb(20, 24, 33);
+    --kit-field: rgb(11, 13, 19);
+    --kit-border: rgb(52, 62, 82);
+    --kit-border-subtle: rgb(36, 43, 58);
+    --kit-text: rgb(238, 242, 248);
+    --kit-muted: rgb(160, 172, 194);
+    --kit-accent: rgb(122, 188, 255);
+    --kit-accent-bg: rgba(84, 152, 235, 0.16);
+    --kit-match: rgb(255, 216, 115);
+    --kit-row-hover: rgba(255, 255, 255, 0.05);
+    --kit-selected: rgb(39, 68, 108);
+    --kit-group: rgb(30, 36, 48);
+    --kit-badge: rgb(33, 41, 56);
+    --kit-run: rgb(36, 88, 54);
+    --kit-run-hover: rgb(46, 108, 67);
+    --kit-run-text: rgb(180, 255, 198);
+    --kit-edit: rgb(36, 68, 110);
+    --kit-edit-hover: rgb(46, 84, 134);
+    --kit-edit-text: rgb(194, 222, 255);
+    --kit-success: rgb(130, 238, 158);
+    --kit-warning: rgb(255, 212, 110);
+    --kit-error: rgb(255, 134, 125);
+    --kit-echo: rgb(158, 206, 255);
+    --kit-echo-bg: rgba(122, 188, 255, 0.07);
+}
+.kit.light-theme {
+    background-color: rgb(242, 244, 248);
+    color: rgb(28, 33, 43);
+    --kit-surface: rgb(250, 251, 253);
+    --kit-elevated: rgb(232, 236, 243);
+    --kit-sidebar: rgb(236, 239, 245);
+    --kit-field: rgb(255, 255, 255);
+    --kit-border: rgb(194, 202, 216);
+    --kit-border-subtle: rgb(216, 222, 232);
+    --kit-text: rgb(28, 33, 43);
+    --kit-muted: rgb(92, 102, 120);
+    --kit-accent: rgb(18, 96, 196);
+    --kit-accent-bg: rgba(18, 96, 196, 0.12);
+    --kit-match: rgb(166, 94, 0);
+    --kit-row-hover: rgba(0, 0, 0, 0.04);
+    --kit-selected: rgb(206, 224, 248);
+    --kit-group: rgb(226, 231, 240);
+    --kit-badge: rgb(224, 232, 244);
+    --kit-run: rgb(202, 236, 208);
+    --kit-run-hover: rgb(182, 226, 190);
+    --kit-run-text: rgb(18, 92, 36);
+    --kit-edit: rgb(202, 220, 246);
+    --kit-edit-hover: rgb(184, 208, 242);
+    --kit-edit-text: rgb(18, 62, 134);
+    --kit-success: rgb(18, 124, 46);
+    --kit-warning: rgb(168, 104, 0);
+    --kit-error: rgb(186, 40, 32);
+    --kit-echo: rgb(18, 96, 196);
+    --kit-echo-bg: rgba(18, 96, 196, 0.07);
+}
+
+.kit .grow { flex-grow: 1; min-height: 0; }
+.kit .muted { color: var(--kit-muted); }
+
+/* 상단 바 */
+.kit .topbar {
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
+    padding: 0 10px 0 8px;
+    background-color: var(--kit-elevated);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--kit-border);
+    flex-shrink: 0;
+}
+.kit .tabs {
+    flex-direction: row;
+    align-items: stretch;
+    height: 100%;
+}
+.kit .tab {
+    margin: 0 2px 0 0;
+    padding: 0 12px;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--kit-muted);
+    -unity-font-style: bold;
+}
+.kit .tab:hover {
+    color: var(--kit-text);
+    background-color: var(--kit-row-hover);
+}
+.kit .tab.active {
+    color: var(--kit-text);
+    border-bottom-color: var(--kit-accent);
+    background-color: var(--kit-accent-bg);
+}
+.kit .topbar-spacer { flex-grow: 1; }
+.kit .topbar-action {
+    height: 22px;
+    margin: 0 10px 0 0;
+    padding: 0 9px;
+    border-width: 1px;
+    border-color: var(--kit-border);
+    border-radius: 4px;
+    background-color: var(--kit-surface);
+    color: var(--kit-muted);
+}
+.kit .topbar-action:hover {
+    color: var(--kit-text);
+    border-color: var(--kit-accent);
+}
+.kit .status-group {
+    flex-direction: row;
+    align-items: center;
+}
+.kit .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    margin-right: 6px;
+    background-color: var(--kit-muted);
+}
+.kit .status-dot.live { background-color: var(--kit-success); }
+.kit .toolbar-status {
+    -unity-text-align: middle-right;
+    color: var(--kit-muted);
+    font-size: 11px;
+}
+
+/* 플레이 중이 아닐 때 */
+.kit .idle { flex-grow: 1; align-items: center; justify-content: center; padding: 20px; }
+.kit .idle-card {
+    align-items: center;
+    padding: 20px 24px;
+    border-radius: 8px;
+    background-color: var(--kit-elevated);
+    border-width: 1px;
+    border-color: var(--kit-border);
+    max-width: 340px;
+}
+.kit .idle-title {
+    font-size: 14px;
+    -unity-font-style: bold;
+    color: var(--kit-text);
+    margin-bottom: 6px;
+}
+.kit .idle-text {
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-bottom: 14px;
+    color: var(--kit-muted);
+}
+.kit .idle-play {
+    height: 26px;
+    padding: 0 16px;
+    border-radius: 5px;
+    -unity-font-style: bold;
+}
+
+/* 치트 메뉴 */
+.kit .menu { flex-direction: row; flex-grow: 1; min-height: 0; }
+.kit .sidebar {
+    width: 156px;
+    flex-shrink: 0;
+    background-color: var(--kit-sidebar);
+    border-right-width: 1px;
+    border-right-color: var(--kit-border-subtle);
+    padding-top: 6px;
+}
+.kit .category {
+    flex-direction: row;
+    height: 26px;
+    align-items: center;
+    padding-right: 10px;
+    border-left-width: 3px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.kit .category:hover { background-color: var(--kit-row-hover); }
+.kit .category.selected { background-color: var(--kit-selected); border-left-color: var(--kit-accent); }
+.kit .category-title { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; color: var(--kit-text); }
+.kit .category-count { color: var(--kit-muted); font-size: 11px; }
+
+.kit .list-area { flex-grow: 1; min-width: 0; background-color: var(--kit-surface); }
+.kit .search-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 8px;
+    background-color: var(--kit-elevated);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--kit-border-subtle);
+}
+.kit .search { margin: 0 6px 0 0; }
+.kit .collapse-btn {
+    height: 20px;
+    margin: 0;
+    padding: 0 10px;
+    border-width: 1px;
+    border-color: var(--kit-border);
+    border-radius: 4px;
+    background-color: var(--kit-surface);
+    color: var(--kit-text);
+}
+.kit .group {
+    flex-direction: row;
+    height: 26px;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 10px;
+    background-color: var(--kit-group);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--kit-border-subtle);
+    -unity-font-style: bold;
+}
+.kit .group-title { flex-grow: 1; color: var(--kit-text); }
+.kit .group-count { color: var(--kit-muted); -unity-font-style: normal; font-size: 11px; }
+
+.kit .row { border-bottom-width: 1px; border-bottom-color: var(--kit-border-subtle); }
+.kit .row:hover { background-color: var(--kit-row-hover); }
+.kit .row-main { flex-direction: row; min-height: 28px; align-items: center; padding: 2px 8px 2px 2px; }
+.kit .star {
+    width: 22px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--kit-muted);
+    -unity-text-align: middle-center;
+}
+.kit .star.on { color: var(--kit-match); }
+.kit .row-title {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 2px;
+    color: var(--kit-text);
+}
+.kit .row-status { margin-right: 8px; font-size: 11px; }
+.kit .row-status.success { color: var(--kit-success); }
+.kit .row-status.error { color: var(--kit-error); }
+.kit .run, .kit .edit {
+    min-width: 48px;
+    height: 21px;
+    margin: 0;
+    padding: 0 8px;
+    border-width: 0;
+    border-radius: 4px;
+    -unity-font-style: bold;
+}
+.kit .run { background-color: var(--kit-run); color: var(--kit-run-text); }
+.kit .run:hover { background-color: var(--kit-run-hover); }
+.kit .edit { background-color: var(--kit-edit); color: var(--kit-edit-text); }
+.kit .edit:hover { background-color: var(--kit-edit-hover); }
+.kit .value { flex-direction: row; align-items: center; flex-shrink: 0; }
+.kit .value-field { width: 96px; margin: 0; flex-shrink: 1; min-width: 44px; }
+.kit .value-step {
+    width: 22px;
+    height: 20px;
+    margin: 0 0 0 3px;
+    padding: 0;
+    border-radius: 3px;
+}
+.kit .value-dropdown { width: 128px; margin: 0; }
+.kit .value-readonly {
+    color: var(--kit-accent);
+    background-color: var(--kit-badge);
+    border-width: 1px;
+    border-color: var(--kit-border-subtle);
+    border-radius: 4px;
+    padding: 2px 8px;
+    -unity-font-style: bold;
+}
+.kit .editor { padding: 4px 10px 8px 30px; background-color: rgba(0, 0, 0, 0.12); }
+.kit .arg { flex-direction: row; align-items: center; min-height: 24px; margin-bottom: 2px; }
+.kit .arg-label { width: 150px; flex-shrink: 0; color: var(--kit-muted); overflow: hidden; text-overflow: ellipsis; }
+.kit .arg-label.required { color: var(--kit-text); }
+.kit .arg-pick { width: 22px; height: 20px; margin: 0 0 0 3px; padding: 0; border-radius: 3px; }
+.kit .arg-run { margin-left: 150px; margin-top: 4px; align-self: flex-start; }
+.kit .empty { padding: 20px; -unity-text-align: middle-center; color: var(--kit-muted); }
+.kit .footer {
+    height: 24px;
+    padding: 0 10px;
+    -unity-text-align: middle-left;
+    color: var(--kit-muted);
+    background-color: var(--kit-elevated);
+    border-top-width: 1px;
+    border-top-color: var(--kit-border-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 콘솔 */
+.kit .console {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: var(--kit-surface);
+}
+.kit .console-surface {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: var(--kit-surface);
+}
+.kit .lines {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 6px 0;
+}
+.kit .lines .unity-scroll-view__content-container {
+    flex-grow: 1;
+    justify-content: flex-end;
+    padding: 2px 0;
+}
+.kit .line {
+    white-space: normal;
+    min-height: 20px;
+    padding: 2px 12px;
+    margin: 0;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0);
+    color: var(--kit-text);
+    -unity-text-align: middle-left;
+}
+.kit .line.echo {
+    color: var(--kit-echo);
+    background-color: var(--kit-echo-bg);
+    border-left-color: var(--kit-accent);
+    margin-top: 3px;
+}
+.kit .line.echo:hover { background-color: var(--kit-accent-bg); }
+.kit .line.muted { color: var(--kit-muted); }
+.kit .line.success { color: var(--kit-success); border-left-color: var(--kit-success); }
+.kit .line.warning { color: var(--kit-warning); border-left-color: var(--kit-warning); }
+.kit .line.error { color: var(--kit-error); border-left-color: var(--kit-error); }
+.kit .line.indented { padding-left: 24px; }
+
+.kit .suggestions {
+    margin: 0 10px 6px 10px;
+    max-height: 180px;
+    border-width: 1px;
+    border-color: var(--kit-border);
+    border-radius: 6px;
+    background-color: var(--kit-elevated);
+    padding: 3px 0;
+    flex-shrink: 0;
+}
+.kit .suggestion {
+    flex-direction: row;
+    height: 24px;
+    align-items: center;
+    padding: 0 10px;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.kit .suggestion:hover { background-color: var(--kit-row-hover); }
+.kit .suggestion.selected { background-color: var(--kit-selected); border-left-color: var(--kit-accent); }
+.kit .suggestion-label { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--kit-text); }
+.kit .suggestion-note {
+    color: var(--kit-muted);
+    font-size: 11px;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background-color: var(--kit-badge);
+}
+
+.kit .console-dock {
+    flex-shrink: 0;
+    background-color: var(--kit-elevated);
+    border-top-width: 1px;
+    border-top-color: var(--kit-border);
+    padding: 8px 10px;
+}
+.kit .input-box {
+    flex-direction: row;
+    align-items: center;
+    height: 30px;
+    padding: 0 4px 0 8px;
+    border-radius: 6px;
+    background-color: var(--kit-field);
+    border-width: 1px;
+    border-color: var(--kit-border);
+}
+.kit .input-box.focused {
+    border-color: var(--kit-accent);
+}
+.kit .prompt {
+    color: var(--kit-accent);
+    width: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 0;
+    padding: 0;
+}
+.kit .input {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+}
+.kit .input > .unity-base-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    margin: 0;
+    padding: 3px 4px;
+    color: var(--kit-text);
+    --unity-cursor-color: rgb(122, 188, 255);
+}
+.kit .ghost { position: absolute; color: var(--kit-muted); white-space: nowrap; }
+.kit .input-run {
+    height: 22px;
+    margin: 0 0 0 6px;
+    padding: 0 12px;
+    border-radius: 4px;
+}
+
+.kit .hint-bar {
+    margin-top: 6px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: var(--kit-surface);
+    border-width: 1px;
+    border-color: var(--kit-border-subtle);
+}
+.kit .hint {
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+    color: var(--kit-muted);
+}

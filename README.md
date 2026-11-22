@@ -10,7 +10,6 @@ Unity 게임용 개발자 콘솔과 치트 메뉴 패키지다. 메서드에 `[C
 | --- | --- |
 | `src/` | Unity 패키지 루트(`com.lumera.debuggerkit`). `Runtime/Core`는 UnityEngine을 쓰지 않는 C# 9 코드, `Runtime/Unity`는 화면(uGUI, TextMeshPro, Input System), `Editor`는 에디터 창과 프리팹 빌더 |
 | `dotnet/` | `src/Runtime/Core`를 .NET Standard 2.1로 컴파일하는 프로젝트와 Core 검사 |
-| `unity/Sandbox/` | 패키지만 넣고 띄워 보는 임시 Unity 프로젝트 |
 
 ## Unity 프로젝트에 넣기
 

@@ -1,0 +1,14 @@
+{
+  "name": "com.lumera.debuggerkit",
+  "version": "0.1.0",
+  "displayName": "Lumera DebuggerKit",
+  "description": "개발자 콘솔과 치트 메뉴. 특성으로 치트를 선언하면 콘솔 자동완성, 인자 힌트, 메뉴 화면이 같은 정의에서 만들어진다. 에디터와 Development Build에서만 컴파일된다.",
+  "unity": "7000.0",
+  "dependencies": {
+    "com.unity.ugui": "7.0.0",
+    "com.unity.inputsystem": "7.0.0"
+  },
+  "author": {
+    "name": "shlifedev"
+  }
+}

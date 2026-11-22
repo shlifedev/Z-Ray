@@ -1,0 +1,21 @@
+{
+    "name": "Lumera.DebuggerKit.Unity",
+    "rootNamespace": "Lumera.DebuggerKit",
+    "references": [
+        "Lumera.DebuggerKit",
+        "Unity.InputSystem",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UNITY_EDITOR || DEVELOPMENT_BUILD || LUMERA_DEBUGGERKIT"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -2,11 +2,11 @@
 
 이 지침은 저장소 전체에서 Codex와 Claude에 공통으로 적용된다.
 
-## 이 저장소의 원본 규칙
+## 이 저장소
 
-- **`src/`는 사본이다. 여기서 고치지 않는다.** 킷의 개발 원본은 Elonia 저장소(`../Elonia`)의 임베디드 패키지 `unity/game/Packages/Lumera.DebuggerKit`이고, Elonia의 `kit-sync` 스킬(`.agents/skills/kit-sync/sync.py`)이 커밋된 내용을 `src/`로 덮어쓴다. `src/`를 바꿔야 하면 Elonia에서 고치고 커밋한 뒤 동기화한다.
-- 이 저장소가 원본인 것: `dotnet/`(Core csproj와 검사), `unity/Sandbox/`(임시 Unity 프로젝트), 루트 문서(`README.md`, `AGENTS.md`, `CLAUDE.md`, `.gitignore`).
-- 킷은 게임을 모른다. `src/`에 특정 게임의 이름이나 코드가 들어가지 않는다(동기화 스크립트가 검사한다).
+- 개발자 콘솔과 치트 메뉴 Unity 패키지(`com.lumera.debuggerkit`)의 원본 저장소다. 패키지 루트는 `src/`다.
+- 쓰는 프로젝트는 `src/`를 로컬 패키지(`file:<경로>/src`)나 git URL(`...git?path=src`)로 참조한다. 로컬 패키지로 참조한 프로젝트에서 소스를 고쳐도 변경은 이 저장소에 커밋한다.
+- 킷은 게임을 모른다. `src/`에 특정 게임의 이름이나 코드를 넣지 않는다.
 
 ## 언어
 
@@ -32,7 +32,7 @@
 - csproj는 `dotnet/`에만 둔다. `src/` 안에 두면 `bin/`·`obj/`의 `.cs`를 Unity가 함께 컴파일한다.
 - 세 asmdef는 `defineConstraints`로 에디터와 Development Build(또는 `LUMERA_DEBUGGERKIT` 심볼)에서만 컴파일된다.
 - .NET 명령: `dotnet build dotnet/Lumera.DebuggerKit.sln -c Release`, `dotnet run --project dotnet/tests/Lumera.DebuggerKit.Checks -c Release`.
-- `unity/Sandbox`는 `file:../../../src`로 패키지를 참조하는 임시 프로젝트다. Sandbox를 열어 Unity가 `src/` 안에 새 `.meta`를 만들면, 같은 `.meta`가 Elonia 원본에도 있어야 하므로 Elonia 쪽에서 만들어 동기화한다.
+- `src/` 안에 파일을 더하거나 지우면 Unity가 만든 `.meta`를 같은 커밋에 넣는다.
 
 ## 도메인 리로드 없는 플레이 모드
 
