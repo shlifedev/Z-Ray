@@ -8,7 +8,7 @@ using UnityEngine.InputSystem.UI;
 
 namespace Lumera.ZRay
 {
-    // ZRay의 진입점. 씬에 하나 두면 정적 치트를 모두 등록하고, 콘솔(기본 `)과 치트 메뉴(기본 F1)를 띄운다.
+    // 씬의 치트를 등록하고 실행한다. 캔버스 프리팹을 연결하면 기본 콘솔과 치트 메뉴도 제공한다.
     // 게임은 CurrentOrNull로 찾아 인스턴스 치트를 Register하고, IsBlockingGameInput이 true인 동안 자기 입력을 읽지 않는다.
     // 치트 정의, 입력 기록, 즐겨찾기는 모두 이 컴포넌트가 갖는다. 정적 상태는 CurrentOrNull 하나뿐이고 플레이를 시작할 때마다 비운다.
     [DisallowMultipleComponent]
@@ -27,7 +27,7 @@ namespace Lumera.ZRay
         // 콘솔을 처음 열면 보이는 짧은 안내.
         private const string WELCOME = "Lumera ZRay — help 명령 목록 · props 프로퍼티 목록";
 
-        [SerializeField] private ZRayCanvas _canvasPrefab = null;
+        [SerializeField, Tooltip("기본 콘솔과 치트 메뉴를 사용할 때 연결한다. 커스텀 GUI만 사용할 때는 비워 둔다.")] private ZRayCanvas _canvasPrefab = null;
         [SerializeField, Range(0.0f, MAX_SCALE), Tooltip("화면 배율의 기본값. 0이면 화면 높이 540마다 1배씩 정수로 키운다(픽셀 글꼴이 가장 또렷하다). 플레이 중에 바꾼 배율(zray.scale, Ctrl/⌘+휠)은 PlayerPrefs에 남아 이 값보다 앞선다.")] private float _uiScale = 0.0f;
         [SerializeField] private InputAction _toggleConsole = new InputAction("ToggleConsole", InputActionType.Button, "<Keyboard>/backquote");
         [SerializeField] private InputAction _toggleMenu = new InputAction("ToggleMenu", InputActionType.Button, "<Keyboard>/f1");
@@ -96,6 +96,12 @@ namespace Lumera.ZRay
             return Executor.Execute(line, MENU_SOURCE_LABEL);
         }
 
+        // 커스텀 GUI에서 고른 치트와 입력값을 선언 순서로 넘긴다.
+        public ExecutionResult ExecuteFromMenu(CheatDefinition definition, IReadOnlyList<string> argumentTexts)
+        {
+            return ExecuteFromMenu(CheatExecutor.BuildLine(definition, argumentTexts));
+        }
+
         public void SaveFavorites()
         {
             Favorites.Save(_store);
@@ -135,18 +141,15 @@ namespace Lumera.ZRay
                 _uiScale = NormalizeScale(PlayerPrefs.GetFloat(SCALE_KEY));
             }
 
+            if (_canvasPrefab == null)
+            {
+                return;
+            }
+
             _zoomWheel = CreateModifiedAction("ZoomWheel", InputActionType.Value, "<Mouse>/scroll/y");
             _zoomIn = CreateModifiedAction("ZoomIn", InputActionType.Button, "<Keyboard>/equals");
             _zoomOut = CreateModifiedAction("ZoomOut", InputActionType.Button, "<Keyboard>/minus");
             _zoomReset = CreateModifiedAction("ZoomReset", InputActionType.Button, "<Keyboard>/0");
-            EnableZoomActions(true);
-
-            if (_canvasPrefab == null)
-            {
-                Debug.LogError("[ZRay] 캔버스 프리팹이 없습니다. Tools/Lumera/ZRay/Build Prefabs를 실행하고 ZRayHost에 연결하세요.", this);
-                enabled = false;
-                return;
-            }
 
             _canvas = Instantiate(_canvasPrefab, transform);
             _canvas.Initialize(this);
@@ -154,6 +157,11 @@ namespace Lumera.ZRay
 
         private void OnEnable()
         {
+            if (_canvas == null)
+            {
+                return;
+            }
+
             _toggleConsole.Enable();
             _toggleMenu.Enable();
             _close.Enable();

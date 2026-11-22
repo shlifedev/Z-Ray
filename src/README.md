@@ -2,6 +2,47 @@
 
 An in-game developer console and cheat menu for Unity.
 
+## 커스텀 GUI에서 치트 사용하기
+
+씬에 `ZRayHost`를 두면 정적 치트를 자동으로 등록한다. 인스턴스 치트는 `host.Register(target)`으로 추가한다. 기본 콘솔과 메뉴도 함께 쓰려면 호스트의 **Canvas Prefab**에 `ZRayCanvas` 프리팹을 연결한다. 커스텀 GUI만 쓸 때는 비워 둔다.
+
+뷰는 호스트가 초기화된 뒤 `host.Registry.Definitions`에서 치트 이름, 분류, 설명과 파라미터를 읽는다. 예를 들어 UI Toolkit 패널을 열 때 다음 메서드를 호출하면 메뉴에 공개한 쓰기 가능한 `bool` 프로퍼티마다 토글이 하나씩 생긴다.
+
+```csharp
+using Lumera.ZRay;
+using UnityEngine.UIElements;
+
+// root는 이 패널의 토글 목록 전용 컨테이너다.
+private void BindToggles(VisualElement root, ZRayHost host)
+{
+    root.Clear();
+    foreach (CheatDefinition cheat in host.Registry.Definitions)
+    {
+        if (!cheat.IsShownInMenu || cheat.Kind != ECheatKind.Value
+            || !cheat.CanWrite || cheat.Parameters[0].Type != typeof(bool))
+        {
+            continue;
+        }
+
+        Toggle toggle = new Toggle(cheat.Name);
+        toggle.SetValueWithoutNotify((bool)cheat.ReadValue());
+        Label status = new Label();
+        toggle.RegisterValueChangedCallback(change =>
+        {
+            ExecutionResult result = host.ExecuteFromMenu(cheat, new[] { change.newValue ? "true" : "false" });
+            toggle.SetValueWithoutNotify((bool)cheat.ReadValue());
+            status.text = result.Message;
+        });
+        root.Add(toggle);
+        root.Add(status);
+    }
+}
+```
+
+메서드 치트도 같은 방식으로 호출한다. `cheat.Parameters`의 선언 순서대로 입력값을 문자열로 넘기면 호스트가 타입과 범위를 검증한다. 인자가 없으면 `System.Array.Empty<string>()`을 넘기고, 뒤쪽 선택 인자를 생략하면 선언된 기본값이 쓰인다.
+
+패널을 연 채로 치트가 등록되거나 해제될 수 있다면 `host.Registry.Version`이 바뀔 때 목록을 갱신한다. 커스텀 패널의 열기·닫기와 게임 입력 차단은 뷰가 관리한다. `host.IsBlockingGameInput`은 기본 콘솔과 메뉴의 상태를 나타낸다.
+
 ## License
 
 The bundled Galmuri11 font is licensed under the [SIL Open Font License 1.1](Runtime/Unity/Fonts/Galmuri-OFL.txt).
