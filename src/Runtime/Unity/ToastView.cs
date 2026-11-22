@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 메뉴에서 실행한 치트의 결과를 화면 아래에 잠깐 보인다. 성공도 실패도 보인다.
     public sealed class ToastView : MonoBehaviour
@@ -23,7 +23,7 @@ namespace Lumera.DebuggerKit
             }
 
             _text.text = message;
-            _text.color = bSuccess ? DebuggerKitTheme.SUCCESS : DebuggerKitTheme.ERROR;
+            _text.color = bSuccess ? ZRayTheme.SUCCESS : ZRayTheme.ERROR;
             _hideAt = Time.unscaledTime + SHOWN_SECONDS;
             _background.gameObject.SetActive(true);
         }

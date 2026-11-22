@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 값을 글자로 남겨 두는 곳. Core는 저장 방법을 모른다(Unity 쪽은 PlayerPrefs로 구현한다).
     public interface IKeyValueStore
@@ -17,8 +17,8 @@ namespace Lumera.DebuggerKit
         public const int MAX_LINES = 100;
         public const int MAX_RECENT_CHEATS = 12;
 
-        private const string LINES_KEY = "Lumera.DebuggerKit.History.v1";
-        private const string RECENT_KEY = "Lumera.DebuggerKit.RecentCheats.v1";
+        private const string LINES_KEY = "Lumera.ZRay.History.v1";
+        private const string RECENT_KEY = "Lumera.ZRay.RecentCheats.v1";
 
         // 오래된 줄이 앞, 새 줄이 뒤
         private readonly List<string> _lines = new List<string>();

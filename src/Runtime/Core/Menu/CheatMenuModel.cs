@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 메뉴 왼쪽의 분류 한 줄.
     public readonly struct MenuCategory

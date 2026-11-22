@@ -1,6 +1,6 @@
 using System;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 메서드를 치트로 선언한다. 콘솔 명령, 자동완성, 도움말, 치트 메뉴 행이 모두 이 선언 하나에서 만들어진다.
     // 정적 메서드는 호스트가 시작할 때 저절로 등록되고, 인스턴스 메서드는 대상 객체를 Register로 넘길 때 등록된다.

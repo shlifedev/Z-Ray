@@ -6,17 +6,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
-    // 디버거 킷의 진입점. 씬에 하나 두면 정적 치트를 모두 등록하고, 콘솔(기본 `)과 치트 메뉴(기본 F1)를 띄운다.
+    // ZRay의 진입점. 씬에 하나 두면 정적 치트를 모두 등록하고, 콘솔(기본 `)과 치트 메뉴(기본 F1)를 띄운다.
     // 게임은 CurrentOrNull로 찾아 인스턴스 치트를 Register하고, IsBlockingGameInput이 true인 동안 자기 입력을 읽지 않는다.
     // 치트 정의, 입력 기록, 즐겨찾기는 모두 이 컴포넌트가 갖는다. 정적 상태는 CurrentOrNull 하나뿐이고 플레이를 시작할 때마다 비운다.
     [DisallowMultipleComponent]
     [DefaultExecutionOrder(-100)]
-    public sealed class DebuggerKitHost : MonoBehaviour
+    public sealed class ZRayHost : MonoBehaviour
     {
         private const string MENU_SOURCE_LABEL = "[메뉴] ";
-        private const string SCALE_KEY = "Lumera.DebuggerKit.UiScale.v2";
+        private const string SCALE_KEY = "Lumera.ZRay.UiScale.v2";
         // 배율은 0.25 단위다. 0은 자동(화면 높이에 맞춘 정수 배율)이고, 직접 고를 때는 MIN_SCALE~MAX_SCALE다.
         private const float MIN_SCALE = 0.5f;
         private const float MAX_SCALE = 4.0f;
@@ -25,16 +25,16 @@ namespace Lumera.DebuggerKit
         private const float ZOOM_INTERVAL = 0.1f;
 
         // 콘솔을 처음 열면 보이는 짧은 안내.
-        private const string WELCOME = "Lumera DebuggerKit — help 명령 목록 · props 프로퍼티 목록";
+        private const string WELCOME = "Lumera ZRay — help 명령 목록 · props 프로퍼티 목록";
 
-        [SerializeField] private DebuggerKitCanvas _canvasPrefab = null;
-        [SerializeField, Range(0.0f, MAX_SCALE), Tooltip("화면 배율의 기본값. 0이면 화면 높이 540마다 1배씩 정수로 키운다(픽셀 글꼴이 가장 또렷하다). 플레이 중에 바꾼 배율(kit.scale, Ctrl/⌘+휠)은 PlayerPrefs에 남아 이 값보다 앞선다.")] private float _uiScale = 0.0f;
+        [SerializeField] private ZRayCanvas _canvasPrefab = null;
+        [SerializeField, Range(0.0f, MAX_SCALE), Tooltip("화면 배율의 기본값. 0이면 화면 높이 540마다 1배씩 정수로 키운다(픽셀 글꼴이 가장 또렷하다). 플레이 중에 바꾼 배율(zray.scale, Ctrl/⌘+휠)은 PlayerPrefs에 남아 이 값보다 앞선다.")] private float _uiScale = 0.0f;
         [SerializeField] private InputAction _toggleConsole = new InputAction("ToggleConsole", InputActionType.Button, "<Keyboard>/backquote");
         [SerializeField] private InputAction _toggleMenu = new InputAction("ToggleMenu", InputActionType.Button, "<Keyboard>/f1");
         [SerializeField] private InputAction _close = new InputAction("Close", InputActionType.Button, "<Keyboard>/escape");
 
         private readonly PlayerPrefsStore _store = new PlayerPrefsStore();
-        private DebuggerKitCanvas _canvas;
+        private ZRayCanvas _canvas;
         private bool _bWasBlocking;
         // 배율 조절(Ctrl/⌘ + 휠, +, -, 0). 관례로 굳은 조합이라 Inspector에 내놓지 않고 코드에서 만든다.
         private InputAction _zoomWheel;
@@ -43,7 +43,7 @@ namespace Lumera.DebuggerKit
         private InputAction _zoomReset;
         private float _nextZoomAt;
 
-        public static DebuggerKitHost CurrentOrNull { get; private set; }
+        public static ZRayHost CurrentOrNull { get; private set; }
 
         public CheatRegistry Registry { get; private set; }
         public ConsoleAssist Assist { get; private set; }
@@ -56,7 +56,7 @@ namespace Lumera.DebuggerKit
         public ConsoleTranscript Transcript { get; private set; }
 
         // 콘솔·메뉴가 열려 있을 때 Ctrl/⌘+휠, Ctrl/⌘ +/-로도 바꾸고 Ctrl/⌘+0으로 자동으로 되돌린다. 바꾼 값은 다음 플레이에도 남는다.
-        [CheatProperty("kit.scale", Category = "디버거", Name = "UI 배율", Description = "디버거 킷 화면 배율(0.25 단위). 0이면 화면 높이에 맞춰 자동 정수 배율. Ctrl/⌘+휠로도 바꾼다.", Order = 0, Min = 0, Max = MAX_SCALE, Step = SCALE_STEP)]
+        [CheatProperty("zray.scale", Category = "ZRay", Name = "UI 배율", Description = "ZRay 화면 배율(0.25 단위). 0이면 화면 높이에 맞춰 자동 정수 배율. Ctrl/⌘+휠로도 바꾼다.", Order = 0, Min = 0, Max = MAX_SCALE, Step = SCALE_STEP)]
         public float UiScale
         {
             get => _uiScale;
@@ -120,7 +120,7 @@ namespace Lumera.DebuggerKit
             History.Load(_store);
             Favorites = new FavoriteSet();
             Favorites.Load(_store);
-            Registry = new CheatRegistry(null, static problem => Debug.LogWarning($"[DebuggerKit] {problem}"));
+            Registry = new CheatRegistry(null, static problem => Debug.LogWarning($"[ZRay] {problem}"));
             BuiltInCheats.Register(Registry, History);
             Registry.Register(this);
             Registry.RegisterStatic(GetLoadedAssemblies());
@@ -143,7 +143,7 @@ namespace Lumera.DebuggerKit
 
             if (_canvasPrefab == null)
             {
-                Debug.LogError("[DebuggerKit] 캔버스 프리팹이 없습니다. Tools/Lumera/DebuggerKit/Build Prefabs를 실행하고 DebuggerKitHost에 연결하세요.", this);
+                Debug.LogError("[ZRay] 캔버스 프리팹이 없습니다. Tools/Lumera/ZRay/Build Prefabs를 실행하고 ZRayHost에 연결하세요.", this);
                 enabled = false;
                 return;
             }

@@ -230,7 +230,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40fcc90fe9452431ea33e09b279f225f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.SuggestionRowView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.SuggestionRowView
   _background: {fileID: 2312531765166396228}
   _marker: {fileID: 7604768420567977955}
   _label: {fileID: 3050496943569629583}

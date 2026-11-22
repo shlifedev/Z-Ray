@@ -5,9 +5,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lumera.DebuggerKit.Editor
+namespace Lumera.ZRay.Editor
 {
-    // 에디터 창의 치트 메뉴. 무엇을 보일지는 CheatMenuModel이 정하고, 실행은 런타임 메뉴와 같은 경로(DebuggerKitHost.ExecuteFromMenu)로 한다.
+    // 에디터 창의 치트 메뉴. 무엇을 보일지는 CheatMenuModel이 정하고, 실행은 런타임 메뉴와 같은 경로(ZRayHost.ExecuteFromMenu)로 한다.
     internal sealed class CheatMenuPane
     {
         private const double POLL_SECONDS = 0.25;
@@ -18,7 +18,7 @@ namespace Lumera.DebuggerKit.Editor
         private readonly Label _footer = new Label();
         private readonly List<ValueRow> _valueRows = new List<ValueRow>();
         private readonly StringBuilder _builder = new StringBuilder();
-        private DebuggerKitHost _hostOrNull;
+        private ZRayHost _hostOrNull;
         private CheatMenuModel _model;
         private int _shownVersion = -1;
         private double _nextPollAt;
@@ -67,7 +67,7 @@ namespace Lumera.DebuggerKit.Editor
             Root.Add(listArea);
         }
 
-        public void Bind(DebuggerKitHost hostOrNull)
+        public void Bind(ZRayHost hostOrNull)
         {
             _hostOrNull = hostOrNull;
             _model = hostOrNull == null ? null : new CheatMenuModel(hostOrNull.Registry, hostOrNull.Favorites, hostOrNull.History, hostOrNull.Drafts);

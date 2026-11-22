@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using static Lumera.DebuggerKit.Checks.Checker;
+using static Lumera.ZRay.Checks.Checker;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
-// 디버거 킷의 Core(화면을 모르는 부분)를 게임 없이 검사한다. 대상은 TestCheats다.
+// ZRay의 Core(화면을 모르는 부분)를 게임 없이 검사한다. 대상은 TestCheats다.
 // 화면(Unity 쪽)은 여기서 검사한 계산 결과를 그리기만 한다.
-internal static partial class DebuggerKitChecks
+internal static partial class ZRayChecks
 {
     public static void RunAll()
     {
@@ -247,9 +247,9 @@ internal static partial class DebuggerKitChecks
         byType.RegisterStatic(typeof(TestCheats));
         Check(byType.Definitions.Count == 1, "정적 등록은 인스턴스 멤버를 읽지 않는다.");
 
-        // 이 검사 어셈블리는 디버거 킷을 참조하므로 훑고, 시스템 어셈블리는 건너뛴다.
+        // 이 검사 어셈블리는 ZRay를 참조하므로 훑고, 시스템 어셈블리는 건너뛴다.
         CheatRegistry byAssembly = new CheatRegistry(null, problems.Add);
-        byAssembly.RegisterStatic(new[] { typeof(string).Assembly, typeof(DebuggerKitChecks).Assembly });
+        byAssembly.RegisterStatic(new[] { typeof(string).Assembly, typeof(ZRayChecks).Assembly });
         Check(byAssembly.FindOrNull("static.ping") != null && problems.Count == 0, "참조하는 어셈블리의 정적 치트를 찾는다.");
         Check(byAssembly.Definitions.Count == 1, "인스턴스 치트는 어셈블리를 훑어도 등록되지 않는다.");
     }

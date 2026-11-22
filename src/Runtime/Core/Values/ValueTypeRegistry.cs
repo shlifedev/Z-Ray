@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // C# 타입과 IValueType을 잇는다. 여기에 없는 타입을 쓰는 치트는 등록할 때 거부된다.
     // 새 타입(예: 좌표 구조체)은 치트를 등록하기 전에 Register로 더한다.

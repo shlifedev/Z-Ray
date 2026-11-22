@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lumera.DebuggerKit.Editor
+namespace Lumera.ZRay.Editor
 {
     // 에디터 창의 콘솔. 입력 상태와 키 동작은 ConsoleSession, 힌트는 ConsoleHintFormatter, 기록은 호스트의 ConsoleTranscript다.
     // 런타임 콘솔과 기록·입력 기록을 함께 쓰고, 입력 줄은 따로 갖는다.
@@ -20,7 +20,7 @@ namespace Lumera.DebuggerKit.Editor
         private readonly List<StyledText> _hintFirst = new List<StyledText>();
         private readonly List<StyledText> _hintSecond = new List<StyledText>();
         private readonly StringBuilder _builder = new StringBuilder();
-        private DebuggerKitHost _hostOrNull;
+        private ZRayHost _hostOrNull;
         private ConsoleSession _session;
         private int _shownTranscriptVersion = -1;
         private int _shownSessionVersion = -1;
@@ -89,7 +89,7 @@ namespace Lumera.DebuggerKit.Editor
             Root.Add(dock);
         }
 
-        public void Bind(DebuggerKitHost hostOrNull)
+        public void Bind(ZRayHost hostOrNull)
         {
             _hostOrNull = hostOrNull;
             _session = hostOrNull == null ? null : new ConsoleSession(hostOrNull.Assist, hostOrNull.Executor, hostOrNull.History);

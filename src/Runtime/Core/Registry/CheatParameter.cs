@@ -1,6 +1,6 @@
 using System;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 인자 하나. 값 치트는 "value" 인자 하나를 갖는다(생략하면 읽기, 주면 쓰기).
     // 글자를 값으로 바꾸고 범위를 확인하는 일(TryParse)은 여기서만 한다. 콘솔과 메뉴가 같은 검증을 쓴다.

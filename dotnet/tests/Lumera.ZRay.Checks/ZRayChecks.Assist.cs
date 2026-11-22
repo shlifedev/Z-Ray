@@ -1,10 +1,10 @@
 using System.Collections.Generic;
-using static Lumera.DebuggerKit.Checks.Checker;
+using static Lumera.ZRay.Checks.Checker;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
 // 자동완성 후보, 후보 적용, 힌트, 인자 자리 안내.
-internal static partial class DebuggerKitChecks
+internal static partial class ZRayChecks
 {
     private static void CheckCommandSuggestions()
     {

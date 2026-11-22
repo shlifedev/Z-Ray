@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 키 입력을 TMP보다 먼저 볼 수 있는 입력칸. 콘솔과 메뉴가 Tab, ↑/↓, Enter를 자기 뜻으로 쓰려고 만든다.
     // TMP_InputField는 Enter와 Esc에서 스스로 포커스를 놓고, 한 줄 입력에서 ↑/↓로 커서를 줄 끝으로 옮긴다.

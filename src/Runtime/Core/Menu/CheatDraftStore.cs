@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트마다 마지막으로 입력한 인자 글자. 메뉴의 입력칸은 이 값으로 시작한다.
     // 호스트가 하나 갖고 런타임 메뉴, 에디터 창, 콘솔 실행이 함께 쓴다. 어디서 입력했든 다음에 같은 값이 보인다.

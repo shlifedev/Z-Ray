@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 화면에서 쓰는 글자 모양. 색은 화면마다 정한다(런타임 TMP, 에디터 UI Toolkit).
     public enum ETextStyle

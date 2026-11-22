@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 콘솔 입력 줄 아래의 힌트 두 줄을 만든다. 첫 줄은 시그니처(입력 중인 인자를 강조, 틀린 인자는 빨강),
     // 둘째 줄은 지금 가장 필요한 설명 하나다. 화면은 이 조각을 자기 색으로 그린다.

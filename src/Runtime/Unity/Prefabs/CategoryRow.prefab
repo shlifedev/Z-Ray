@@ -490,7 +490,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d57fa880070cf48a9a9b99de36e3dcf0, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.CategoryRowView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.CategoryRowView
   _button: {fileID: 5572908627516092266}
   _marker: {fileID: 8880957965021239473}
   _label: {fileID: 1677305031214363894}

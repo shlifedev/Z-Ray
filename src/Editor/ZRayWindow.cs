@@ -3,19 +3,19 @@ using UnityEditor.ShortcutManagement;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Lumera.DebuggerKit.Editor
+namespace Lumera.ZRay.Editor
 {
-    // 디버거 킷 에디터 창(Tools/Lumera/DebuggerKit/Window, Shift+F1). 게임 화면을 가리지 않고 치트 메뉴와 콘솔을 쓴다.
-    // 플레이 중인 씬의 DebuggerKitHost에 붙어서 런타임 화면과 같은 치트, 기록, 즐겨찾기를 쓴다.
+    // ZRay 에디터 창(Tools/Lumera/ZRay/Window, Shift+F1). 게임 화면을 가리지 않고 치트 메뉴와 콘솔을 쓴다.
+    // 플레이 중인 씬의 ZRayHost에 붙어서 런타임 화면과 같은 치트, 기록, 즐겨찾기를 쓴다.
     // 무엇을 보일지와 키 동작은 런타임과 같은 Core 모델(CheatMenuModel, ConsoleSession)이 정한다. 이 창은 UI Toolkit으로 그리기만 한다.
-    public sealed class DebuggerKitWindow : EditorWindow
+    public sealed class ZRayWindow : EditorWindow
     {
-        private const string STYLE_PATH = "Packages/com.lumera.debuggerkit/Editor/DebuggerKitWindow.uss";
+        private const string STYLE_PATH = "Packages/com.lumera.zray/Editor/ZRayWindow.uss";
         private const long TICK_MILLISECONDS = 50;
 
         [SerializeField] private int _tab;
 
-        private DebuggerKitHost _hostOrNull;
+        private ZRayHost _hostOrNull;
         private CheatMenuPane _menu;
         private ConsolePane _console;
         private VisualElement _idle;
@@ -27,13 +27,13 @@ namespace Lumera.DebuggerKit.Editor
         private Label _status;
         private IVisualElementScheduledItem _tick;
 
-        [MenuItem("Tools/Lumera/DebuggerKit/Window")]
+        [MenuItem("Tools/Lumera/ZRay/Window")]
         public static void Open()
         {
-            GetWindow<DebuggerKitWindow>().Show();
+            GetWindow<ZRayWindow>().Show();
         }
 
-        [Shortcut("Lumera/DebuggerKit Window", KeyCode.F1, ShortcutModifiers.Shift)]
+        [Shortcut("Lumera/ZRay Window", KeyCode.F1, ShortcutModifiers.Shift)]
         private static void OpenFromShortcut()
         {
             Open();
@@ -41,7 +41,7 @@ namespace Lumera.DebuggerKit.Editor
 
         private void OnEnable()
         {
-            titleContent = new GUIContent("디버거 킷");
+            titleContent = new GUIContent("ZRay");
             minSize = new Vector2(440.0f, 260.0f);
         }
 
@@ -57,7 +57,7 @@ namespace Lumera.DebuggerKit.Editor
             VisualElement root = rootVisualElement;
             root.Clear();
             root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(STYLE_PATH));
-            root.AddToClassList("kit");
+            root.AddToClassList("zray");
             root.EnableInClassList("light-theme", !EditorGUIUtility.isProSkin);
 
             VisualElement header = new VisualElement();
@@ -98,7 +98,7 @@ namespace Lumera.DebuggerKit.Editor
             idleCard.AddToClassList("idle-card");
             Label idleTitle = new Label("플레이 중이 아닙니다");
             idleTitle.AddToClassList("idle-title");
-            Label idleText = new Label("플레이를 시작하면 씬의 DebuggerKitHost에 자동으로 연결됩니다.");
+            Label idleText = new Label("플레이를 시작하면 씬의 ZRayHost에 자동으로 연결됩니다.");
             idleText.AddToClassList("idle-text");
             Button playButton = new Button(() => EditorApplication.isPlaying = true) { text = "플레이 시작" };
             playButton.AddToClassList("run");
@@ -150,7 +150,7 @@ namespace Lumera.DebuggerKit.Editor
         // 플레이를 시작하거나 멈추면 호스트가 바뀐다. 바뀐 호스트에 창을 다시 붙인다.
         private void Tick()
         {
-            DebuggerKitHost host = EditorApplication.isPlaying ? DebuggerKitHost.CurrentOrNull : null;
+            ZRayHost host = EditorApplication.isPlaying ? ZRayHost.CurrentOrNull : null;
             if (host != _hostOrNull)
             {
                 Bind(host);
@@ -188,7 +188,7 @@ namespace Lumera.DebuggerKit.Editor
             }
         }
 
-        private void Bind(DebuggerKitHost hostOrNull)
+        private void Bind(ZRayHost hostOrNull)
         {
             _hostOrNull = hostOrNull;
             _menu?.Bind(hostOrNull);

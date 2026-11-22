@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     public enum ECheatKind
     {

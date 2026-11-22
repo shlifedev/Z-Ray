@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 입력 줄의 토큰 하나. Start~End는 원문에서 따옴표까지 포함한 범위다(자동완성이 이 범위를 통째로 바꾼다).
     public readonly struct CommandToken

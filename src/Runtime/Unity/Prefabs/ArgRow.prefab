@@ -402,7 +402,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8ee7f2e20fee4b69bba72f14183aaa6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.KeyFilteredInputField
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.KeyFilteredInputField
   m_Navigation:
     m_Mode: 0
     m_WrapAround: 0
@@ -846,7 +846,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cb56969d12c0c4a41a7058a13afb9545, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ArgRowView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ArgRowView
   _label: {fileID: 2357233199755360054}
   _widget: {fileID: 3532906725408745903}
 --- !u!1 &1072796642772371643
@@ -1900,7 +1900,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cc88a02542ddf4ea38e2b366d9943742, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ValueWidget
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ValueWidget
   _switch: {fileID: 6447609895495847047}
   _knob: {fileID: 3740553327460927840}
   _segments: {fileID: 1887616357926926215}

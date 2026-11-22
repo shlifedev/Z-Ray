@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Text;
-using static Lumera.DebuggerKit.Checks.Checker;
+using static Lumera.ZRay.Checks.Checker;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
 // 런타임 화면과 에디터 창이 함께 쓰는 모델: 콘솔 입력 상태, 힌트 문장, 출력 기록, 치트 메뉴 목록.
-internal static partial class DebuggerKitChecks
+internal static partial class ZRayChecks
 {
     private static ConsoleSession CreateSession(Fixture fixture)
     {

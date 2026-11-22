@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 메뉴 화면. 무엇을 보일지(분류, 묶음, 검색 순위, 펼친 치트, 입력 초안)는 CheatMenuModel이 정하고, 여기서는 그린다.
     // 행을 누르면 주 동작을 한다(실행, 입력칸 펴기, 스위치 뒤집기).
@@ -34,8 +34,8 @@ namespace Lumera.DebuggerKit
         private readonly List<GroupHeaderView> _headers = new List<GroupHeaderView>();
         private readonly List<CategoryRowView> _categoryRows = new List<CategoryRowView>();
         private readonly List<string> _previousArgs = new List<string>();
-        private DebuggerKitHost _host;
-        private DebuggerKitCanvas _canvas;
+        private ZRayHost _host;
+        private ZRayCanvas _canvas;
         private CheatMenuModel _model;
         // ↑/↓로 고른 행(_rows의 번호). 고른 것이 없으면 -1이다.
         private int _highlight = -1;
@@ -59,7 +59,7 @@ namespace Lumera.DebuggerKit
         private InputAction _tab;
         private InputAction _shift;
 
-        public void Initialize(DebuggerKitHost host, DebuggerKitCanvas canvas)
+        public void Initialize(ZRayHost host, ZRayCanvas canvas)
         {
             _host = host;
             _canvas = canvas;
@@ -492,7 +492,7 @@ namespace Lumera.DebuggerKit
                 {
                     CategoryRowView created = _canvas.Create(_categoryPrefab, _categoryContent);
                     RectTransform rect = (RectTransform)created.transform;
-                    rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -index * DebuggerKitTheme.ROW_HEIGHT);
+                    rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -index * ZRayTheme.ROW_HEIGHT);
                     _categoryRows.Add(created);
                 }
 
@@ -506,7 +506,7 @@ namespace Lumera.DebuggerKit
                 _categoryRows[index].gameObject.SetActive(false);
             }
 
-            _categoryContent.sizeDelta = new Vector2(_categoryContent.sizeDelta.x, categories.Count * DebuggerKitTheme.ROW_HEIGHT);
+            _categoryContent.sizeDelta = new Vector2(_categoryContent.sizeDelta.x, categories.Count * ZRayTheme.ROW_HEIGHT);
         }
 
         private void OnCategoryClicked(string key)
@@ -548,7 +548,7 @@ namespace Lumera.DebuggerKit
                     header.gameObject.SetActive(true);
                     header.Set(entry, OnHeaderClicked);
                     rect = (RectTransform)header.transform;
-                    height = DebuggerKitTheme.GROUP_HEIGHT;
+                    height = ZRayTheme.GROUP_HEIGHT;
                 }
                 else
                 {

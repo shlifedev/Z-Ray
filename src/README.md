@@ -1,30 +1,30 @@
-# Lumera DebuggerKit
+# Lumera ZRay
 
 개발자 콘솔과 치트 메뉴다. 메서드에 `[Cheat]`를 붙이면 콘솔 명령, 자동완성, 인자 힌트, 도움말, 메뉴의 행이 모두 그 선언 하나에서 만들어진다. 게임 코드를 모르는 독립 패키지라서 다른 프로젝트에도 넣을 수 있다.
 
-에디터와 Development Build에서만 컴파일된다(asmdef의 `defineConstraints`). 릴리스 빌드에 넣으려면 스크립팅 심볼 `LUMERA_DEBUGGERKIT`을 정의한다.
+에디터와 Development Build에서만 컴파일된다(asmdef의 `defineConstraints`). 릴리스 빌드에 넣으려면 스크립팅 심볼 `LUMERA_ZRAY`을 정의한다.
 
 ## 구성
 
 | 폴더 | 어셈블리 | 내용 |
 | --- | --- | --- |
-| `Runtime/Core` | `Lumera.DebuggerKit` | 선언 특성, 치트 등록, 명령 줄 파서, 자동완성과 힌트, 실행, 입력 기록. UnityEngine을 쓰지 않는 C# 9 코드라 .NET에서도 컴파일하고 검사한다 |
-| `Runtime/Unity` | `Lumera.DebuggerKit.Unity` | 호스트 컴포넌트와 화면(uGUI, TextMeshPro, Input System) |
-| `Editor` | `Lumera.DebuggerKit.Editor` | 에디터 창, UI 프리팹 빌더, IL2CPP 빌드용 link.xml 생성 |
+| `Runtime/Core` | `Lumera.ZRay` | 선언 특성, 치트 등록, 명령 줄 파서, 자동완성과 힌트, 실행, 입력 기록. UnityEngine을 쓰지 않는 C# 9 코드라 .NET에서도 컴파일하고 검사한다 |
+| `Runtime/Unity` | `Lumera.ZRay.Unity` | 호스트 컴포넌트와 화면(uGUI, TextMeshPro, Input System) |
+| `Editor` | `Lumera.ZRay.Editor` | 에디터 창, UI 프리팹 빌더, IL2CPP 빌드용 link.xml 생성 |
 
 ## 씬에 넣기
 
-1. 메뉴 `Tools/Lumera/DebuggerKit/Build Prefabs`로 UI 프리팹을 만든다(`Runtime/Unity/Prefabs`).
-2. 씬의 루트 오브젝트에 `DebuggerKitHost`를 붙이고 `Canvas Prefab`에 `DebuggerKitCanvas` 프리팹을 넣는다.
+1. 메뉴 `Tools/Lumera/ZRay/Build Prefabs`로 UI 프리팹을 만든다(`Runtime/Unity/Prefabs`).
+2. 씬의 루트 오브젝트에 `ZRayHost`를 붙이고 `Canvas Prefab`에 `ZRayCanvas` 프리팹을 넣는다.
 3. 여닫는 키는 호스트의 `Toggle Console`(기본 `` ` ``), `Toggle Menu`(기본 F1), `Close`(기본 Esc) 입력 액션에서 바꾼다. 화면의 안내와 버튼에는 지금 설정된 키 이름이 보인다.
-4. 글꼴은 따로 넣지 않는다. 킷이 자기 글꼴(갈무리11)을 갖고 있다.
+4. 글꼴은 따로 넣지 않는다. ZRay가 자기 글꼴(갈무리11)을 갖고 있다.
 
 TMP Essential Resources가 프로젝트에 있어야 한다(비트맵 글꼴 셰이더 `TextMeshPro/Mobile/Bitmap`을 쓴다).
 
 ## 치트 선언
 
 ```csharp
-using Lumera.DebuggerKit;
+using Lumera.ZRay;
 
 public sealed class TownCheats
 {
@@ -56,11 +56,11 @@ public sealed class TownCheats
 
 ### 등록
 
-- **정적 메서드**는 호스트가 깨어날 때 저절로 등록된다. 디버거 킷을 참조하는 어셈블리만 훑는다.
+- **정적 메서드**는 호스트가 깨어날 때 저절로 등록된다. ZRay를 참조하는 어셈블리만 훑는다.
 - **인스턴스 메서드**는 대상 객체를 넘겨 등록한다. 판이나 씬이 바뀌면 이전 핸들을 버리고 다시 등록한다.
 
 ```csharp
-IDisposable registration = DebuggerKitHost.CurrentOrNull.Register(new TownCheats(play));
+IDisposable registration = ZRayHost.CurrentOrNull.Register(new TownCheats(play));
 // 판이 끝날 때
 registration.Dispose();
 ```
@@ -89,9 +89,9 @@ internal sealed class ItemSuggestions : ISuggestionProvider
 호스트는 게임을 모른다. 게임 쪽에서 두 가지를 한다.
 
 ```csharp
-DebuggerKitHost kit = DebuggerKitHost.CurrentOrNull;
-kit.BlockingChanged += bBlocking => gameInput.IsSuspended = bBlocking;  // 콘솔·메뉴가 열려 있는 동안 게임 입력을 끈다
-kit.Executed += result => hud.Refresh();                               // 치트를 실행한 뒤 화면을 다시 그린다
+ZRayHost zRay = ZRayHost.CurrentOrNull;
+zRay.BlockingChanged += bBlocking => gameInput.IsSuspended = bBlocking;  // 콘솔·메뉴가 열려 있는 동안 게임 입력을 끈다
+zRay.Executed += result => hud.Refresh();                               // 치트를 실행한 뒤 화면을 다시 그린다
 ```
 
 구독은 `OnDisable`에서 해제한다.
@@ -134,7 +134,7 @@ F1로 연다. 왼쪽에서 분류(전체, 즐겨찾기, 최근 사용, 분류 �
 
 ## 에디터 창
 
-메뉴 `Tools/Lumera/DebuggerKit/Window`(Shift+F1)로 연다. 게임 화면을 가리지 않고 치트 메뉴와 콘솔을 쓴다. 플레이 중인 씬의 `DebuggerKitHost`에 붙어서 런타임 화면과 같은 치트, 콘솔 기록, 입력 기록, 즐겨찾기를 쓴다. 플레이 중이 아니면 쓸 수 없다.
+메뉴 `Tools/Lumera/ZRay/Window`(Shift+F1)로 연다. 게임 화면을 가리지 않고 치트 메뉴와 콘솔을 쓴다. 플레이 중인 씬의 `ZRayHost`에 붙어서 런타임 화면과 같은 치트, 콘솔 기록, 입력 기록, 즐겨찾기를 쓴다. 플레이 중이 아니면 쓸 수 없다.
 
 런타임 화면은 uGUI, 에디터 창은 UI Toolkit으로 그리지만, 무엇을 보일지와 키 동작은 같은 Core 모델(`CheatMenuModel`, `ConsoleSession`)이 정한다.
 
@@ -143,7 +143,7 @@ F1로 연다. 왼쪽에서 분류(전체, 즐겨찾기, 최근 사용, 분류 �
 - 글꼴은 갈무리11(`Runtime/Unity/Fonts/Galmuri11.ttf`, SIL OFL 1.1, 라이선스는 같은 폴더의 `Galmuri-OFL.txt`)이다. 12픽셀에서 글자가 픽셀 격자에 정확히 맞는 픽셀 글꼴이다.
 - 실행할 때 TTF에서 비트맵 TMP 글꼴을 만든다. 글꼴 에셋을 저장소에 두지 않는 것은, 동적 아틀라스가 글자를 더할 때마다 에셋이 바뀌어 변경이 계속 남기 때문이다.
 - 배율의 기본은 자동이다. 화면 높이 540픽셀마다 1배씩 정수로 키운다(720p는 1배, 1080p는 2배). 정수 배율에서는 글자 픽셀이 화면 픽셀에 딱 맞아 가장 또렷하다.
-- 배율은 0.25 단위로 바꿀 수 있다(0.5~4). 콘솔의 `kit.scale 1.5`, 메뉴의 `UI 배율` 행, Ctrl/⌘+휠 어느 것으로 바꿔도 같고, 바꾼 값은 PlayerPrefs에 남는다. `kit.scale 0`이나 Ctrl/⌘+0은 자동으로 되돌린다.
+- 배율은 0.25 단위로 바꿀 수 있다(0.5~4). 콘솔의 `zray.scale 1.5`, 메뉴의 `UI 배율` 행, Ctrl/⌘+휠 어느 것으로 바꿔도 같고, 바꾼 값은 PlayerPrefs에 남는다. `zray.scale 0`이나 Ctrl/⌘+0은 자동으로 되돌린다.
 - 소수 배율에서는 글자 픽셀이 고르게 나뉘지 않는다. 그때는 아틀라스를 선형 필터로 읽어 획 굵기가 들쭉날쭉해지지 않게 한다(조금 부드럽게 보인다).
 
 ## 구조
@@ -162,8 +162,8 @@ Core는 화면을 모르는 계산만 한다. 화면은 그 결과를 그린다.
 | `ConsoleTranscript` | 콘솔에 보이는 기록. 런타임 콘솔과 에디터 창이 같은 기록을 그린다 |
 | `CheatMenuModel` | 메뉴에 보일 것: 분류 목록, 묶음, 검색 순위, 펼친 치트 |
 | `CheatDraftStore` | 치트마다 마지막으로 입력한 인자 값. 호스트가 하나 갖고 메뉴, 에디터 창, 콘솔 실행이 함께 쓴다 |
-| `DebuggerKitHost` | 위의 것들을 갖고, 단축키와 창 여닫기, 화면 배율을 맡는다 |
+| `ZRayHost` | 위의 것들을 갖고, 단축키와 창 여닫기, 화면 배율을 맡는다 |
 | `ConsoleView`, `CheatMenuView` | 런타임 화면(uGUI) |
-| `DebuggerKitWindow`, `ConsolePane`, `CheatMenuPane` | 에디터 창(UI Toolkit) |
+| `ZRayWindow`, `ConsolePane`, `CheatMenuPane` | 에디터 창(UI Toolkit) |
 
-검색 규칙을 늘리려면 `TextMatcher`만, 화면의 색과 크기를 바꾸려면 `DebuggerKitTheme`와 `DebuggerKitPrefabBuilder`만 고친다. 프리팹은 빌더가 매번 처음부터 다시 만들므로 손으로 고치지 않는다.
+검색 규칙을 늘리려면 `TextMatcher`만, 화면의 색과 크기를 바꾸려면 `ZRayTheme`와 `ZRayPrefabBuilder`만 고친다. 프리팹은 빌더가 매번 처음부터 다시 만들므로 손으로 고치지 않는다.

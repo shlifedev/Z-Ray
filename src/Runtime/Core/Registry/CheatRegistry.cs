@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 등록된 치트 정의를 모아 둔다. 정적 상태가 없어서 호스트(또는 검사)가 인스턴스를 만들어 소유한다.
     // id는 대소문자를 무시해서 비교한다. 같은 id는 먼저 등록한 것만 남고 나중 것은 거부하며 이유를 알린다.

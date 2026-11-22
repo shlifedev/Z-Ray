@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 후보 글자 안에서 검색어와 일치한 구간. 화면이 이 구간을 강조한다.
     public readonly struct MatchSpan

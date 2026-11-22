@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 리플렉션으로 [Cheat]·[CheatProperty] 선언을 읽어 정의를 만든다.
     // 지원하지 않는 선언(타입, 반환형, 공급자)은 정의를 만들지 않고 이유를 알린다. 잘못 붙인 특성이 조용히 사라지지 않게 하려는 것이다.

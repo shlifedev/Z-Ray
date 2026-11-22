@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
 internal enum ETestElement
 {

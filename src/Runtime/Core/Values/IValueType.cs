@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 인자 타입 하나를 글자와 값 사이에서 바꾸는 방법. 콘솔 입력, 메뉴 위젯, 힌트, 자동완성이 모두 이것을 쓴다.
     // 기본 타입(string, bool, int, long, float, double, enum) 밖의 타입은 ValueTypeRegistry.Register로 더한다.

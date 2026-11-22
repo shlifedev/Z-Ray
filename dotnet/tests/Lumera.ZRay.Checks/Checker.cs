@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
-// 모든 검사가 함께 쓰는 확인 함수와 집계. 각 검사 파일은 `using static Lumera.DebuggerKit.Checks.Checker;`로 가져다 쓴다.
+// 모든 검사가 함께 쓰는 확인 함수와 집계. 각 검사 파일은 `using static Lumera.ZRay.Checks.Checker;`로 가져다 쓴다.
 // 확인이 실패해도 멈추지 않고 기록만 한다. 예상하지 못한 예외는 Run이 잡아 실패로 기록하고 다음 검사로 넘어간다.
 internal static class Checker
 {

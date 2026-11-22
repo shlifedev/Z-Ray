@@ -1,4 +1,4 @@
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 메서드가 돌려주는 결과. 메시지는 콘솔 기록과 메뉴 토스트에 그대로 보인다. 여러 줄이면 줄마다 나뉘어 보인다.
     public readonly struct CheatResult

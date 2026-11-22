@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 위젯에서 일어난 일을 받는 쪽(치트 행).
     public interface IValueWidgetOwner
@@ -55,7 +55,7 @@ namespace Lumera.DebuggerKit
         // 글자를 입력하는 칸이 보이는가(Tab으로 옮겨 갈 수 있는가)
         public bool HasField => _fieldGroup.gameObject.activeSelf;
 
-        public void Bind(DebuggerKitCanvas canvas, IValueWidgetOwner owner, CheatParameter parameter, int parameterIndex, bool bWritable, string text)
+        public void Bind(ZRayCanvas canvas, IValueWidgetOwner owner, CheatParameter parameter, int parameterIndex, bool bWritable, string text)
         {
             _owner = owner;
             _parameter = parameter;
@@ -103,7 +103,7 @@ namespace Lumera.DebuggerKit
             if (_switch.gameObject.activeSelf)
             {
                 bool bOn = _text == "true";
-                _switch.image.color = bOn ? DebuggerKitTheme.SWITCH_ON : DebuggerKitTheme.SWITCH_OFF;
+                _switch.image.color = bOn ? ZRayTheme.SWITCH_ON : ZRayTheme.SWITCH_OFF;
                 RectTransform track = (RectTransform)_switch.transform;
                 float travel = track.sizeDelta.x - _knob.sizeDelta.x - (KNOB_INSET * 2.0f);
                 _knob.anchoredPosition = new Vector2(KNOB_INSET + (bOn ? travel : 0.0f), 0.0f);
@@ -114,8 +114,8 @@ namespace Lumera.DebuggerKit
                 for (int index = 0; index < _segmentButtons.Count; index++)
                 {
                     bool bChosen = index < _choices.Count && string.Equals(_choices[index], _text, StringComparison.OrdinalIgnoreCase);
-                    _segmentButtons[index].image.color = bChosen ? DebuggerKitTheme.EDIT : DebuggerKitTheme.BUTTON;
-                    _segmentButtons[index].GetComponentInChildren<TextMeshProUGUI>(true).color = bChosen ? DebuggerKitTheme.EDIT_TEXT : DebuggerKitTheme.MUTED;
+                    _segmentButtons[index].image.color = bChosen ? ZRayTheme.EDIT : ZRayTheme.BUTTON;
+                    _segmentButtons[index].GetComponentInChildren<TextMeshProUGUI>(true).color = bChosen ? ZRayTheme.EDIT_TEXT : ZRayTheme.MUTED;
                 }
             }
 
@@ -146,7 +146,7 @@ namespace Lumera.DebuggerKit
             }
         }
 
-        private void BuildSegments(DebuggerKitCanvas canvas)
+        private void BuildSegments(ZRayCanvas canvas)
         {
             float x = 0.0f;
             for (int index = 0; index < _choices.Count; index++)

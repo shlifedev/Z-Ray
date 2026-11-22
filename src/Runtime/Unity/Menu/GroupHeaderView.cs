@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 목록의 묶음 제목 줄. 누르면 묶음을 접거나 편다. 오른쪽에 치트 수를 보인다.
     public sealed class GroupHeaderView : MonoBehaviour

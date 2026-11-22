@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 콘솔 기록의 한 줄. 실행한 명령을 보여 주는 줄은 누르면 그 명령을 입력 줄로 다시 가져온다.
     public sealed class ConsoleLineView : MonoBehaviour, IPointerClickHandler
@@ -18,11 +18,11 @@ namespace Lumera.DebuggerKit
         public void Set(TranscriptLine line, Action<string> recall)
         {
             _text.text = line.Text;
-            _text.color = DebuggerKitTheme.GetLineColor(line.Kind);
+            _text.color = ZRayTheme.GetLineColor(line.Kind);
             bool bRecallable = line.Recall.Length > 0;
             if (_background != null)
             {
-                _background.color = line.Kind == EConsoleLineKind.Echo ? DebuggerKitTheme.ECHO_BG : DebuggerKitTheme.TRANSPARENT;
+                _background.color = line.Kind == EConsoleLineKind.Echo ? ZRayTheme.ECHO_BG : ZRayTheme.TRANSPARENT;
                 _background.raycastTarget = bRecallable;
                 _text.raycastTarget = false;
             }

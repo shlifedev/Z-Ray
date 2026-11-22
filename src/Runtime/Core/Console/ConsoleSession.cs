@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 콘솔이 따로 쓰는 키. 화면이 자기 입력 방식(uGUI, UI Toolkit)으로 읽어 이 값으로 넘긴다.
     public enum EConsoleKey

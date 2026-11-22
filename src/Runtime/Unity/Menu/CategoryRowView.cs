@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 왼쪽 분류 목록의 한 줄. 고른 줄은 배경과 왼쪽 막대로 표시한다.
     public sealed class CategoryRowView : MonoBehaviour
@@ -30,9 +30,9 @@ namespace Lumera.DebuggerKit
             _clickedOrNull = clicked;
             _label.text = category.Key == CheatMenuModel.FAVORITES_KEY ? "★ " + category.Title : category.Title;
             _label.margin = new Vector4(LEFT_PADDING + (category.Depth * INDENT), 0.0f, 0.0f, 0.0f);
-            _label.color = bSelected ? DebuggerKitTheme.TEXT : (category.Depth == 0 ? DebuggerKitTheme.TEXT : DebuggerKitTheme.MUTED);
+            _label.color = bSelected ? ZRayTheme.TEXT : (category.Depth == 0 ? ZRayTheme.TEXT : ZRayTheme.MUTED);
             _count.text = category.Count.ToString();
-            _button.image.color = bSelected ? DebuggerKitTheme.ROW_SELECTED : DebuggerKitTheme.TRANSPARENT;
+            _button.image.color = bSelected ? ZRayTheme.ROW_SELECTED : ZRayTheme.TRANSPARENT;
             _marker.enabled = bSelected;
         }
 

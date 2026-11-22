@@ -1,9 +1,9 @@
 {
-    "name": "Lumera.DebuggerKit.Editor",
-    "rootNamespace": "Lumera.DebuggerKit.Editor",
+    "name": "Lumera.ZRay.Editor",
+    "rootNamespace": "Lumera.ZRay.Editor",
     "references": [
-        "Lumera.DebuggerKit",
-        "Lumera.DebuggerKit.Unity",
+        "Lumera.ZRay",
+        "Lumera.ZRay.Unity",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"

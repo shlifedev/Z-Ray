@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     internal sealed class StringValueType : IValueType
     {

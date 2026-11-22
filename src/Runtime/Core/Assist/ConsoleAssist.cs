@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 입력 줄과 커서 위치를 받아 자동완성 후보, 힌트, 인자 자리 안내를 만든다. 화면을 모르는 계산만 한다.
     // 화면은 입력이 바뀔 때마다 Analyze를 한 번 부르고, 후보를 고르면 ApplySuggestion으로 새 입력 줄을 받는다.

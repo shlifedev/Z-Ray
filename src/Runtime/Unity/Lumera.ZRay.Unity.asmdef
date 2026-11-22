@@ -1,8 +1,8 @@
 {
-    "name": "Lumera.DebuggerKit.Unity",
-    "rootNamespace": "Lumera.DebuggerKit",
+    "name": "Lumera.ZRay.Unity",
+    "rootNamespace": "Lumera.ZRay",
     "references": [
-        "Lumera.DebuggerKit",
+        "Lumera.ZRay",
         "Unity.InputSystem",
         "UnityEngine.UI",
         "Unity.TextMeshPro"
@@ -14,7 +14,7 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "UNITY_EDITOR || DEVELOPMENT_BUILD || LUMERA_DEBUGGERKIT"
+        "UNITY_EDITOR || DEVELOPMENT_BUILD || LUMERA_ZRAY"
     ],
     "versionDefines": [],
     "noEngineReferences": false

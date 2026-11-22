@@ -1704,7 +1704,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 05eca5c00cbb04c8f810033e9273cd09, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ConsoleView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ConsoleView
   _linesScroll: {fileID: 5028687865043324648}
   _linesContent: {fileID: 7210188363856510318}
   _linePrefab: {fileID: 5413421585712564678, guid: c46b0aca181b24f21a46d7bdb1d2bb0c, type: 3}
@@ -2019,7 +2019,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8caf7dc8ee7174450a14933255145724, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ToastView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ToastView
   _background: {fileID: 1035595413038774732}
   _text: {fileID: 4067656075081461333}
 --- !u!1 &3135089777109679899
@@ -2241,7 +2241,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8ee7f2e20fee4b69bba72f14183aaa6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.KeyFilteredInputField
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.KeyFilteredInputField
   m_Navigation:
     m_Mode: 0
     m_WrapAround: 0
@@ -2681,7 +2681,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8ee7f2e20fee4b69bba72f14183aaa6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.KeyFilteredInputField
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.KeyFilteredInputField
   m_Navigation:
     m_Mode: 0
     m_WrapAround: 0
@@ -3287,7 +3287,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a1aa2ada7c15841059fad97bf7c10fbc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.CheatMenuView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.CheatMenuView
   _search: {fileID: 4654306899493159326}
   _close: {fileID: 6782275775708357784}
   _openConsole: {fileID: 8053436008870214247}
@@ -5238,7 +5238,7 @@ GameObject:
   - component: {fileID: 564640932518419112}
   - component: {fileID: 1490845299071564771}
   m_Layer: 0
-  m_Name: DebuggerKitCanvas
+  m_Name: ZRayCanvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5342,7 +5342,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f21303d7d8122431aa9686b3965b9572, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.DebuggerKitCanvas
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ZRayCanvas
   _console: {fileID: 711325238010503661}
   _menu: {fileID: 4173805803324754296}
   _toast: {fileID: 1703644319102907249}
@@ -5779,7 +5779,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d91a4b529b6834ae297baafa266bf1f5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.SuggestionListView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.SuggestionListView
   _panel: {fileID: 7724108133444722110}
   _scroll: {fileID: 3275087191308590869}
   _content: {fileID: 7264589403801952133}
@@ -6528,7 +6528,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d91a4b529b6834ae297baafa266bf1f5, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.SuggestionListView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.SuggestionListView
   _panel: {fileID: 5854476199045261425}
   _scroll: {fileID: 1487210642335306578}
   _content: {fileID: 6914334496284963677}

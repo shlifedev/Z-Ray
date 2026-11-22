@@ -1,4 +1,4 @@
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 검색어 하나로 치트 정의의 순위를 매긴다. 콘솔의 명령 자동완성과 메뉴 검색이 같은 순위를 쓴다.
     // 어느 칸에 어떻게 일치했는지로 점수를 정한다. id가 가장 앞서고, 이름, 분류, 설명 순이다.

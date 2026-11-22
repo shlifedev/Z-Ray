@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 공급자가 내놓는 후보 값 하나. Description은 후보 옆에 흐리게 보이고 검색에도 걸린다(예: 아이템 id 옆의 한글 이름).
     public readonly struct CandidateValue

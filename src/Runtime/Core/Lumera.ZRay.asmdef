@@ -1,6 +1,6 @@
 {
-    "name": "Lumera.DebuggerKit",
-    "rootNamespace": "Lumera.DebuggerKit",
+    "name": "Lumera.ZRay",
+    "rootNamespace": "Lumera.ZRay",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -9,7 +9,7 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "UNITY_EDITOR || DEVELOPMENT_BUILD || LUMERA_DEBUGGERKIT"
+        "UNITY_EDITOR || DEVELOPMENT_BUILD || LUMERA_ZRAY"
     ],
     "versionDefines": [],
     "noEngineReferences": true

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 치트 메뉴의 한 행. 행을 누르면 주 동작을 한다(인자 없는 치트는 실행, 인자 있는 치트는 입력칸 펴기, 스위치는 뒤집기).
     // 종류에 따라 오른쪽에 다른 것을 둔다.
@@ -42,12 +42,12 @@ namespace Lumera.DebuggerKit
         private float _statusHideAt;
 
         public CheatDefinition Definition { get; private set; }
-        public float Height => DebuggerKitTheme.MENU_ROW_HEIGHT + (_bExpanded ? (Definition.Parameters.Count + 1) * ARG_ROW_HEIGHT + EDITOR_PADDING : 0.0f);
+        public float Height => ZRayTheme.MENU_ROW_HEIGHT + (_bExpanded ? (Definition.Parameters.Count + 1) * ARG_ROW_HEIGHT + EDITOR_PADDING : 0.0f);
         public IReadOnlyList<string> Drafts => _drafts;
         public string ValueText => _valueWidget.Text;
 
         // drafts: 이 치트의 인자마다 입력하던 글자(CheatMenuModel이 갖는다). 행이 다시 쓰여도 남는다.
-        public void Bind(CheatMenuView menu, DebuggerKitCanvas canvas, CheatDefinition definition, string query, bool bFavorite, bool bExpanded, string[] drafts)
+        public void Bind(CheatMenuView menu, ZRayCanvas canvas, CheatDefinition definition, string query, bool bFavorite, bool bExpanded, string[] drafts)
         {
             if (!_bListening)
             {
@@ -70,23 +70,23 @@ namespace Lumera.DebuggerKit
             _bExpanded = bExpanded && !bValue && definition.HasParameters;
 
             _builder.Clear();
-            RichText.AppendHighlighted(_builder, definition.Name, TextMatcher.FindSpans(definition.Name, query), DebuggerKitTheme.HEX_MATCH);
+            RichText.AppendHighlighted(_builder, definition.Name, TextMatcher.FindSpans(definition.Name, query), ZRayTheme.HEX_MATCH);
             if (definition.Name != definition.Id)
             {
-                _builder.Append("  <color=").Append(DebuggerKitTheme.HEX_MUTED).Append('>');
-                RichText.AppendHighlighted(_builder, definition.Id, TextMatcher.FindSpans(definition.Id, query), DebuggerKitTheme.HEX_MATCH);
+                _builder.Append("  <color=").Append(ZRayTheme.HEX_MUTED).Append('>');
+                RichText.AppendHighlighted(_builder, definition.Id, TextMatcher.FindSpans(definition.Id, query), ZRayTheme.HEX_MATCH);
                 _builder.Append("</color>");
             }
 
             _title.SetText(_builder);
             _favoriteLabel.text = bFavorite ? "★" : "☆";
-            _favoriteLabel.color = bFavorite ? DebuggerKitTheme.STAR : DebuggerKitTheme.MUTED;
+            _favoriteLabel.color = bFavorite ? ZRayTheme.STAR : ZRayTheme.MUTED;
 
             _run.gameObject.SetActive(!bValue);
             bool bRunsNow = !definition.HasParameters;
             _runLabel.text = bRunsNow ? "실행" : (_bExpanded ? "접기" : "입력");
-            _run.image.color = bRunsNow ? DebuggerKitTheme.RUN : DebuggerKitTheme.EDIT;
-            _runLabel.color = bRunsNow ? DebuggerKitTheme.RUN_TEXT : DebuggerKitTheme.EDIT_TEXT;
+            _run.image.color = bRunsNow ? ZRayTheme.RUN : ZRayTheme.EDIT;
+            _runLabel.color = bRunsNow ? ZRayTheme.RUN_TEXT : ZRayTheme.EDIT_TEXT;
             _valueWidget.gameObject.SetActive(bValue);
             if (bValue)
             {
@@ -121,7 +121,7 @@ namespace Lumera.DebuggerKit
         public void ShowStatus(bool bSuccess)
         {
             _status.text = bSuccess ? "완료" : "실패";
-            _status.color = bSuccess ? DebuggerKitTheme.SUCCESS : DebuggerKitTheme.ERROR;
+            _status.color = bSuccess ? ZRayTheme.SUCCESS : ZRayTheme.ERROR;
             _statusHideAt = Time.unscaledTime + STATUS_SECONDS;
         }
 
@@ -167,7 +167,7 @@ namespace Lumera.DebuggerKit
         // 키보드 포커스가 [실행] 버튼에 있다는 것을 색으로 보인다. 이때 Space나 Enter로 실행한다(CheatMenuView).
         public void SetExecuteFocused(bool bFocused)
         {
-            _execute.image.color = bFocused ? DebuggerKitTheme.RUN_FOCUS : DebuggerKitTheme.RUN;
+            _execute.image.color = bFocused ? ZRayTheme.RUN_FOCUS : ZRayTheme.RUN;
         }
 
         public ValueWidget FindEditingWidgetOrNull()
@@ -237,7 +237,7 @@ namespace Lumera.DebuggerKit
             // 펼친 입력칸 영역의 빈 곳을 눌러서는 접히지 않게, 맨 위 한 줄만 받는다.
             RectTransform rect = (RectTransform)transform;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out Vector2 local)
-                || local.y < -DebuggerKitTheme.MENU_ROW_HEIGHT)
+                || local.y < -ZRayTheme.MENU_ROW_HEIGHT)
             {
                 return;
             }
@@ -260,10 +260,10 @@ namespace Lumera.DebuggerKit
 
         private void RefreshBackground()
         {
-            _background.color = _bHighlighted ? DebuggerKitTheme.ROW_SELECTED : (_bHovered ? DebuggerKitTheme.ROW_HOVER : DebuggerKitTheme.TRANSPARENT);
+            _background.color = _bHighlighted ? ZRayTheme.ROW_SELECTED : (_bHovered ? ZRayTheme.ROW_HOVER : ZRayTheme.TRANSPARENT);
         }
 
-        private void BuildEditor(DebuggerKitCanvas canvas)
+        private void BuildEditor(ZRayCanvas canvas)
         {
             IReadOnlyList<CheatParameter> parameters = Definition.Parameters;
             for (int index = 0; index < parameters.Count; index++)

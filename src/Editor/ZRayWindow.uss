@@ -1,0 +1,438 @@
+/* ZRay 에디터 창. 다크 슬레이트 터미널 톤으로 콘솔과 치트 메뉴의 가독성과 계층을 명확하게 잡는다. */
+.zray {
+    flex-grow: 1;
+    min-height: 0;
+    font-size: 12px;
+    background-color: rgb(22, 25, 33);
+    color: rgb(236, 240, 247);
+    --zray-surface: rgb(15, 18, 24);
+    --zray-elevated: rgb(28, 33, 44);
+    --zray-sidebar: rgb(20, 24, 33);
+    --zray-field: rgb(11, 13, 19);
+    --zray-border: rgb(52, 62, 82);
+    --zray-border-subtle: rgb(36, 43, 58);
+    --zray-text: rgb(238, 242, 248);
+    --zray-muted: rgb(160, 172, 194);
+    --zray-accent: rgb(122, 188, 255);
+    --zray-accent-bg: rgba(84, 152, 235, 0.16);
+    --zray-match: rgb(255, 216, 115);
+    --zray-row-hover: rgba(255, 255, 255, 0.05);
+    --zray-selected: rgb(39, 68, 108);
+    --zray-group: rgb(30, 36, 48);
+    --zray-badge: rgb(33, 41, 56);
+    --zray-run: rgb(36, 88, 54);
+    --zray-run-hover: rgb(46, 108, 67);
+    --zray-run-text: rgb(180, 255, 198);
+    --zray-edit: rgb(36, 68, 110);
+    --zray-edit-hover: rgb(46, 84, 134);
+    --zray-edit-text: rgb(194, 222, 255);
+    --zray-success: rgb(130, 238, 158);
+    --zray-warning: rgb(255, 212, 110);
+    --zray-error: rgb(255, 134, 125);
+    --zray-echo: rgb(158, 206, 255);
+    --zray-echo-bg: rgba(122, 188, 255, 0.07);
+}
+.zray.light-theme {
+    background-color: rgb(242, 244, 248);
+    color: rgb(28, 33, 43);
+    --zray-surface: rgb(250, 251, 253);
+    --zray-elevated: rgb(232, 236, 243);
+    --zray-sidebar: rgb(236, 239, 245);
+    --zray-field: rgb(255, 255, 255);
+    --zray-border: rgb(194, 202, 216);
+    --zray-border-subtle: rgb(216, 222, 232);
+    --zray-text: rgb(28, 33, 43);
+    --zray-muted: rgb(92, 102, 120);
+    --zray-accent: rgb(18, 96, 196);
+    --zray-accent-bg: rgba(18, 96, 196, 0.12);
+    --zray-match: rgb(166, 94, 0);
+    --zray-row-hover: rgba(0, 0, 0, 0.04);
+    --zray-selected: rgb(206, 224, 248);
+    --zray-group: rgb(226, 231, 240);
+    --zray-badge: rgb(224, 232, 244);
+    --zray-run: rgb(202, 236, 208);
+    --zray-run-hover: rgb(182, 226, 190);
+    --zray-run-text: rgb(18, 92, 36);
+    --zray-edit: rgb(202, 220, 246);
+    --zray-edit-hover: rgb(184, 208, 242);
+    --zray-edit-text: rgb(18, 62, 134);
+    --zray-success: rgb(18, 124, 46);
+    --zray-warning: rgb(168, 104, 0);
+    --zray-error: rgb(186, 40, 32);
+    --zray-echo: rgb(18, 96, 196);
+    --zray-echo-bg: rgba(18, 96, 196, 0.07);
+}
+
+.zray .grow { flex-grow: 1; min-height: 0; }
+.zray .muted { color: var(--zray-muted); }
+
+/* 상단 바 */
+.zray .topbar {
+    flex-direction: row;
+    align-items: center;
+    height: 32px;
+    padding: 0 10px 0 8px;
+    background-color: var(--zray-elevated);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--zray-border);
+    flex-shrink: 0;
+}
+.zray .tabs {
+    flex-direction: row;
+    align-items: stretch;
+    height: 100%;
+}
+.zray .tab {
+    margin: 0 2px 0 0;
+    padding: 0 12px;
+    border-width: 0;
+    border-bottom-width: 2px;
+    border-bottom-color: rgba(0, 0, 0, 0);
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--zray-muted);
+    -unity-font-style: bold;
+}
+.zray .tab:hover {
+    color: var(--zray-text);
+    background-color: var(--zray-row-hover);
+}
+.zray .tab.active {
+    color: var(--zray-text);
+    border-bottom-color: var(--zray-accent);
+    background-color: var(--zray-accent-bg);
+}
+.zray .topbar-spacer { flex-grow: 1; }
+.zray .topbar-action {
+    height: 22px;
+    margin: 0 10px 0 0;
+    padding: 0 9px;
+    border-width: 1px;
+    border-color: var(--zray-border);
+    border-radius: 4px;
+    background-color: var(--zray-surface);
+    color: var(--zray-muted);
+}
+.zray .topbar-action:hover {
+    color: var(--zray-text);
+    border-color: var(--zray-accent);
+}
+.zray .status-group {
+    flex-direction: row;
+    align-items: center;
+}
+.zray .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 4px;
+    margin-right: 6px;
+    background-color: var(--zray-muted);
+}
+.zray .status-dot.live { background-color: var(--zray-success); }
+.zray .toolbar-status {
+    -unity-text-align: middle-right;
+    color: var(--zray-muted);
+    font-size: 11px;
+}
+
+/* 플레이 중이 아닐 때 */
+.zray .idle { flex-grow: 1; align-items: center; justify-content: center; padding: 20px; }
+.zray .idle-card {
+    align-items: center;
+    padding: 20px 24px;
+    border-radius: 8px;
+    background-color: var(--zray-elevated);
+    border-width: 1px;
+    border-color: var(--zray-border);
+    max-width: 340px;
+}
+.zray .idle-title {
+    font-size: 14px;
+    -unity-font-style: bold;
+    color: var(--zray-text);
+    margin-bottom: 6px;
+}
+.zray .idle-text {
+    white-space: normal;
+    -unity-text-align: middle-center;
+    margin-bottom: 14px;
+    color: var(--zray-muted);
+}
+.zray .idle-play {
+    height: 26px;
+    padding: 0 16px;
+    border-radius: 5px;
+    -unity-font-style: bold;
+}
+
+/* 치트 메뉴 */
+.zray .menu { flex-direction: row; flex-grow: 1; min-height: 0; }
+.zray .sidebar {
+    width: 156px;
+    flex-shrink: 0;
+    background-color: var(--zray-sidebar);
+    border-right-width: 1px;
+    border-right-color: var(--zray-border-subtle);
+    padding-top: 6px;
+}
+.zray .category {
+    flex-direction: row;
+    height: 26px;
+    align-items: center;
+    padding-right: 10px;
+    border-left-width: 3px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.zray .category:hover { background-color: var(--zray-row-hover); }
+.zray .category.selected { background-color: var(--zray-selected); border-left-color: var(--zray-accent); }
+.zray .category-title { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; color: var(--zray-text); }
+.zray .category-count { color: var(--zray-muted); font-size: 11px; }
+
+.zray .list-area { flex-grow: 1; min-width: 0; background-color: var(--zray-surface); }
+.zray .search-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 8px;
+    background-color: var(--zray-elevated);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--zray-border-subtle);
+}
+.zray .search { margin: 0 6px 0 0; }
+.zray .collapse-btn {
+    height: 20px;
+    margin: 0;
+    padding: 0 10px;
+    border-width: 1px;
+    border-color: var(--zray-border);
+    border-radius: 4px;
+    background-color: var(--zray-surface);
+    color: var(--zray-text);
+}
+.zray .group {
+    flex-direction: row;
+    height: 26px;
+    align-items: center;
+    padding-left: 8px;
+    padding-right: 10px;
+    background-color: var(--zray-group);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--zray-border-subtle);
+    -unity-font-style: bold;
+}
+.zray .group-title { flex-grow: 1; color: var(--zray-text); }
+.zray .group-count { color: var(--zray-muted); -unity-font-style: normal; font-size: 11px; }
+
+.zray .row { border-bottom-width: 1px; border-bottom-color: var(--zray-border-subtle); }
+.zray .row:hover { background-color: var(--zray-row-hover); }
+.zray .row-main { flex-direction: row; min-height: 28px; align-items: center; padding: 2px 8px 2px 2px; }
+.zray .star {
+    width: 22px;
+    margin: 0;
+    padding: 0;
+    border-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    color: var(--zray-muted);
+    -unity-text-align: middle-center;
+}
+.zray .star.on { color: var(--zray-match); }
+.zray .row-title {
+    flex-grow: 1;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 2px;
+    color: var(--zray-text);
+}
+.zray .row-status { margin-right: 8px; font-size: 11px; }
+.zray .row-status.success { color: var(--zray-success); }
+.zray .row-status.error { color: var(--zray-error); }
+.zray .run, .zray .edit {
+    min-width: 48px;
+    height: 21px;
+    margin: 0;
+    padding: 0 8px;
+    border-width: 0;
+    border-radius: 4px;
+    -unity-font-style: bold;
+}
+.zray .run { background-color: var(--zray-run); color: var(--zray-run-text); }
+.zray .run:hover { background-color: var(--zray-run-hover); }
+.zray .edit { background-color: var(--zray-edit); color: var(--zray-edit-text); }
+.zray .edit:hover { background-color: var(--zray-edit-hover); }
+.zray .value { flex-direction: row; align-items: center; flex-shrink: 0; }
+.zray .value-field { width: 96px; margin: 0; flex-shrink: 1; min-width: 44px; }
+.zray .value-step {
+    width: 22px;
+    height: 20px;
+    margin: 0 0 0 3px;
+    padding: 0;
+    border-radius: 3px;
+}
+.zray .value-dropdown { width: 128px; margin: 0; }
+.zray .value-readonly {
+    color: var(--zray-accent);
+    background-color: var(--zray-badge);
+    border-width: 1px;
+    border-color: var(--zray-border-subtle);
+    border-radius: 4px;
+    padding: 2px 8px;
+    -unity-font-style: bold;
+}
+.zray .editor { padding: 4px 10px 8px 30px; background-color: rgba(0, 0, 0, 0.12); }
+.zray .arg { flex-direction: row; align-items: center; min-height: 24px; margin-bottom: 2px; }
+.zray .arg-label { width: 150px; flex-shrink: 0; color: var(--zray-muted); overflow: hidden; text-overflow: ellipsis; }
+.zray .arg-label.required { color: var(--zray-text); }
+.zray .arg-pick { width: 22px; height: 20px; margin: 0 0 0 3px; padding: 0; border-radius: 3px; }
+.zray .arg-run { margin-left: 150px; margin-top: 4px; align-self: flex-start; }
+.zray .empty { padding: 20px; -unity-text-align: middle-center; color: var(--zray-muted); }
+.zray .footer {
+    height: 24px;
+    padding: 0 10px;
+    -unity-text-align: middle-left;
+    color: var(--zray-muted);
+    background-color: var(--zray-elevated);
+    border-top-width: 1px;
+    border-top-color: var(--zray-border-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 콘솔 */
+.zray .console {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: var(--zray-surface);
+}
+.zray .console-surface {
+    flex-grow: 1;
+    min-height: 0;
+    background-color: var(--zray-surface);
+}
+.zray .lines {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 6px 0;
+}
+.zray .lines .unity-scroll-view__content-container {
+    flex-grow: 1;
+    justify-content: flex-end;
+    padding: 2px 0;
+}
+.zray .line {
+    white-space: normal;
+    min-height: 20px;
+    padding: 2px 12px;
+    margin: 0;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0);
+    color: var(--zray-text);
+    -unity-text-align: middle-left;
+}
+.zray .line.echo {
+    color: var(--zray-echo);
+    background-color: var(--zray-echo-bg);
+    border-left-color: var(--zray-accent);
+    margin-top: 3px;
+}
+.zray .line.echo:hover { background-color: var(--zray-accent-bg); }
+.zray .line.muted { color: var(--zray-muted); }
+.zray .line.success { color: var(--zray-success); border-left-color: var(--zray-success); }
+.zray .line.warning { color: var(--zray-warning); border-left-color: var(--zray-warning); }
+.zray .line.error { color: var(--zray-error); border-left-color: var(--zray-error); }
+.zray .line.indented { padding-left: 24px; }
+
+.zray .suggestions {
+    margin: 0 10px 6px 10px;
+    max-height: 180px;
+    border-width: 1px;
+    border-color: var(--zray-border);
+    border-radius: 6px;
+    background-color: var(--zray-elevated);
+    padding: 3px 0;
+    flex-shrink: 0;
+}
+.zray .suggestion {
+    flex-direction: row;
+    height: 24px;
+    align-items: center;
+    padding: 0 10px;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 0, 0, 0);
+}
+.zray .suggestion:hover { background-color: var(--zray-row-hover); }
+.zray .suggestion.selected { background-color: var(--zray-selected); border-left-color: var(--zray-accent); }
+.zray .suggestion-label { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--zray-text); }
+.zray .suggestion-note {
+    color: var(--zray-muted);
+    font-size: 11px;
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background-color: var(--zray-badge);
+}
+
+.zray .console-dock {
+    flex-shrink: 0;
+    background-color: var(--zray-elevated);
+    border-top-width: 1px;
+    border-top-color: var(--zray-border);
+    padding: 8px 10px;
+}
+.zray .input-box {
+    flex-direction: row;
+    align-items: center;
+    height: 30px;
+    padding: 0 4px 0 8px;
+    border-radius: 6px;
+    background-color: var(--zray-field);
+    border-width: 1px;
+    border-color: var(--zray-border);
+}
+.zray .input-box.focused {
+    border-color: var(--zray-accent);
+}
+.zray .prompt {
+    color: var(--zray-accent);
+    width: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    margin: 0;
+    padding: 0;
+}
+.zray .input {
+    flex-grow: 1;
+    margin: 0;
+    padding: 0;
+}
+.zray .input > .unity-base-text-field__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-width: 0;
+    margin: 0;
+    padding: 3px 4px;
+    color: var(--zray-text);
+    --unity-cursor-color: rgb(122, 188, 255);
+}
+.zray .ghost { position: absolute; color: var(--zray-muted); white-space: nowrap; }
+.zray .input-run {
+    height: 22px;
+    margin: 0 0 0 6px;
+    padding: 0 12px;
+    border-radius: 4px;
+}
+
+.zray .hint-bar {
+    margin-top: 6px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background-color: var(--zray-surface);
+    border-width: 1px;
+    border-color: var(--zray-border-subtle);
+}
+.zray .hint {
+    white-space: normal;
+    margin: 0;
+    padding: 0;
+    color: var(--zray-muted);
+}

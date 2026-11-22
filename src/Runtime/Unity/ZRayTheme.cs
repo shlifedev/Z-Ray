@@ -1,14 +1,14 @@
 using UnityEngine;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
-    // 디버거 킷 화면의 색과 크기. 프리팹 빌더와 런타임 뷰가 같은 값을 쓰도록 한 곳에 둔다.
+    // ZRay 화면의 색과 크기. 프리팹 빌더와 런타임 뷰가 같은 값을 쓰도록 한 곳에 둔다.
     //
     // 글꼴은 갈무리11(픽셀 글꼴)이다. 12픽셀에서 글자가 정확히 픽셀 격자에 맞는다.
-    // 캔버스는 정수 배율로만 키우므로(DebuggerKitCanvas) 크기와 위치는 모두 정수로 둔다.
+    // 캔버스는 정수 배율로만 키우므로(ZRayCanvas) 크기와 위치는 모두 정수로 둔다.
     // 프로젝트가 선형 색 공간이라 반투명 회색·테두리는 체감 대비가 크게 떨어진다.
     // 면과 테두리는 불투명 색으로 두고, 글자는 어두운 배경에서도 또렷하게 읽히도록 높은 명도로 맞춘다.
-    public static class DebuggerKitTheme
+    public static class ZRayTheme
     {
         public const int FONT_SIZE = 12;
         public const int FONT_SAMPLING_SIZE = 12;

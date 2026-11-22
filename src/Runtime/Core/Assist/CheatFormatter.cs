@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 정의를 사람이 읽는 글자로 쓴다. 힌트 바, 입력 줄의 인자 자리, help 출력, 오류 메시지가 같은 모양을 쓰도록 한 곳에 둔다.
     public static class CheatFormatter

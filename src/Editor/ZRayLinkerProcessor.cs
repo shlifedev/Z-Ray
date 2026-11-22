@@ -5,15 +5,15 @@ using UnityEditor.Build.Reporting;
 using UnityEditor.Compilation;
 using UnityEditor.UnityLinker;
 
-namespace Lumera.DebuggerKit.Editor
+namespace Lumera.ZRay.Editor
 {
     // 치트는 리플렉션으로만 불리므로, 코드 스트리핑(IL2CPP 빌드)이 쓰이지 않는 코드로 보고 지울 수 있다.
-    // 빌드할 때 디버거 킷을 참조하는 어셈블리를 통째로 보존하는 link.xml을 만들어 링커에 넘긴다.
-    // 디버거 킷은 Development Build에서만 컴파일되므로, 릴리스 빌드에서는 보존할 어셈블리가 없어 아무것도 하지 않는다.
-    internal sealed class DebuggerKitLinkerProcessor : IUnityLinkerProcessor
+    // 빌드할 때 ZRay를 참조하는 어셈블리를 통째로 보존하는 link.xml을 만들어 링커에 넘긴다.
+    // ZRay는 Development Build에서만 컴파일되므로, 릴리스 빌드에서는 보존할 어셈블리가 없어 아무것도 하지 않는다.
+    internal sealed class ZRayLinkerProcessor : IUnityLinkerProcessor
     {
-        private const string CORE_ASSEMBLY = "Lumera.DebuggerKit";
-        private const string OUTPUT_PATH = "Library/Lumera.DebuggerKit/link.xml";
+        private const string CORE_ASSEMBLY = "Lumera.ZRay";
+        private const string OUTPUT_PATH = "Library/Lumera.ZRay/link.xml";
 
         public int callbackOrder => 0;
 

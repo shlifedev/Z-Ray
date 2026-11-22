@@ -1734,7 +1734,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3fb0bf9f6ea34e6098d7a7ffc99c375, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.CheatRowView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.CheatRowView
   _background: {fileID: 5507491206109516696}
   _favorite: {fileID: 1403133638564170966}
   _favoriteLabel: {fileID: 6221412658863253683}
@@ -3107,7 +3107,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cc88a02542ddf4ea38e2b366d9943742, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ValueWidget
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ValueWidget
   _switch: {fileID: 2129281076739176643}
   _knob: {fileID: 4194738677943724799}
   _segments: {fileID: 5019288014338006978}
@@ -3467,7 +3467,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e8ee7f2e20fee4b69bba72f14183aaa6, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.KeyFilteredInputField
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.KeyFilteredInputField
   m_Navigation:
     m_Mode: 0
     m_WrapAround: 0

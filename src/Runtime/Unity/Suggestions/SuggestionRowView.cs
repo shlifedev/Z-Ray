@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 자동완성 후보 한 줄. 왼쪽에 값과 설명, 오른쪽에 분류나 "기본값" 같은 짧은 표시를 보인다.
     // 클릭(뗄 때)이 아니라 누르는 순간에 고른다. 누르면 입력칸이 포커스를 잃고, 포커스를 잃은 입력칸의 후보 목록은
@@ -28,11 +28,11 @@ namespace Lumera.DebuggerKit
             _index = index;
             _clickedOrNull = clicked;
             _builder.Clear();
-            RichText.AppendHighlighted(_builder, suggestion.Insert, suggestion.InsertSpans, DebuggerKitTheme.HEX_MATCH);
+            RichText.AppendHighlighted(_builder, suggestion.Insert, suggestion.InsertSpans, ZRayTheme.HEX_MATCH);
             if (suggestion.Detail.Length > 0)
             {
-                _builder.Append("  <color=").Append(DebuggerKitTheme.HEX_MUTED).Append('>');
-                RichText.AppendHighlighted(_builder, suggestion.Detail, suggestion.DetailSpans, DebuggerKitTheme.HEX_MATCH);
+                _builder.Append("  <color=").Append(ZRayTheme.HEX_MUTED).Append('>');
+                RichText.AppendHighlighted(_builder, suggestion.Detail, suggestion.DetailSpans, ZRayTheme.HEX_MATCH);
                 _builder.Append("</color>");
             }
 
@@ -74,7 +74,7 @@ namespace Lumera.DebuggerKit
 
         private void RefreshBackground()
         {
-            _background.color = _bSelected ? DebuggerKitTheme.ROW_SELECTED : (_bHovered ? DebuggerKitTheme.ROW_HOVER : DebuggerKitTheme.TRANSPARENT);
+            _background.color = _bSelected ? ZRayTheme.ROW_SELECTED : (_bHovered ? ZRayTheme.ROW_HOVER : ZRayTheme.TRANSPARENT);
             if (_marker != null)
             {
                 _marker.enabled = _bSelected;

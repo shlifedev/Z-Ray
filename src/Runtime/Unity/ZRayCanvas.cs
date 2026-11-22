@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     public enum EDebuggerOverlay
     {
@@ -21,7 +21,7 @@ namespace Lumera.DebuggerKit
     //   사용자가 소수 배율(0.25 단위)을 고르면 픽셀이 고르게 나뉘지 않으므로, 획 굵기가 들쭉날쭉해지지 않게 선형 필터로 바꾼다.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CanvasScaler))]
-    public sealed class DebuggerKitCanvas : MonoBehaviour
+    public sealed class ZRayCanvas : MonoBehaviour
     {
         private const int ATLAS_SIZE = 1024;
 
@@ -32,7 +32,7 @@ namespace Lumera.DebuggerKit
         // 비트맵 글꼴 셰이더. TMP는 이름으로 찾는데, 빌드에 들어가려면 누군가 참조해야 해서 여기서 참조한다.
         [SerializeField] private Shader _bitmapShader = null;
 
-        private DebuggerKitHost _host;
+        private ZRayHost _host;
         private CanvasScaler _scaler;
         private TMP_FontAsset _fontAssetOrNull;
         private EDebuggerOverlay _current = EDebuggerOverlay.None;
@@ -44,7 +44,7 @@ namespace Lumera.DebuggerKit
         // 지금 적용된 배율
         public float Scale { get; private set; } = 1.0f;
 
-        public void Initialize(DebuggerKitHost host)
+        public void Initialize(ZRayHost host)
         {
             _host = host;
             _scaler = GetComponent<CanvasScaler>();
@@ -137,7 +137,7 @@ namespace Lumera.DebuggerKit
         // 호스트가 정한 배율(0이면 화면 높이에 맞춘 자동 정수 배율)을 캔버스에 바로 적용한다. 화면 크기가 바뀔 수 있어 매 프레임 확인한다.
         public void ApplyScale()
         {
-            Scale = _host.UiScale > 0.0f ? _host.UiScale : Mathf.Max(1, Mathf.FloorToInt(Screen.height / DebuggerKitTheme.SCALE_UNIT_HEIGHT));
+            Scale = _host.UiScale > 0.0f ? _host.UiScale : Mathf.Max(1, Mathf.FloorToInt(Screen.height / ZRayTheme.SCALE_UNIT_HEIGHT));
             if (!Mathf.Approximately(_scaler.scaleFactor, Scale))
             {
                 _scaler.scaleFactor = Scale;
@@ -161,18 +161,18 @@ namespace Lumera.DebuggerKit
         {
             if (_font == null || _bitmapShader == null)
             {
-                Debug.LogWarning("[DebuggerKit] 캔버스 프리팹에 글꼴이나 셰이더가 없어 TMP 기본 글꼴을 씁니다. Tools/Lumera/DebuggerKit/Build Prefabs를 다시 실행하세요.", this);
+                Debug.LogWarning("[ZRay] 캔버스 프리팹에 글꼴이나 셰이더가 없어 TMP 기본 글꼴을 씁니다. Tools/Lumera/ZRay/Build Prefabs를 다시 실행하세요.", this);
                 return null;
             }
 
-            TMP_FontAsset fontAsset = TMP_FontAsset.CreateFontAsset(_font, DebuggerKitTheme.FONT_SAMPLING_SIZE, 2, GlyphRenderMode.RASTER, ATLAS_SIZE, ATLAS_SIZE, AtlasPopulationMode.Dynamic, false);
+            TMP_FontAsset fontAsset = TMP_FontAsset.CreateFontAsset(_font, ZRayTheme.FONT_SAMPLING_SIZE, 2, GlyphRenderMode.RASTER, ATLAS_SIZE, ATLAS_SIZE, AtlasPopulationMode.Dynamic, false);
             if (fontAsset == null)
             {
-                Debug.LogWarning("[DebuggerKit] 툴킷 글꼴로 TMP 글꼴을 만들지 못해 TMP 기본 글꼴을 씁니다.", this);
+                Debug.LogWarning("[ZRay] 툴킷 글꼴로 TMP 글꼴을 만들지 못해 TMP 기본 글꼴을 씁니다.", this);
                 return null;
             }
 
-            fontAsset.name = "DebuggerKit Galmuri11 (Runtime)";
+            fontAsset.name = "ZRay Galmuri11 (Runtime)";
             fontAsset.material.shader = _bitmapShader;
             fontAsset.atlasTexture.filterMode = FilterMode.Point;
             return fontAsset;
@@ -189,7 +189,7 @@ namespace Lumera.DebuggerKit
             foreach (TMP_InputField input in root.GetComponentsInChildren<TMP_InputField>(true))
             {
                 input.fontAsset = _fontAssetOrNull;
-                input.pointSize = DebuggerKitTheme.FONT_SIZE;
+                input.pointSize = ZRayTheme.FONT_SIZE;
             }
 
             foreach (TMP_Text text in root.GetComponentsInChildren<TMP_Text>(true))

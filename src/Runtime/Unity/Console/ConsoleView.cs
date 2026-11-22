@@ -4,11 +4,11 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 화면 아래의 개발자 콘솔. 입력 상태와 키 동작은 ConsoleSession, 힌트 문장은 ConsoleHintFormatter,
     // 기록은 호스트의 ConsoleTranscript가 갖는다. 여기서는 키를 읽어 넘기고 결과를 그린다.
-    // 여닫는 키와 Esc는 호스트가 처리한다(DebuggerKitHost.Update).
+    // 여닫는 키와 Esc는 호스트가 처리한다(ZRayHost.Update).
     public sealed class ConsoleView : MonoBehaviour
     {
         public const float HEADER_HEIGHT = 28.0f;
@@ -35,8 +35,8 @@ namespace Lumera.DebuggerKit
         private readonly List<StyledText> _hintFirst = new List<StyledText>();
         private readonly List<StyledText> _hintSecond = new List<StyledText>();
         private readonly StringBuilder _builder = new StringBuilder();
-        private DebuggerKitHost _host;
-        private DebuggerKitCanvas _canvas;
+        private ZRayHost _host;
+        private ZRayCanvas _canvas;
         private ConsoleSession _session;
         private int _shownSessionVersion = -1;
         private int _shownInputVersion;
@@ -46,7 +46,7 @@ namespace Lumera.DebuggerKit
         private bool _bFocusPending;
         private bool _bHintVisible;
 
-        public void Initialize(DebuggerKitHost host, DebuggerKitCanvas canvas)
+        public void Initialize(ZRayHost host, ZRayCanvas canvas)
         {
             _host = host;
             _canvas = canvas;
@@ -216,13 +216,13 @@ namespace Lumera.DebuggerKit
                 if (bHasHint)
                 {
                     _builder.Clear();
-                    RichText.AppendStyled(_builder, _hintFirst, DebuggerKitTheme.GetHex);
+                    RichText.AppendStyled(_builder, _hintFirst, ZRayTheme.GetHex);
                     if (_hintFirst.Count > 0 && _hintSecond.Count > 0)
                     {
                         _builder.Append('\n');
                     }
 
-                    RichText.AppendStyled(_builder, _hintSecond, DebuggerKitTheme.GetHex);
+                    RichText.AppendStyled(_builder, _hintSecond, ZRayTheme.GetHex);
                     _hint.SetText(_builder);
                 }
             }
@@ -265,8 +265,8 @@ namespace Lumera.DebuggerKit
             _builder.Clear();
             if (tail.Length > 0)
             {
-                RichText.AppendColored(_builder, shown, DebuggerKitTheme.HEX_INVISIBLE);
-                RichText.AppendColored(_builder, tail, DebuggerKitTheme.HEX_GHOST);
+                RichText.AppendColored(_builder, shown, ZRayTheme.HEX_INVISIBLE);
+                RichText.AppendColored(_builder, tail, ZRayTheme.HEX_GHOST);
             }
 
             _ghost.SetText(_builder);
@@ -291,7 +291,7 @@ namespace Lumera.DebuggerKit
                 _lineViews.Add(_canvas.Create(_linePrefab, _linesContent));
             }
 
-            float linesHeight = lines.Count * DebuggerKitTheme.LINE_HEIGHT;
+            float linesHeight = lines.Count * ZRayTheme.LINE_HEIGHT;
             float top = Mathf.Max(0.0f, viewHeight - linesHeight);
             for (int index = 0; index < _lineViews.Count; index++)
             {
@@ -302,7 +302,7 @@ namespace Lumera.DebuggerKit
                 {
                     view.Set(lines[index], OnLineRecalled);
                     RectTransform rect = (RectTransform)view.transform;
-                    rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -(top + (index * DebuggerKitTheme.LINE_HEIGHT)));
+                    rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, -(top + (index * ZRayTheme.LINE_HEIGHT)));
                 }
             }
 

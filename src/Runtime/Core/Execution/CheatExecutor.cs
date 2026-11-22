@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 명령 한 줄을 실행한다. 콘솔과 메뉴가 모두 이 경로 하나로 실행한다.
     // 메뉴는 위젯의 값을 BuildLine으로 명령 줄로 만들어 넘긴다. 그래서 검증, 기본값, 결과 메시지가 어디서 실행하든 같고,

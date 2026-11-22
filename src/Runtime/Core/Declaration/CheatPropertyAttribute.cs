@@ -1,6 +1,6 @@
 using System;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 프로퍼티나 필드를 값 치트로 선언한다. 콘솔에서 `id`는 값을 읽고 `id 값`은 쓴다.
     // 메뉴에서는 행 오른쪽에 타입에 맞는 위젯(토글, 숫자, 선택지, 글자)이 붙는다.

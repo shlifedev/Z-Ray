@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using static Lumera.DebuggerKit.Checks.Checker;
+using static Lumera.ZRay.Checks.Checker;
 
-namespace Lumera.DebuggerKit.Checks;
+namespace Lumera.ZRay.Checks;
 
 // 명령 실행, 내장 명령, 메뉴 경로, 기록과 저장.
-internal static partial class DebuggerKitChecks
+internal static partial class ZRayChecks
 {
     private static void CheckExecuteAction()
     {

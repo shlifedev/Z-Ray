@@ -89,7 +89,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6cdfeafd491294fb0a7f07c46a6c7e6b, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Lumera.DebuggerKit.Unity::Lumera.DebuggerKit.ConsoleLineView
+  m_EditorClassIdentifier: Lumera.ZRay.Unity::Lumera.ZRay.ConsoleLineView
   _background: {fileID: 8084446578157329814}
   _text: {fileID: 5743538706557518801}
 --- !u!1 &8060051231743010181

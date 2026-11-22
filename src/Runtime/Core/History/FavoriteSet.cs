@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 즐겨찾기한 치트 id. 더한 순서를 지킨다. 지금 등록되지 않은 id(다른 씬의 치트)도 지우지 않고 갖고 있는다.
     public sealed class FavoriteSet
     {
-        private const string KEY = "Lumera.DebuggerKit.Favorites.v1";
+        private const string KEY = "Lumera.ZRay.Favorites.v1";
 
         private readonly List<string> _ids = new List<string>();
 

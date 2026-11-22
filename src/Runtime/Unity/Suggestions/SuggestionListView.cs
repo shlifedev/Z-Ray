@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 자동완성 후보 목록. 콘솔의 입력 줄 아래와 메뉴의 입력칸 아래에서 같은 것을 쓴다.
     // 줄 높이가 같아서 레이아웃 그룹 없이 직접 자리를 잡는다. 한 번에 MAX_VISIBLE_SUGGESTIONS줄까지 보이고 나머지는 스크롤한다.
@@ -51,8 +51,8 @@ namespace Lumera.DebuggerKit
                     rect.anchorMin = new Vector2(0.0f, 1.0f);
                     rect.anchorMax = new Vector2(1.0f, 1.0f);
                     rect.pivot = new Vector2(0.5f, 1.0f);
-                    rect.sizeDelta = new Vector2(0.0f, DebuggerKitTheme.ROW_HEIGHT);
-                    rect.anchoredPosition = new Vector2(0.0f, -index * DebuggerKitTheme.ROW_HEIGHT);
+                    rect.sizeDelta = new Vector2(0.0f, ZRayTheme.ROW_HEIGHT);
+                    rect.anchoredPosition = new Vector2(0.0f, -index * ZRayTheme.ROW_HEIGHT);
                     _rows.Add(row);
                 }
 
@@ -65,9 +65,9 @@ namespace Lumera.DebuggerKit
                 _rows[index].gameObject.SetActive(false);
             }
 
-            int visibleRows = Mathf.Min(_count, DebuggerKitTheme.MAX_VISIBLE_SUGGESTIONS);
-            _content.sizeDelta = new Vector2(_content.sizeDelta.x, _count * DebuggerKitTheme.ROW_HEIGHT);
-            _panel.sizeDelta = new Vector2(_panel.sizeDelta.x, visibleRows * DebuggerKitTheme.ROW_HEIGHT);
+            int visibleRows = Mathf.Min(_count, ZRayTheme.MAX_VISIBLE_SUGGESTIONS);
+            _content.sizeDelta = new Vector2(_content.sizeDelta.x, _count * ZRayTheme.ROW_HEIGHT);
+            _panel.sizeDelta = new Vector2(_panel.sizeDelta.x, visibleRows * ZRayTheme.ROW_HEIGHT);
             _selectedIndex = selectedIndex;
             ScrollToSelected();
         }
@@ -106,14 +106,14 @@ namespace Lumera.DebuggerKit
             }
             else
             {
-                float rowTop = _selectedIndex * DebuggerKitTheme.ROW_HEIGHT;
+                float rowTop = _selectedIndex * ZRayTheme.ROW_HEIGHT;
                 if (rowTop < top)
                 {
                     top = rowTop;
                 }
-                else if (rowTop + DebuggerKitTheme.ROW_HEIGHT > top + viewHeight)
+                else if (rowTop + ZRayTheme.ROW_HEIGHT > top + viewHeight)
                 {
-                    top = rowTop + DebuggerKitTheme.ROW_HEIGHT - viewHeight;
+                    top = rowTop + ZRayTheme.ROW_HEIGHT - viewHeight;
                 }
             }
 

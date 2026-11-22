@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 콘솔 자체의 명령(help, clear, history). 다른 치트와 같은 방식으로 선언하고 등록한다. 메뉴에는 보이지 않는다.
     public sealed class BuiltInCheats

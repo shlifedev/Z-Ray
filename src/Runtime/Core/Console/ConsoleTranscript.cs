@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Lumera.DebuggerKit
+namespace Lumera.ZRay
 {
     // 콘솔 기록의 한 줄. Recall은 눌렀을 때 입력 줄로 다시 가져올 명령이다(실행한 명령을 보여 주는 줄만 있다).
     public readonly struct TranscriptLine

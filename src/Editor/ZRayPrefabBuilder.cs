@@ -4,25 +4,25 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Lumera.DebuggerKit.Editor
+namespace Lumera.ZRay.Editor
 {
-    // 디버거 킷의 UI 프리팹을 코드로 만든다(Tools/Lumera/DebuggerKit/Build Prefabs).
-    // 실행할 때마다 프리팹을 처음부터 다시 만들어 덮어쓴다. 모양을 바꾸려면 프리팹을 손으로 고치지 말고 이 파일과 DebuggerKitTheme를 고친다.
+    // ZRay의 UI 프리팹을 코드로 만든다(Tools/Lumera/ZRay/Build Prefabs).
+    // 실행할 때마다 프리팹을 처음부터 다시 만들어 덮어쓴다. 모양을 바꾸려면 프리팹을 손으로 고치지 말고 이 파일과 ZRayTheme를 고친다.
     //
     // 픽셀 글꼴이 번지지 않게 크기와 위치는 모두 정수로 두고, 캔버스는 정수 배율(ConstantPixelSize)로만 키운다.
-    // 글자는 프리팹에서 TMP 기본 글꼴로 두고, 실행할 때 DebuggerKitCanvas가 갈무리11 비트맵 글꼴로 바꾼다.
+    // 글자는 프리팹에서 TMP 기본 글꼴로 두고, 실행할 때 ZRayCanvas가 갈무리11 비트맵 글꼴로 바꾼다.
     // 사각형 테두리는 uGUI Outline 대신 4변 1px 선(AddBorder)으로 그려 모서리 번짐과 이중선을 없앤다.
-    public static class DebuggerKitPrefabBuilder
+    public static class ZRayPrefabBuilder
     {
-        private const string ROOT = "Packages/com.lumera.debuggerkit/Runtime/Unity";
+        private const string ROOT = "Packages/com.lumera.zray/Runtime/Unity";
         private const string FOLDER = ROOT + "/Prefabs";
-        private const string CANVAS_PATH = FOLDER + "/DebuggerKitCanvas.prefab";
+        private const string CANVAS_PATH = FOLDER + "/ZRayCanvas.prefab";
         private const string FONT_PATH = ROOT + "/Fonts/Galmuri11.ttf";
         private const string BITMAP_SHADER = "TextMeshPro/Mobile/Bitmap";
         private const int SORTING_ORDER = 30000;
 
-        private const float HEIGHT = DebuggerKitTheme.WIDGET_HEIGHT;
-        private const float LINE = DebuggerKitTheme.LINE_HEIGHT;
+        private const float HEIGHT = ZRayTheme.WIDGET_HEIGHT;
+        private const float LINE = ZRayTheme.LINE_HEIGHT;
         // 콘솔이 화면 아래에서 차지하는 높이의 비율
         private const float CONSOLE_HEIGHT = 0.44f;
         private const float CONSOLE_HEADER = ConsoleView.HEADER_HEIGHT;
@@ -38,20 +38,20 @@ namespace Lumera.DebuggerKit.Editor
         private static readonly Vector2 BOTTOM_LEFT = Vector2.zero;
         private static readonly Vector2 BOTTOM_RIGHT = new Vector2(1.0f, 0.0f);
 
-        [MenuItem("Tools/Lumera/DebuggerKit/Build Prefabs")]
+        [MenuItem("Tools/Lumera/ZRay/Build Prefabs")]
         public static void BuildFromMenu()
         {
             Build();
         }
 
         // 이미 만든 캔버스 프리팹. 아직 만들지 않았으면 null이다.
-        public static DebuggerKitCanvas LoadCanvasOrNull()
+        public static ZRayCanvas LoadCanvasOrNull()
         {
-            return AssetDatabase.LoadAssetAtPath<DebuggerKitCanvas>(CANVAS_PATH);
+            return AssetDatabase.LoadAssetAtPath<ZRayCanvas>(CANVAS_PATH);
         }
 
-        // 모든 프리팹을 다시 만들고 캔버스 프리팹을 돌려준다. 씬 빌더가 DebuggerKitHost에 연결할 때 쓴다.
-        public static DebuggerKitCanvas Build()
+        // 모든 프리팹을 다시 만들고 캔버스 프리팹을 돌려준다. 씬 빌더가 ZRayHost에 연결할 때 쓴다.
+        public static ZRayCanvas Build()
         {
             if (!AssetDatabase.IsValidFolder(FOLDER))
             {
@@ -72,13 +72,13 @@ namespace Lumera.DebuggerKit.Editor
             GroupHeaderView groupHeader = SavePrefab("GroupHeader", BuildGroupHeader).GetComponent<GroupHeaderView>();
             ArgRowView argRow = SavePrefab("ArgRow", root => BuildArgRow(root, segment)).GetComponent<ArgRowView>();
             CheatRowView cheatRow = SavePrefab("CheatRow", root => BuildCheatRow(root, segment, argRow)).GetComponent<CheatRowView>();
-            DebuggerKitCanvas canvas = SavePrefab("DebuggerKitCanvas", root =>
+            ZRayCanvas canvas = SavePrefab("ZRayCanvas", root =>
             {
                 ConsoleView console = BuildConsole(root, consoleLine, suggestionRow);
                 CheatMenuView menu = BuildMenu(root, categoryRow, groupHeader, cheatRow, suggestionRow);
                 ToastView toast = BuildToast(root);
                 BuildCanvas(root, console, menu, toast, font, bitmapShader);
-            }).GetComponent<DebuggerKitCanvas>();
+            }).GetComponent<ZRayCanvas>();
             AssetDatabase.SaveAssets();
             return canvas;
         }
@@ -89,12 +89,12 @@ namespace Lumera.DebuggerKit.Editor
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = SORTING_ORDER;
             canvas.pixelPerfect = true;
-            // 배율은 DebuggerKitCanvas가 화면 높이에 맞춰 정수로 정한다.
+            // 배율은 ZRayCanvas가 화면 높이에 맞춰 정수로 정한다.
             CanvasScaler scaler = root.gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             scaler.scaleFactor = 1.0f;
             root.gameObject.AddComponent<GraphicRaycaster>();
-            DebuggerKitCanvas view = root.gameObject.AddComponent<DebuggerKitCanvas>();
+            ZRayCanvas view = root.gameObject.AddComponent<ZRayCanvas>();
             using (SerializedObject serialized = new SerializedObject(view))
             {
                 Wire(serialized, "_console", console);
@@ -113,59 +113,59 @@ namespace Lumera.DebuggerKit.Editor
             Stretch(root, 0.0f, 0.0f, 0.0f, 0.0f);
             ConsoleView view = root.gameObject.AddComponent<ConsoleView>();
 
-            Image panel = AddImage(root, "Panel", DebuggerKitTheme.PANEL, true);
+            Image panel = AddImage(root, "Panel", ZRayTheme.PANEL, true);
             panel.rectTransform.anchorMin = Vector2.zero;
             panel.rectTransform.anchorMax = new Vector2(1.0f, CONSOLE_HEIGHT);
             panel.rectTransform.offsetMin = Vector2.zero;
             panel.rectTransform.offsetMax = Vector2.zero;
-            Image topAccent = AddImage(panel.rectTransform, "TopAccent", DebuggerKitTheme.BORDER_ACCENT, false);
+            Image topAccent = AddImage(panel.rectTransform, "TopAccent", ZRayTheme.BORDER_ACCENT, false);
             PlaceTopStretch(topAccent.rectTransform, 0.0f, 0.0f, 0.0f, 2.0f);
 
             // 머리줄: 악센트 막대, 제목, 오른쪽에 지우기·치트 메뉴·닫기
-            Image header = AddImage(panel.rectTransform, "Header", DebuggerKitTheme.HEADER, false);
+            Image header = AddImage(panel.rectTransform, "Header", ZRayTheme.HEADER, false);
             PlaceTopStretch(header.rectTransform, 0.0f, 0.0f, 2.0f, CONSOLE_HEADER - 2.0f);
-            Image headerBottom = AddImage(header.rectTransform, "BottomLine", DebuggerKitTheme.LINE, false);
+            Image headerBottom = AddImage(header.rectTransform, "BottomLine", ZRayTheme.LINE, false);
             PlaceBottomStretch(headerBottom.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
-            Image titleAccent = AddImage(header.rectTransform, "TitleAccent", DebuggerKitTheme.ACCENT, false);
+            Image titleAccent = AddImage(header.rectTransform, "TitleAccent", ZRayTheme.ACCENT, false);
             Place(titleAccent.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, PAD, 0.0f, 3.0f, 12.0f);
-            TextMeshProUGUI title = AddLabel(header.rectTransform, "Title", "개발자 콘솔", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI title = AddLabel(header.rectTransform, "Title", "개발자 콘솔", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(title.rectTransform, PAD + 8.0f, 0.0f, 220.0f, 0.0f);
 
-            Button close = AddButton(header.rectTransform, "Close", "×", DebuggerKitTheme.TRANSPARENT, DebuggerKitTheme.BUTTON_TEXT, out _);
+            Button close = AddButton(header.rectTransform, "Close", "×", ZRayTheme.TRANSPARENT, ZRayTheme.BUTTON_TEXT, out _);
             Place((RectTransform)close.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -6.0f, 0.0f, 22.0f, HEIGHT);
-            Button openMenu = AddButton(header.rectTransform, "OpenMenu", "치트 메뉴", DebuggerKitTheme.BUTTON, DebuggerKitTheme.BUTTON_TEXT, out _);
+            Button openMenu = AddButton(header.rectTransform, "OpenMenu", "치트 메뉴", ZRayTheme.BUTTON, ZRayTheme.BUTTON_TEXT, out _);
             Place((RectTransform)openMenu.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -32.0f, 0.0f, 70.0f, HEIGHT);
-            AddBorder((RectTransform)openMenu.transform, DebuggerKitTheme.BORDER);
-            Button clear = AddButton(header.rectTransform, "Clear", "지우기", DebuggerKitTheme.BUTTON, DebuggerKitTheme.MUTED, out _);
+            AddBorder((RectTransform)openMenu.transform, ZRayTheme.BORDER);
+            Button clear = AddButton(header.rectTransform, "Clear", "지우기", ZRayTheme.BUTTON, ZRayTheme.MUTED, out _);
             Place((RectTransform)clear.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -108.0f, 0.0f, 52.0f, HEIGHT);
-            AddBorder((RectTransform)clear.transform, DebuggerKitTheme.BORDER);
+            AddBorder((RectTransform)clear.transform, ZRayTheme.BORDER);
 
             ScrollRect lines = AddScroll(panel.rectTransform, "Lines", out RectTransform linesContent);
-            lines.GetComponent<Image>().color = DebuggerKitTheme.SURFACE;
+            lines.GetComponent<Image>().color = ZRayTheme.SURFACE;
             Stretch((RectTransform)lines.transform, PAD, PAD + INPUT_HEIGHT + 6.0f, PAD, CONSOLE_HEADER + 6.0f);
 
             // 입력 줄: 프롬프트, 입력칸(위에 회색 완성), 실행 버튼
-            Image inputRow = AddImage(panel.rectTransform, "InputRow", DebuggerKitTheme.FIELD, false);
+            Image inputRow = AddImage(panel.rectTransform, "InputRow", ZRayTheme.FIELD, false);
             PlaceBottomStretch(inputRow.rectTransform, PAD, PAD, PAD, INPUT_HEIGHT);
-            AddBorder(inputRow.rectTransform, DebuggerKitTheme.BORDER);
-            TextMeshProUGUI prompt = AddLabel(inputRow.rectTransform, "Prompt", ">", DebuggerKitTheme.ACCENT, TextAlignmentOptions.Center);
+            AddBorder(inputRow.rectTransform, ZRayTheme.BORDER);
+            TextMeshProUGUI prompt = AddLabel(inputRow.rectTransform, "Prompt", ">", ZRayTheme.ACCENT, TextAlignmentOptions.Center);
             Place(prompt.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, 2.0f, 0.0f, 20.0f, INPUT_HEIGHT);
-            KeyFilteredInputField input = AddInput(inputRow.rectTransform, "Input", "명령을 입력하세요 (help)", DebuggerKitTheme.TRANSPARENT, out TextMeshProUGUI inputText);
+            KeyFilteredInputField input = AddInput(inputRow.rectTransform, "Input", "명령을 입력하세요 (help)", ZRayTheme.TRANSPARENT, out TextMeshProUGUI inputText);
             Stretch((RectTransform)input.transform, 20.0f, 2.0f, 56.0f, 2.0f);
             // 회색 완성은 입력 글자와 같은 영역에 겹쳐 그린다. 글자가 길어 옆으로 밀릴 때 함께 밀리도록 글자의 자식으로 둔다.
-            TextMeshProUGUI ghost = AddLabel(inputText.rectTransform, "Ghost", "", DebuggerKitTheme.PLACEHOLDER, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI ghost = AddLabel(inputText.rectTransform, "Ghost", "", ZRayTheme.PLACEHOLDER, TextAlignmentOptions.MidlineLeft);
             Stretch(ghost.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             ghost.margin = inputText.margin;
             ghost.richText = true;
-            Button run = AddButton(inputRow.rectTransform, "Run", "실행", DebuggerKitTheme.RUN, DebuggerKitTheme.RUN_TEXT, out _);
+            Button run = AddButton(inputRow.rectTransform, "Run", "실행", ZRayTheme.RUN, ZRayTheme.RUN_TEXT, out _);
             Place((RectTransform)run.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -4.0f, 0.0f, 48.0f, HEIGHT);
 
             // 힌트 바: 평소(빈 줄)에는 숨기고, 시그니처·오류·설명 힌트가 있을 때만 보인다.
-            Image hintBar = AddImage(panel.rectTransform, "HintBar", DebuggerKitTheme.HINT_BG, false);
+            Image hintBar = AddImage(panel.rectTransform, "HintBar", ZRayTheme.HINT_BG, false);
             PlaceBottomStretch(hintBar.rectTransform, 0.0f, 0.0f, 0.0f, HINT_HEIGHT);
-            Image hintTopLine = AddImage(hintBar.rectTransform, "TopLine", DebuggerKitTheme.LINE, false);
+            Image hintTopLine = AddImage(hintBar.rectTransform, "TopLine", ZRayTheme.LINE, false);
             PlaceTopStretch(hintTopLine.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
-            TextMeshProUGUI hint = AddLabel(hintBar.rectTransform, "Hint", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI hint = AddLabel(hintBar.rectTransform, "Hint", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineLeft);
             Stretch(hint.rectTransform, PAD + 4.0f, 2.0f, PAD + 4.0f, 3.0f);
             hint.richText = true;
             hint.overflowMode = TextOverflowModes.Ellipsis;
@@ -211,50 +211,50 @@ namespace Lumera.DebuggerKit.Editor
             Stretch(root, 0.0f, 0.0f, 0.0f, 0.0f);
             CheatMenuView view = root.gameObject.AddComponent<CheatMenuView>();
             // 메뉴 밖을 눌러도 게임 UI가 눌리지 않게 화면 전체를 가린다.
-            Image dim = AddImage(root, "Dim", DebuggerKitTheme.DIM, true);
+            Image dim = AddImage(root, "Dim", ZRayTheme.DIM, true);
             Stretch(dim.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
 
-            Image panel = AddImage(root, "Panel", DebuggerKitTheme.PANEL, true);
+            Image panel = AddImage(root, "Panel", ZRayTheme.PANEL, true);
             panel.rectTransform.anchorMin = new Vector2(0.10f, 0.07f);
             panel.rectTransform.anchorMax = new Vector2(0.90f, 0.93f);
             panel.rectTransform.offsetMin = Vector2.zero;
             panel.rectTransform.offsetMax = Vector2.zero;
-            AddBorder(panel.rectTransform, DebuggerKitTheme.BORDER);
-            Image topAccent = AddImage(panel.rectTransform, "TopAccent", DebuggerKitTheme.BORDER_ACCENT, false);
+            AddBorder(panel.rectTransform, ZRayTheme.BORDER);
+            Image topAccent = AddImage(panel.rectTransform, "TopAccent", ZRayTheme.BORDER_ACCENT, false);
             PlaceTopStretch(topAccent.rectTransform, 1.0f, 1.0f, 0.0f, 2.0f);
 
-            Image header = AddImage(panel.rectTransform, "Header", DebuggerKitTheme.HEADER, false);
+            Image header = AddImage(panel.rectTransform, "Header", ZRayTheme.HEADER, false);
             PlaceTopStretch(header.rectTransform, 1.0f, 1.0f, 2.0f, HEADER - 2.0f);
-            Image headerLine = AddImage(header.rectTransform, "BottomLine", DebuggerKitTheme.LINE, false);
+            Image headerLine = AddImage(header.rectTransform, "BottomLine", ZRayTheme.LINE, false);
             PlaceBottomStretch(headerLine.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
-            Image titleAccent = AddImage(header.rectTransform, "TitleAccent", DebuggerKitTheme.ACCENT, false);
+            Image titleAccent = AddImage(header.rectTransform, "TitleAccent", ZRayTheme.ACCENT, false);
             Place(titleAccent.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, PAD, 0.0f, 3.0f, 12.0f);
-            TextMeshProUGUI title = AddLabel(header.rectTransform, "Title", "치트 메뉴", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI title = AddLabel(header.rectTransform, "Title", "치트 메뉴", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Place(title.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, PAD + 8.0f, 0.0f, SIDEBAR - PAD - 12.0f, HEADER);
-            KeyFilteredInputField search = AddInput(header.rectTransform, "Search", "검색 (이름, id, 분류)", DebuggerKitTheme.FIELD, out _);
+            KeyFilteredInputField search = AddInput(header.rectTransform, "Search", "검색 (이름, id, 분류)", ZRayTheme.FIELD, out _);
             RectTransform searchRect = (RectTransform)search.transform;
             searchRect.anchorMin = new Vector2(0.0f, 0.5f);
             searchRect.anchorMax = new Vector2(1.0f, 0.5f);
             searchRect.pivot = MIDDLE_LEFT;
             searchRect.offsetMin = new Vector2(SIDEBAR, -11.0f);
             searchRect.offsetMax = new Vector2(-154.0f, 11.0f);
-            AddBorder(searchRect, DebuggerKitTheme.BORDER);
-            Button close = AddButton(header.rectTransform, "Close", "×", DebuggerKitTheme.TRANSPARENT, DebuggerKitTheme.BUTTON_TEXT, out _);
+            AddBorder(searchRect, ZRayTheme.BORDER);
+            Button close = AddButton(header.rectTransform, "Close", "×", ZRayTheme.TRANSPARENT, ZRayTheme.BUTTON_TEXT, out _);
             Place((RectTransform)close.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -6.0f, 0.0f, 22.0f, HEIGHT);
-            Button openConsole = AddButton(header.rectTransform, "OpenConsole", "콘솔", DebuggerKitTheme.BUTTON, DebuggerKitTheme.BUTTON_TEXT, out _);
+            Button openConsole = AddButton(header.rectTransform, "OpenConsole", "콘솔", ZRayTheme.BUTTON, ZRayTheme.BUTTON_TEXT, out _);
             Place((RectTransform)openConsole.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -32.0f, 0.0f, 50.0f, HEIGHT);
-            AddBorder((RectTransform)openConsole.transform, DebuggerKitTheme.BORDER);
-            Button collapseAll = AddButton(header.rectTransform, "CollapseAll", "접기", DebuggerKitTheme.BUTTON, DebuggerKitTheme.BUTTON_TEXT, out _);
+            AddBorder((RectTransform)openConsole.transform, ZRayTheme.BORDER);
+            Button collapseAll = AddButton(header.rectTransform, "CollapseAll", "접기", ZRayTheme.BUTTON, ZRayTheme.BUTTON_TEXT, out _);
             Place((RectTransform)collapseAll.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -88.0f, 0.0f, 48.0f, HEIGHT);
-            AddBorder((RectTransform)collapseAll.transform, DebuggerKitTheme.BORDER);
+            AddBorder((RectTransform)collapseAll.transform, ZRayTheme.BORDER);
 
-            Image sidebar = AddImage(panel.rectTransform, "Sidebar", DebuggerKitTheme.SIDEBAR, false);
+            Image sidebar = AddImage(panel.rectTransform, "Sidebar", ZRayTheme.SIDEBAR, false);
             sidebar.rectTransform.anchorMin = Vector2.zero;
             sidebar.rectTransform.anchorMax = new Vector2(0.0f, 1.0f);
             sidebar.rectTransform.pivot = TOP_LEFT;
             sidebar.rectTransform.offsetMin = new Vector2(1.0f, FOOTER);
             sidebar.rectTransform.offsetMax = new Vector2(SIDEBAR, -HEADER);
-            Image sidebarLine = AddImage(sidebar.rectTransform, "Line", DebuggerKitTheme.LINE, false);
+            Image sidebarLine = AddImage(sidebar.rectTransform, "Line", ZRayTheme.LINE, false);
             sidebarLine.rectTransform.anchorMin = BOTTOM_RIGHT;
             sidebarLine.rectTransform.anchorMax = Vector2.one;
             sidebarLine.rectTransform.pivot = MIDDLE_RIGHT;
@@ -265,14 +265,14 @@ namespace Lumera.DebuggerKit.Editor
 
             ScrollRect list = AddScroll(panel.rectTransform, "List", out RectTransform listContent);
             Stretch((RectTransform)list.transform, SIDEBAR, FOOTER, 1.0f, HEADER);
-            TextMeshProUGUI empty = AddLabel((RectTransform)list.transform, "Empty", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.Center);
+            TextMeshProUGUI empty = AddLabel((RectTransform)list.transform, "Empty", "", ZRayTheme.MUTED, TextAlignmentOptions.Center);
             Stretch(empty.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
 
-            Image footerBar = AddImage(panel.rectTransform, "FooterBar", DebuggerKitTheme.HEADER, false);
+            Image footerBar = AddImage(panel.rectTransform, "FooterBar", ZRayTheme.HEADER, false);
             PlaceBottomStretch(footerBar.rectTransform, 1.0f, 1.0f, 1.0f, FOOTER - 1.0f);
-            Image footerTopLine = AddImage(footerBar.rectTransform, "TopLine", DebuggerKitTheme.LINE, false);
+            Image footerTopLine = AddImage(footerBar.rectTransform, "TopLine", ZRayTheme.LINE, false);
             PlaceTopStretch(footerTopLine.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
-            TextMeshProUGUI footer = AddLabel(footerBar.rectTransform, "Footer", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI footer = AddLabel(footerBar.rectTransform, "Footer", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineLeft);
             Stretch(footer.rectTransform, PAD, 0.0f, PAD, 0.0f);
             footer.overflowMode = TextOverflowModes.Ellipsis;
             footer.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
@@ -306,9 +306,9 @@ namespace Lumera.DebuggerKit.Editor
             RectTransform root = Child(canvas, "Toast");
             Stretch(root, 0.0f, 0.0f, 0.0f, 0.0f);
             ToastView view = root.gameObject.AddComponent<ToastView>();
-            Image background = AddImage(root, "Background", DebuggerKitTheme.HEADER, false);
+            Image background = AddImage(root, "Background", ZRayTheme.HEADER, false);
             Place(background.rectTransform, new Vector2(0.5f, 0.0f), new Vector2(0.5f, 0.0f), 0.0f, 28.0f, 200.0f, 28.0f);
-            AddBorder(background.rectTransform, DebuggerKitTheme.BORDER);
+            AddBorder(background.rectTransform, ZRayTheme.BORDER);
             // 메시지 길이에 맞춰 배경이 늘어난다.
             HorizontalLayoutGroup layout = background.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.padding = new RectOffset(14, 14, 6, 6);
@@ -320,7 +320,7 @@ namespace Lumera.DebuggerKit.Editor
             ContentSizeFitter fitter = background.gameObject.AddComponent<ContentSizeFitter>();
             fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-            TextMeshProUGUI text = AddLabel(background.rectTransform, "Text", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.Center);
+            TextMeshProUGUI text = AddLabel(background.rectTransform, "Text", "", ZRayTheme.TEXT, TextAlignmentOptions.Center);
 
             using (SerializedObject serialized = new SerializedObject(view))
             {
@@ -334,24 +334,24 @@ namespace Lumera.DebuggerKit.Editor
 
         private static void BuildSuggestionRow(RectTransform root)
         {
-            Place(root, TOP_LEFT, TOP_LEFT, 0.0f, 0.0f, 320.0f, DebuggerKitTheme.ROW_HEIGHT);
+            Place(root, TOP_LEFT, TOP_LEFT, 0.0f, 0.0f, 320.0f, ZRayTheme.ROW_HEIGHT);
             Image background = root.gameObject.AddComponent<Image>();
-            background.color = DebuggerKitTheme.TRANSPARENT;
+            background.color = ZRayTheme.TRANSPARENT;
             SuggestionRowView view = root.gameObject.AddComponent<SuggestionRowView>();
-            Image marker = AddImage(root, "Marker", DebuggerKitTheme.ACCENT, false);
+            Image marker = AddImage(root, "Marker", ZRayTheme.ACCENT, false);
             marker.rectTransform.anchorMin = Vector2.zero;
             marker.rectTransform.anchorMax = new Vector2(0.0f, 1.0f);
             marker.rectTransform.pivot = MIDDLE_LEFT;
             marker.rectTransform.offsetMin = Vector2.zero;
             marker.rectTransform.offsetMax = new Vector2(2.0f, 0.0f);
             marker.enabled = false;
-            TextMeshProUGUI label = AddLabel(root, "Label", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI label = AddLabel(root, "Label", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(label.rectTransform, 8.0f, 0.0f, 116.0f, 0.0f);
             label.richText = true;
             label.overflowMode = TextOverflowModes.Ellipsis;
             label.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
-            TextMeshProUGUI note = AddLabel(root, "Note", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineRight);
-            Place(note.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -8.0f, 0.0f, 104.0f, DebuggerKitTheme.ROW_HEIGHT);
+            TextMeshProUGUI note = AddLabel(root, "Note", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineRight);
+            Place(note.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -8.0f, 0.0f, 104.0f, ZRayTheme.ROW_HEIGHT);
             note.overflowMode = TextOverflowModes.Ellipsis;
 
             using (SerializedObject serialized = new SerializedObject(view))
@@ -372,9 +372,9 @@ namespace Lumera.DebuggerKit.Editor
             root.anchoredPosition = Vector2.zero;
             root.sizeDelta = new Vector2(0.0f, LINE);
             Image background = root.gameObject.AddComponent<Image>();
-            background.color = DebuggerKitTheme.TRANSPARENT;
+            background.color = ZRayTheme.TRANSPARENT;
             background.raycastTarget = false;
-            TextMeshProUGUI text = AddLabel(root, "Text", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI text = AddLabel(root, "Text", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(text.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             text.overflowMode = TextOverflowModes.Ellipsis;
             // RectMask2D 경계에서 첫 글자의 왼쪽 획이 잘리지 않도록 안전 여백을 둔다.
@@ -393,22 +393,22 @@ namespace Lumera.DebuggerKit.Editor
             root.anchorMin = TOP_LEFT;
             root.anchorMax = TOP_RIGHT;
             root.pivot = TOP_LEFT;
-            root.sizeDelta = new Vector2(0.0f, DebuggerKitTheme.ROW_HEIGHT);
+            root.sizeDelta = new Vector2(0.0f, ZRayTheme.ROW_HEIGHT);
             Image background = root.gameObject.AddComponent<Image>();
-            background.color = DebuggerKitTheme.TRANSPARENT;
+            background.color = ZRayTheme.TRANSPARENT;
             Button button = AddButtonBehaviour(root.gameObject, background);
             CategoryRowView view = root.gameObject.AddComponent<CategoryRowView>();
-            Image marker = AddImage(root, "Marker", DebuggerKitTheme.ACCENT, false);
+            Image marker = AddImage(root, "Marker", ZRayTheme.ACCENT, false);
             marker.rectTransform.anchorMin = Vector2.zero;
             marker.rectTransform.anchorMax = new Vector2(0.0f, 1.0f);
             marker.rectTransform.pivot = MIDDLE_LEFT;
             marker.rectTransform.offsetMin = Vector2.zero;
             marker.rectTransform.offsetMax = new Vector2(3.0f, 0.0f);
-            TextMeshProUGUI label = AddLabel(root, "Label", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI label = AddLabel(root, "Label", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(label.rectTransform, 0.0f, 0.0f, 34.0f, 0.0f);
             label.overflowMode = TextOverflowModes.Ellipsis;
-            TextMeshProUGUI count = AddLabel(root, "Count", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineRight);
-            Place(count.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -10.0f, 0.0f, 26.0f, DebuggerKitTheme.ROW_HEIGHT);
+            TextMeshProUGUI count = AddLabel(root, "Count", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineRight);
+            Place(count.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -10.0f, 0.0f, 26.0f, ZRayTheme.ROW_HEIGHT);
 
             using (SerializedObject serialized = new SerializedObject(view))
             {
@@ -425,18 +425,18 @@ namespace Lumera.DebuggerKit.Editor
             root.anchorMin = TOP_LEFT;
             root.anchorMax = TOP_RIGHT;
             root.pivot = TOP_LEFT;
-            root.sizeDelta = new Vector2(0.0f, DebuggerKitTheme.GROUP_HEIGHT);
+            root.sizeDelta = new Vector2(0.0f, ZRayTheme.GROUP_HEIGHT);
             Image background = root.gameObject.AddComponent<Image>();
-            background.color = DebuggerKitTheme.GROUP;
+            background.color = ZRayTheme.GROUP;
             Button button = AddButtonBehaviour(root.gameObject, background);
             GroupHeaderView view = root.gameObject.AddComponent<GroupHeaderView>();
-            Image bottomLine = AddImage(root, "BottomLine", DebuggerKitTheme.LINE, false);
+            Image bottomLine = AddImage(root, "BottomLine", ZRayTheme.LINE, false);
             PlaceBottomStretch(bottomLine.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
-            TextMeshProUGUI label = AddLabel(root, "Label", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI label = AddLabel(root, "Label", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(label.rectTransform, PAD, 0.0f, 44.0f, 0.0f);
             label.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
-            TextMeshProUGUI count = AddLabel(root, "Count", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineRight);
-            Place(count.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -12.0f, 0.0f, 32.0f, DebuggerKitTheme.GROUP_HEIGHT);
+            TextMeshProUGUI count = AddLabel(root, "Count", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineRight);
+            Place(count.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -12.0f, 0.0f, 32.0f, ZRayTheme.GROUP_HEIGHT);
 
             using (SerializedObject serialized = new SerializedObject(view))
             {
@@ -451,10 +451,10 @@ namespace Lumera.DebuggerKit.Editor
         {
             Place(root, MIDDLE_LEFT, MIDDLE_LEFT, 0.0f, 0.0f, 44.0f, HEIGHT);
             Image background = root.gameObject.AddComponent<Image>();
-            background.color = DebuggerKitTheme.BUTTON;
+            background.color = ZRayTheme.BUTTON;
             AddButtonBehaviour(root.gameObject, background);
-            AddBorder(root, DebuggerKitTheme.BORDER);
-            TextMeshProUGUI label = AddLabel(root, "Label", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.Center);
+            AddBorder(root, ZRayTheme.BORDER);
+            TextMeshProUGUI label = AddLabel(root, "Label", "", ZRayTheme.MUTED, TextAlignmentOptions.Center);
             Stretch(label.rectTransform, 2.0f, 0.0f, 2.0f, 0.0f);
         }
 
@@ -465,7 +465,7 @@ namespace Lumera.DebuggerKit.Editor
             root.pivot = TOP_LEFT;
             root.sizeDelta = new Vector2(0.0f, CheatRowView.ARG_ROW_HEIGHT);
             ArgRowView view = root.gameObject.AddComponent<ArgRowView>();
-            TextMeshProUGUI label = AddLabel(root, "Label", "", DebuggerKitTheme.MUTED, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI label = AddLabel(root, "Label", "", ZRayTheme.MUTED, TextAlignmentOptions.MidlineLeft);
             Place(label.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, 0.0f, 0.0f, 154.0f, CheatRowView.ARG_ROW_HEIGHT);
             label.overflowMode = TextOverflowModes.Ellipsis;
             label.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
@@ -482,7 +482,7 @@ namespace Lumera.DebuggerKit.Editor
 
         private static void BuildCheatRow(RectTransform root, Button segmentPrefab, ArgRowView argPrefab)
         {
-            const float ROW = DebuggerKitTheme.MENU_ROW_HEIGHT;
+            const float ROW = ZRayTheme.MENU_ROW_HEIGHT;
             const float INDENT = 28.0f;
 
             root.anchorMin = TOP_LEFT;
@@ -491,30 +491,30 @@ namespace Lumera.DebuggerKit.Editor
             root.sizeDelta = new Vector2(0.0f, ROW);
             CheatRowView view = root.gameObject.AddComponent<CheatRowView>();
             // 행 어디에 마우스를 올려도 설명이 보이도록 배경이 포인터를 받는다.
-            Image background = AddImage(root, "Background", DebuggerKitTheme.TRANSPARENT, true);
+            Image background = AddImage(root, "Background", ZRayTheme.TRANSPARENT, true);
             Stretch(background.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
-            Image separator = AddImage(root, "Separator", DebuggerKitTheme.LINE, false);
+            Image separator = AddImage(root, "Separator", ZRayTheme.LINE, false);
             PlaceBottomStretch(separator.rectTransform, 0.0f, 0.0f, 0.0f, 1.0f);
 
             RectTransform main = Child(root, "Main");
             PlaceTopStretch(main, 0.0f, 0.0f, 0.0f, ROW);
-            Button favorite = AddButton(main, "Favorite", "☆", DebuggerKitTheme.TRANSPARENT, DebuggerKitTheme.MUTED, out TextMeshProUGUI favoriteLabel);
+            Button favorite = AddButton(main, "Favorite", "☆", ZRayTheme.TRANSPARENT, ZRayTheme.MUTED, out TextMeshProUGUI favoriteLabel);
             Place((RectTransform)favorite.transform, MIDDLE_LEFT, MIDDLE_LEFT, 6.0f, 0.0f, 18.0f, HEIGHT);
-            TextMeshProUGUI title = AddLabel(main, "Title", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI title = AddLabel(main, "Title", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(title.rectTransform, INDENT, 0.0f, WIDGET_WIDTH + 66.0f, 0.0f);
             title.richText = true;
             title.overflowMode = TextOverflowModes.Ellipsis;
             title.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
-            TextMeshProUGUI status = AddLabel(main, "Status", "", DebuggerKitTheme.SUCCESS, TextAlignmentOptions.MidlineRight);
+            TextMeshProUGUI status = AddLabel(main, "Status", "", ZRayTheme.SUCCESS, TextAlignmentOptions.MidlineRight);
             Place(status.rectTransform, MIDDLE_RIGHT, MIDDLE_RIGHT, -(WIDGET_WIDTH + 16.0f), 0.0f, 44.0f, ROW);
-            Button run = AddButton(main, "Run", "실행", DebuggerKitTheme.RUN, DebuggerKitTheme.RUN_TEXT, out TextMeshProUGUI runLabel);
+            Button run = AddButton(main, "Run", "실행", ZRayTheme.RUN, ZRayTheme.RUN_TEXT, out TextMeshProUGUI runLabel);
             Place((RectTransform)run.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -10.0f, 0.0f, 48.0f, HEIGHT);
             ValueWidget valueWidget = AddValueWidget(main, "Value", segmentPrefab, true);
             Place((RectTransform)valueWidget.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -10.0f, 0.0f, WIDGET_WIDTH, HEIGHT);
 
             RectTransform editor = Child(root, "Editor");
             PlaceTopStretch(editor, INDENT, 10.0f, ROW, CheatRowView.ARG_ROW_HEIGHT);
-            Button execute = AddButton(editor, "Execute", "실행", DebuggerKitTheme.RUN, DebuggerKitTheme.RUN_TEXT, out _);
+            Button execute = AddButton(editor, "Execute", "실행", ZRayTheme.RUN, ZRayTheme.RUN_TEXT, out _);
             Place((RectTransform)execute.transform, TOP_LEFT, TOP_LEFT, 160.0f, 0.0f, 48.0f, HEIGHT);
             editor.gameObject.SetActive(false);
 
@@ -551,18 +551,18 @@ namespace Lumera.DebuggerKit.Editor
             ValueWidget widget = root.gameObject.AddComponent<ValueWidget>();
 
             // 읽기 전용 프로퍼티 값 배지
-            Image readOnlyBadge = AddImage(root, "ReadOnlyBadge", DebuggerKitTheme.BADGE, false);
+            Image readOnlyBadge = AddImage(root, "ReadOnlyBadge", ZRayTheme.BADGE, false);
             Place(readOnlyBadge.rectTransform, side, side, 0.0f, 0.0f, 108.0f, HEIGHT);
-            AddBorder(readOnlyBadge.rectTransform, DebuggerKitTheme.LINE);
-            TextMeshProUGUI readOnly = AddLabel(readOnlyBadge.rectTransform, "ReadOnly", "", DebuggerKitTheme.ACCENT, bRightAligned ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.MidlineLeft);
+            AddBorder(readOnlyBadge.rectTransform, ZRayTheme.LINE);
+            TextMeshProUGUI readOnly = AddLabel(readOnlyBadge.rectTransform, "ReadOnly", "", ZRayTheme.ACCENT, bRightAligned ? TextAlignmentOptions.MidlineRight : TextAlignmentOptions.MidlineLeft);
             Stretch(readOnly.rectTransform, 8.0f, 0.0f, 8.0f, 0.0f);
             readOnly.overflowMode = TextOverflowModes.Ellipsis;
 
-            Image track = AddImage(root, "Switch", DebuggerKitTheme.SWITCH_OFF, true);
+            Image track = AddImage(root, "Switch", ZRayTheme.SWITCH_OFF, true);
             Place(track.rectTransform, side, side, 0.0f, 0.0f, SWITCH_WIDTH, SWITCH_HEIGHT);
-            AddBorder(track.rectTransform, DebuggerKitTheme.BORDER);
+            AddBorder(track.rectTransform, ZRayTheme.BORDER);
             Button switchButton = AddButtonBehaviour(track.gameObject, track);
-            Image knob = AddImage(track.rectTransform, "Knob", DebuggerKitTheme.KNOB, false);
+            Image knob = AddImage(track.rectTransform, "Knob", ZRayTheme.KNOB, false);
             Place(knob.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, 2.0f, 0.0f, KNOB, KNOB);
 
             RectTransform segments = Child(root, "Segments");
@@ -570,15 +570,15 @@ namespace Lumera.DebuggerKit.Editor
 
             RectTransform fieldGroup = Child(root, "FieldGroup");
             Place(fieldGroup, side, side, 0.0f, 0.0f, GROUP_WIDTH, HEIGHT);
-            KeyFilteredInputField field = AddInput(fieldGroup, "Field", "", DebuggerKitTheme.FIELD, out _);
+            KeyFilteredInputField field = AddInput(fieldGroup, "Field", "", ZRayTheme.FIELD, out _);
             Place((RectTransform)field.transform, MIDDLE_LEFT, MIDDLE_LEFT, 0.0f, 0.0f, FIELD_WIDTH, HEIGHT);
-            AddBorder((RectTransform)field.transform, DebuggerKitTheme.BORDER);
-            Button minus = AddButton(fieldGroup, "Minus", "-", DebuggerKitTheme.BUTTON, DebuggerKitTheme.TEXT, out _);
+            AddBorder((RectTransform)field.transform, ZRayTheme.BORDER);
+            Button minus = AddButton(fieldGroup, "Minus", "-", ZRayTheme.BUTTON, ZRayTheme.TEXT, out _);
             Place((RectTransform)minus.transform, MIDDLE_LEFT, MIDDLE_LEFT, FIELD_WIDTH + 2.0f, 0.0f, STEP_WIDTH, HEIGHT);
-            AddBorder((RectTransform)minus.transform, DebuggerKitTheme.BORDER);
-            Button plus = AddButton(fieldGroup, "Plus", "+", DebuggerKitTheme.BUTTON, DebuggerKitTheme.TEXT, out _);
+            AddBorder((RectTransform)minus.transform, ZRayTheme.BORDER);
+            Button plus = AddButton(fieldGroup, "Plus", "+", ZRayTheme.BUTTON, ZRayTheme.TEXT, out _);
             Place((RectTransform)plus.transform, MIDDLE_LEFT, MIDDLE_LEFT, FIELD_WIDTH + STEP_WIDTH + 4.0f, 0.0f, STEP_WIDTH, HEIGHT);
-            AddBorder((RectTransform)plus.transform, DebuggerKitTheme.BORDER);
+            AddBorder((RectTransform)plus.transform, ZRayTheme.BORDER);
 
             using (SerializedObject serialized = new SerializedObject(widget))
             {
@@ -604,10 +604,10 @@ namespace Lumera.DebuggerKit.Editor
         {
             ScrollRect scroll = AddScroll(parent, name, out RectTransform content);
             RectTransform root = (RectTransform)scroll.transform;
-            Place(root, BOTTOM_LEFT, TOP_LEFT, 0.0f, 0.0f, width, DebuggerKitTheme.ROW_HEIGHT);
+            Place(root, BOTTOM_LEFT, TOP_LEFT, 0.0f, 0.0f, width, ZRayTheme.ROW_HEIGHT);
             Image background = root.GetComponent<Image>();
-            background.color = DebuggerKitTheme.POPUP;
-            AddBorder(root, DebuggerKitTheme.BORDER);
+            background.color = ZRayTheme.POPUP;
+            AddBorder(root, ZRayTheme.BORDER);
             SuggestionListView view = root.gameObject.AddComponent<SuggestionListView>();
             using (SerializedObject serialized = new SerializedObject(view))
             {
@@ -625,7 +625,7 @@ namespace Lumera.DebuggerKit.Editor
         private static ScrollRect AddScroll(RectTransform parent, string name, out RectTransform content)
         {
             // 휠과 드래그를 받으려면 그래픽이 있어야 한다. 보이지 않는 이미지를 둔다.
-            Image background = AddImage(parent, name, DebuggerKitTheme.TRANSPARENT, true);
+            Image background = AddImage(parent, name, ZRayTheme.TRANSPARENT, true);
             background.gameObject.AddComponent<RectMask2D>();
             content = Child(background.rectTransform, "Content");
             content.anchorMin = TOP_LEFT;
@@ -650,11 +650,11 @@ namespace Lumera.DebuggerKit.Editor
             RectTransform area = Child(background.rectTransform, "TextArea");
             Stretch(area, 6.0f, 1.0f, 6.0f, 1.0f);
             area.gameObject.AddComponent<RectMask2D>();
-            TextMeshProUGUI placeholder = AddLabel(area, "Placeholder", placeholderText, DebuggerKitTheme.PLACEHOLDER, TextAlignmentOptions.MidlineLeft);
+            TextMeshProUGUI placeholder = AddLabel(area, "Placeholder", placeholderText, ZRayTheme.PLACEHOLDER, TextAlignmentOptions.MidlineLeft);
             Stretch(placeholder.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             placeholder.overflowMode = TextOverflowModes.Ellipsis;
             placeholder.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
-            text = AddLabel(area, "Text", "", DebuggerKitTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            text = AddLabel(area, "Text", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(text.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             text.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
 
@@ -666,12 +666,12 @@ namespace Lumera.DebuggerKit.Editor
             input.textComponent = text;
             input.placeholder = placeholder;
             input.lineType = TMP_InputField.LineType.SingleLine;
-            input.pointSize = DebuggerKitTheme.FONT_SIZE;
+            input.pointSize = ZRayTheme.FONT_SIZE;
             input.richText = false;
             input.onFocusSelectAll = false;
             input.resetOnDeActivation = false;
             input.restoreOriginalTextOnEscape = false;
-            input.caretColor = DebuggerKitTheme.ACCENT;
+            input.caretColor = ZRayTheme.ACCENT;
             input.customCaretColor = true;
             input.caretWidth = 1;
             input.caretBlinkRate = 1.0f;
@@ -748,7 +748,7 @@ namespace Lumera.DebuggerKit.Editor
         private static void SetLabel(TextMeshProUGUI label, string text, Color color, TextAlignmentOptions alignment)
         {
             label.text = text;
-            label.fontSize = DebuggerKitTheme.FONT_SIZE;
+            label.fontSize = ZRayTheme.FONT_SIZE;
             label.enableAutoSizing = false;
             label.color = color;
             label.alignment = alignment;
