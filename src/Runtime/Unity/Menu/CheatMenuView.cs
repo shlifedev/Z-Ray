@@ -7,11 +7,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 치트 메뉴 화면. 무엇을 보일지(분류, 묶음, 검색 순위, 펼친 치트, 입력 초안)는 CheatMenuModel이 정하고, 여기서는 그린다.
-    // 행을 누르면 주 동작을 한다(실행, 입력칸 펴기, 스위치 뒤집기).
-    // 키: 검색칸에서 ↑/↓로 행을 고르고 Enter로 실행하거나 편다.
-    //     인자 입력칸에서는 Enter로 실행, ↑/↓로 후보를 고르고, Tab으로 다음 칸(Shift+Tab은 앞 칸)으로 간다.
-    //     마지막 칸에서 Tab을 누르면 [실행] 버튼에 포커스가 가고, Space나 Enter로 실행한다.
     public sealed class CheatMenuView : MonoBehaviour
     {
         private const float POLL_SECONDS = 0.25f;
@@ -37,23 +32,18 @@ namespace Lumera.ZRay
         private ZRayHost _host;
         private ZRayCanvas _canvas;
         private CheatMenuModel _model;
-        // ↑/↓로 고른 행(_rows의 번호). 고른 것이 없으면 -1이다.
         private int _highlight = -1;
         private int _activeRowCount;
         private float _nextPollAt;
         private bool _bFocusPending;
-        // 후보 목록을 띄운 입력칸과 그 행. 후보가 없으면 null이다.
         private ValueWidget _popupWidget;
         private CheatRowView _popupRow;
         private List<Suggestion> _popupSuggestions;
         private int _popupSelected = -1;
         private bool _bPopupDismissed;
-        // 포커스를 받은 뒤로 사용자가 그 칸에 입력했다(또는 ↓로 후보를 청했다). 입력하기 전에는 후보를 띄우지 않는다.
         private bool _bPopupRequested;
-        // 키보드 포커스가 [실행] 버튼에 있는 치트. 없으면 null이다.
         private CheatDefinition _executeFocusOrNull;
         private int _executeFocusFrame;
-        // 입력칸이 키를 처리하는 도중에는 포커스를 옮기지 않고, 다음 Update에서 실행한다.
         private System.Action _deferredOrNull;
         private InputAction _confirm;
         private InputAction _tab;
@@ -64,7 +54,6 @@ namespace Lumera.ZRay
             _host = host;
             _canvas = canvas;
             _model = new CheatMenuModel(host.Registry, host.Favorites, host.History, host.Drafts);
-            // [실행] 버튼에 포커스가 있을 때 쓰는 키. 입력칸에 포커스가 있을 때의 키는 입력칸이 직접 넘겨 준다(OnWidgetKey).
             _confirm = new InputAction("Confirm", InputActionType.Button);
             _confirm.AddBinding("<Keyboard>/space");
             _confirm.AddBinding("<Keyboard>/enter");
@@ -104,12 +93,10 @@ namespace Lumera.ZRay
             gameObject.SetActive(false);
         }
 
-        // 한 단계씩 닫는다: 후보 목록 → 인자 입력칸의 포커스 → 검색어. 닫을 것이 없으면 false를 돌려주고 호스트가 메뉴를 닫는다.
         public bool HandleEscape()
         {
             if (_popup.IsVisible)
             {
-                // 어느 입력칸의 후보였는지는 기억해 둔다. 잊으면 다음 프레임에 새 입력칸으로 보고 다시 띄운다.
                 _bPopupDismissed = true;
                 _popup.Hide();
                 return true;
@@ -140,8 +127,6 @@ namespace Lumera.ZRay
             Rebuild();
         }
 
-        // 행의 주 동작: 인자가 없으면 실행, 있으면 펴거나 접는다. 값 치트는 스위치면 뒤집고 아니면 입력칸에 포커스를 준다.
-        // 행을 누르거나, 검색칸에서 고른 행에 Enter를 누르거나, 행의 버튼을 누를 때 불린다.
         public void ActivateRow(CheatRowView row)
         {
             CheatDefinition definition = row.Definition;
@@ -167,7 +152,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // 행의 값으로 명령 줄을 만들어 콘솔과 같은 실행기로 실행한다. 결과는 토스트와 행, 콘솔 기록에 보인다.
         public void Run(CheatRowView row)
         {
             CheatDefinition definition = row.Definition;
@@ -193,7 +177,6 @@ namespace Lumera.ZRay
             RefreshPopup(row, widget);
         }
 
-        // 인자 입력칸의 키. 후보 목록이 떠 있으면 Tab·↑/↓가 후보를 고르고, Enter는 고른 후보를 넣거나 실행한다.
         public bool OnWidgetKey(CheatRowView row, ValueWidget widget, Event keyEvent)
         {
             char character = keyEvent.character;
@@ -218,8 +201,6 @@ namespace Lumera.ZRay
 
                     return true;
                 case KeyCode.Tab:
-                    // ↑/↓로 고른 후보가 있으면 넣고 넘어간다. Tab은 다음 입력칸으로, Shift+Tab은 앞 칸으로 간다.
-                    // 마지막 칸에서는 [실행] 버튼으로 간다. 입력칸이 자기 키를 처리하는 중이라, 포커스는 다음 Update에서 옮긴다.
                     if (bPopup && _popupSelected >= 0)
                     {
                         ApplyPopup(_popupSelected);
@@ -235,7 +216,6 @@ namespace Lumera.ZRay
                     return true;
                 case KeyCode.DownArrow:
                 case KeyCode.UpArrow:
-                    // 아직 입력하지 않아 후보가 떠 있지 않으면, ↓로 후보를 청할 수 있다(무엇을 넣을 수 있는지 볼 때).
                     if (!bPopup && keyEvent.keyCode == KeyCode.DownArrow)
                     {
                         _bPopupDismissed = false;
@@ -246,7 +226,6 @@ namespace Lumera.ZRay
                     {
                         int count = _popupSuggestions.Count;
                         int step = keyEvent.keyCode == KeyCode.DownArrow ? 1 : -1;
-                        // -1(고른 것 없음)을 포함해 한 바퀴 돈다.
                         _popupSelected = ((_popupSelected + 1 + step + count + 1) % (count + 1)) - 1;
                         _popup.Select(_popupSelected);
                     }
@@ -283,7 +262,6 @@ namespace Lumera.ZRay
 
             UpdateExecuteFocus();
 
-            // 판이 바뀌어 치트가 다시 등록되거나, 콘솔에서 치트를 써서 최근 사용이 바뀌면 모델이 알아챈다.
             if (_model.Refresh())
             {
                 Render();
@@ -298,7 +276,6 @@ namespace Lumera.ZRay
                 }
             }
 
-            // 포커스가 다른 입력칸으로 옮겨 갔다. 새 칸의 후보는 사용자가 입력을 시작할 때까지 띄우지 않는다.
             ValueWidget editing = FindEditingWidgetOrNull(out CheatRowView editingRow);
             if (editing != _popupWidget)
             {
@@ -308,7 +285,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // 입력칸 사이를 옮긴다. 그쪽에 칸이 더 없으면, 앞으로 가던 중일 때만 [실행] 버튼으로 간다.
         private void MoveFocus(CheatRowView row, int fromIndex, int direction)
         {
             if (!row.FocusField(fromIndex, direction) && direction > 0)
@@ -317,7 +293,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // [실행] 버튼에 키보드 포커스를 둔다(null이면 뗀다). 입력칸은 포커스를 놓아 글자를 받지 않게 한다.
         private void SetExecuteFocus(CheatDefinition definitionOrNull)
         {
             if (_executeFocusOrNull != null)
@@ -342,8 +317,6 @@ namespace Lumera.ZRay
             _footer.text = "Space 실행 · Tab 첫 입력칸으로 · Esc 검색으로";
         }
 
-        // [실행] 버튼에 포커스가 있는 동안: Space/Enter는 실행, Tab은 첫 입력칸(Shift+Tab은 마지막 칸)으로.
-        // 다른 입력칸이나 검색칸을 누르면 포커스가 그쪽으로 간 것이다.
         private void UpdateExecuteFocus()
         {
             if (_executeFocusOrNull == null)
@@ -358,7 +331,6 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 포커스를 옮긴 그 Tab이 같은 프레임에 한 번 더 읽히지 않게 한다.
             if (Time.frameCount == _executeFocusFrame)
             {
                 return;
@@ -449,7 +421,6 @@ namespace Lumera.ZRay
             ScrollIntoView((RectTransform)row.transform);
         }
 
-        // 묶음이 하나라도 펴져 있으면 모두 접고, 모두 접혀 있으면 모두 편다.
         private void ToggleAllGroups()
         {
             bool bAnyExpanded = false;
@@ -524,7 +495,6 @@ namespace Lumera.ZRay
             Rebuild();
         }
 
-        // 줄마다 뷰를 붙이고 위에서부터 자리를 잡는다. 펼친 행은 그만큼 높다.
         private void RenderEntries(CheatDefinition highlightedOrNull)
         {
             IReadOnlyList<MenuEntry> entries = _model.Entries;
@@ -561,7 +531,6 @@ namespace Lumera.ZRay
                     CheatRowView row = _rows[rowCount];
                     row.gameObject.SetActive(true);
                     row.Bind(this, _canvas, definition, _model.Query, _model.IsFavorite(definition), _model.IsExpanded(definition), _model.GetDrafts(definition));
-                    // 다시 그리기 전에 고른 행을 그대로 고른 채 둔다(즐겨찾기 묶음에 같은 치트가 또 있으면 먼저 나온 쪽).
                     bool bHighlighted = _highlight < 0 && definition == highlightedOrNull;
                     if (bHighlighted)
                     {
@@ -606,7 +575,6 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 앞 인자에 따라 후보가 달라지는 공급자를 위해, 이 인자 앞의 값들을 함께 넘긴다.
             _previousArgs.Clear();
             for (int index = 0; index < widget.ParameterIndex && index < row.Drafts.Count; index++)
             {
@@ -614,7 +582,6 @@ namespace Lumera.ZRay
             }
 
             _popupSuggestions = _host.Assist.SuggestArguments(row.Definition, widget.ParameterIndex, widget.Text, _previousArgs.ToArray());
-            // 이미 그 값을 다 쳤으면 후보를 띄울 이유가 없다.
             if (_popupSuggestions.Count == 0 || (_popupSuggestions.Count == 1 && _popupSuggestions[0].Insert == widget.Text))
             {
                 _popup.Hide();
@@ -656,7 +623,6 @@ namespace Lumera.ZRay
             _bPopupRequested = false;
         }
 
-        // 후보 목록을 입력칸의 왼쪽 아래 모서리에 붙인다.
         private void PlacePopupUnder(RectTransform field)
         {
             Vector3[] corners = new Vector3[4];

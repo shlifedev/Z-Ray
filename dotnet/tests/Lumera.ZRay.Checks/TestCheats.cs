@@ -30,7 +30,6 @@ internal readonly struct TestPoint
     }
 }
 
-// "x,y" 글자를 TestPoint로 읽는다. 기본 타입 밖의 타입을 더하는 방법을 검사한다.
 internal sealed class TestPointValueType : IValueType
 {
     public string Label => "point";
@@ -60,7 +59,6 @@ internal sealed class TestPointValueType : IValueType
     }
 }
 
-// 게임을 모르는 작은 대상. 인스턴스 치트, 값 치트, 기본값, 범위, 공급자, 예외를 모두 갖는다.
 internal sealed class TestCheats
 {
     public int Gold = 100;
@@ -88,7 +86,6 @@ internal sealed class TestCheats
         set => Gold = value;
     }
 
-    // 줄일 수 없는 값. setter는 CheatResult를 돌려줄 수 없어서 CheatException으로 거절한다.
     [CheatProperty("player.level", Category = "플레이어", Name = "레벨")]
     public int Level
     {
@@ -215,7 +212,6 @@ internal static class GenericTestCheats<T>
     public static readonly string FIELD = typeof(T).Name;
 }
 
-// 잘못된 선언만 모았다. 하나도 등록되지 않고 선언마다 이유가 보고되어야 한다.
 internal sealed class BadCheats
 {
     [Cheat("bad.type")]
@@ -263,7 +259,6 @@ internal sealed class BadCheats
     public DateTime UnsupportedValue { get; set; }
 }
 
-// 같은 id를 다시 등록하려는 대상.
 internal sealed class DuplicateCheats
 {
     [Cheat("PLAYER.GOLD.ADD")]

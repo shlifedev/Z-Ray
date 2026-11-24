@@ -1,9 +1,7 @@
-# .NET 빌드 결과
 bin/
 obj/
 *.user
 
-# Unity 샘플 프로젝트의 캐시, 빌드 결과와 IDE 파일
 /unity/[Ll]ibrary/
 /unity/[Tt]emp/
 /unity/[Oo]bj/
@@ -19,7 +17,6 @@ obj/
 /unity/TestResults*.xml
 /unity/test-results*.xml
 
-# OS와 IDE
 .DS_Store
 .idea/
 .vs/

@@ -6,8 +6,6 @@ using UnityEngine.UIElements;
 
 namespace Lumera.ZRay.Editor
 {
-    // 에디터 창의 콘솔. 입력 상태와 키 동작은 ConsoleSession, 힌트는 ConsoleHintFormatter, 기록은 호스트의 ConsoleTranscript다.
-    // 런타임 콘솔과 기록·입력 기록을 함께 쓰고, 입력 줄은 따로 갖는다.
     internal sealed class ConsolePane
     {
         private readonly ScrollView _lines = new ScrollView();
@@ -61,7 +59,6 @@ namespace Lumera.ZRay.Editor
             _input.RegisterValueChangedCallback(OnInputChanged);
             _input.RegisterCallback<FocusInEvent>(_ => _inputBox.AddToClassList("focused"));
             _input.RegisterCallback<FocusOutEvent>(_ => _inputBox.RemoveFromClassList("focused"));
-            // TextField보다 먼저 키를 본다. Tab·Enter·↑↓는 콘솔이 쓰고, 입력칸의 기본 동작(포커스 이동, 제출)은 막는다.
             _input.RegisterCallback<KeyDownEvent>(OnKeyDown, TrickleDown.TrickleDown);
             _input.RegisterCallback<NavigationMoveEvent>(evt => evt.StopPropagation(), TrickleDown.TrickleDown);
             _input.RegisterCallback<NavigationSubmitEvent>(evt => evt.StopPropagation(), TrickleDown.TrickleDown);
@@ -73,7 +70,6 @@ namespace Lumera.ZRay.Editor
             _inputBox.Add(run);
             dock.Add(_inputBox);
 
-            // 회색 완성: 입력 글자와 같은 자리에 투명한 입력 글자 + 회색 글자를 겹쳐 쓴다.
             _ghost.AddToClassList("ghost");
             _ghost.pickingMode = PickingMode.Ignore;
             _ghost.enableRichText = true;
@@ -115,12 +111,10 @@ namespace Lumera.ZRay.Editor
                 return;
             }
 
-            // 값 변경 이벤트가 오지 않은 글자 변화(다른 도구가 넣은 값, 창이 포커스를 갖기 전의 변경)도 따라간다.
             if (_input.value != _session.Text)
             {
                 _session.OnTextEdited(_input.value, GetCaret());
             }
-            // 글자는 그대로인데 커서만 옮겼을 때(←/→, 클릭)도 후보와 힌트가 달라진다.
             else if (_input.focusController?.focusedElement == _input)
             {
                 _session.OnCaretMoved(_input.cursorIndex);
@@ -131,7 +125,6 @@ namespace Lumera.ZRay.Editor
 
         private void OnInputChanged(ChangeEvent<string> evt)
         {
-            // 회색 완성 라벨이 입력칸 안에 있어서, 라벨 글자를 바꿀 때 나는 변경 이벤트도 올라온다. 입력칸 자신의 것만 받는다.
             if (_session == null || evt.target != _input)
             {
                 return;
@@ -148,7 +141,6 @@ namespace Lumera.ZRay.Editor
                 return;
             }
 
-            // Tab과 Enter는 글자 이벤트로도 한 번 더 온다. 그것도 입력칸에 넣지 않는다.
             if (evt.character == '\t' || evt.character == '\n' || evt.character == '\r')
             {
                 evt.StopImmediatePropagation();
@@ -187,7 +179,6 @@ namespace Lumera.ZRay.Editor
             }
         }
 
-        // 포커스가 없을 때 바뀐 글자(코드가 넣은 값)는 커서가 0에 남아 있다. 그때는 줄 끝을 커서로 본다.
         private int GetCaret()
         {
             bool bFocused = _input.focusController?.focusedElement == _input;
@@ -208,7 +199,6 @@ namespace Lumera.ZRay.Editor
 
         private void Render()
         {
-            // 세션이 글자를 바꿨으면(후보 넣기, 기록) 입력칸에 다시 쓴다.
             if (_shownInputVersion != _session.InputVersion)
             {
                 _shownInputVersion = _session.InputVersion;
@@ -315,7 +305,6 @@ namespace Lumera.ZRay.Editor
             _ghost.text = _builder.ToString();
         }
 
-        // 회색 글자를 입력칸의 글자 영역에 붙인다. 입력 글자와 같은 글꼴·위치라 이어 붙는다.
         private void PlaceGhost()
         {
             VisualElement text = _input.Q<TextElement>();

@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 왼쪽 분류 목록의 한 줄. 고른 줄은 배경과 왼쪽 막대로 표시한다.
     public sealed class CategoryRowView : MonoBehaviour
     {
         private const float INDENT = 12.0f;

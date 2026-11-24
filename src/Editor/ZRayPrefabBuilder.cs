@@ -6,12 +6,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay.Editor
 {
-    // ZRay의 UI 프리팹을 코드로 만든다(Tools/Lumera/ZRay/Build Prefabs).
-    // 실행할 때마다 프리팹을 처음부터 다시 만들어 덮어쓴다. 모양을 바꾸려면 프리팹을 손으로 고치지 말고 이 파일과 ZRayTheme를 고친다.
-    //
-    // 픽셀 글꼴이 번지지 않게 크기와 위치는 모두 정수로 두고, 캔버스는 정수 배율(ConstantPixelSize)로만 키운다.
-    // 글자는 프리팹에서 TMP 기본 글꼴로 두고, 실행할 때 ZRayCanvas가 갈무리11 비트맵 글꼴로 바꾼다.
-    // 사각형 테두리는 uGUI Outline 대신 4변 1px 선(AddBorder)으로 그려 모서리 번짐과 이중선을 없앤다.
     public static class ZRayPrefabBuilder
     {
         private const string ROOT = "Packages/com.lumera.zray/Runtime/Unity";
@@ -25,7 +19,6 @@ namespace Lumera.ZRay.Editor
 
         private const float HEIGHT = ZRayTheme.WIDGET_HEIGHT;
         private const float LINE = ZRayTheme.LINE_HEIGHT;
-        // 콘솔이 화면 아래에서 차지하는 높이의 비율
         private const float CONSOLE_HEIGHT = 0.44f;
         private const float CONSOLE_HEADER = ConsoleView.HEADER_HEIGHT;
         private const float INPUT_HEIGHT = ConsoleView.INPUT_HEIGHT;
@@ -46,13 +39,11 @@ namespace Lumera.ZRay.Editor
             Build();
         }
 
-        // 이미 만든 캔버스 프리팹. 아직 만들지 않았으면 null이다.
         public static ZRayCanvas LoadCanvasOrNull()
         {
             return AssetDatabase.LoadAssetAtPath<ZRayCanvas>(CANVAS_PATH);
         }
 
-        // 모든 프리팹을 다시 만들고 캔버스 프리팹을 돌려준다. 씬 빌더가 ZRayHost에 연결할 때 쓴다.
         public static ZRayCanvas Build()
         {
             if (!AssetDatabase.IsValidFolder(FOLDER))
@@ -91,7 +82,6 @@ namespace Lumera.ZRay.Editor
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
             canvas.sortingOrder = SORTING_ORDER;
             canvas.pixelPerfect = true;
-            // 배율은 ZRayCanvas가 화면 높이에 맞춰 정수로 정한다.
             CanvasScaler scaler = root.gameObject.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
             scaler.scaleFactor = 1.0f;
@@ -108,7 +98,6 @@ namespace Lumera.ZRay.Editor
             }
         }
 
-        // 화면 아래의 콘솔. 위에서부터 머리줄, 기록, 입력 줄, (입력 중일 때만) 힌트 바. 후보 목록은 입력 줄 바로 위에 뜬다.
         private static ConsoleView BuildConsole(RectTransform canvas, ConsoleLineView linePrefab, SuggestionRowView suggestionRow)
         {
             RectTransform root = Child(canvas, "Console");
@@ -123,7 +112,6 @@ namespace Lumera.ZRay.Editor
             Image topAccent = AddImage(panel.rectTransform, "TopAccent", ZRayTheme.BORDER_ACCENT, false);
             PlaceTopStretch(topAccent.rectTransform, 0.0f, 0.0f, 0.0f, 2.0f);
 
-            // 머리줄: 악센트 막대, 제목, 오른쪽에 지우기·치트 메뉴·닫기
             Image header = AddImage(panel.rectTransform, "Header", ZRayTheme.HEADER, false);
             PlaceTopStretch(header.rectTransform, 0.0f, 0.0f, 2.0f, CONSOLE_HEADER - 2.0f);
             Image headerBottom = AddImage(header.rectTransform, "BottomLine", ZRayTheme.LINE, false);
@@ -146,7 +134,6 @@ namespace Lumera.ZRay.Editor
             lines.GetComponent<Image>().color = ZRayTheme.SURFACE;
             Stretch((RectTransform)lines.transform, PAD, PAD + INPUT_HEIGHT + 6.0f, PAD, CONSOLE_HEADER + 6.0f);
 
-            // 입력 줄: 프롬프트, 입력칸(위에 회색 완성), 실행 버튼
             Image inputRow = AddImage(panel.rectTransform, "InputRow", ZRayTheme.FIELD, false);
             PlaceBottomStretch(inputRow.rectTransform, PAD, PAD, PAD, INPUT_HEIGHT);
             AddBorder(inputRow.rectTransform, ZRayTheme.BORDER);
@@ -154,7 +141,6 @@ namespace Lumera.ZRay.Editor
             Place(prompt.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, 2.0f, 0.0f, 20.0f, INPUT_HEIGHT);
             KeyFilteredInputField input = AddInput(inputRow.rectTransform, "Input", "명령을 입력하세요 (help)", ZRayTheme.TRANSPARENT, out TextMeshProUGUI inputText);
             Stretch((RectTransform)input.transform, 20.0f, 2.0f, 56.0f, 2.0f);
-            // 회색 완성은 입력 글자와 같은 영역에 겹쳐 그린다. 글자가 길어 옆으로 밀릴 때 함께 밀리도록 글자의 자식으로 둔다.
             TextMeshProUGUI ghost = AddLabel(inputText.rectTransform, "Ghost", "", ZRayTheme.PLACEHOLDER, TextAlignmentOptions.MidlineLeft);
             Stretch(ghost.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             ghost.margin = inputText.margin;
@@ -162,7 +148,6 @@ namespace Lumera.ZRay.Editor
             Button run = AddButton(inputRow.rectTransform, "Run", "실행", ZRayTheme.RUN, ZRayTheme.RUN_TEXT, out _);
             Place((RectTransform)run.transform, MIDDLE_RIGHT, MIDDLE_RIGHT, -4.0f, 0.0f, 48.0f, HEIGHT);
 
-            // 힌트 바: 평소(빈 줄)에는 숨기고, 시그니처·오류·설명 힌트가 있을 때만 보인다.
             Image hintBar = AddImage(panel.rectTransform, "HintBar", ZRayTheme.HINT_BG, false);
             PlaceBottomStretch(hintBar.rectTransform, 0.0f, 0.0f, 0.0f, HINT_HEIGHT);
             Image hintTopLine = AddImage(hintBar.rectTransform, "TopLine", ZRayTheme.LINE, false);
@@ -202,7 +187,6 @@ namespace Lumera.ZRay.Editor
             return view;
         }
 
-        // 화면 가운데의 치트 메뉴. 머리줄(제목, 검색, 버튼), 왼쪽 분류, 오른쪽 치트 목록, 아래 설명 줄.
         private static CheatMenuView BuildMenu(RectTransform canvas, CategoryRowView categoryRow, GroupHeaderView groupHeader, CheatRowView cheatRow, SuggestionRowView suggestionRow)
         {
             const float HEADER = 34.0f;
@@ -212,7 +196,6 @@ namespace Lumera.ZRay.Editor
             RectTransform root = Child(canvas, "Menu");
             Stretch(root, 0.0f, 0.0f, 0.0f, 0.0f);
             CheatMenuView view = root.gameObject.AddComponent<CheatMenuView>();
-            // 메뉴 밖을 눌러도 게임 UI가 눌리지 않게 화면 전체를 가린다.
             Image dim = AddImage(root, "Dim", ZRayTheme.DIM, true);
             Stretch(dim.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -279,7 +262,6 @@ namespace Lumera.ZRay.Editor
             footer.overflowMode = TextOverflowModes.Ellipsis;
             footer.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
 
-            // 인자 입력칸 아래에 띄우는 후보 목록. 위치는 실행 중에 입력칸에 맞춘다.
             SuggestionListView popup = AddSuggestionList(panel.rectTransform, "Popup", suggestionRow, 320.0f);
 
             using (SerializedObject serialized = new SerializedObject(view))
@@ -311,7 +293,6 @@ namespace Lumera.ZRay.Editor
             Image background = AddImage(root, "Background", ZRayTheme.HEADER, false);
             Place(background.rectTransform, new Vector2(0.5f, 0.0f), new Vector2(0.5f, 0.0f), 0.0f, 28.0f, 200.0f, 28.0f);
             AddBorder(background.rectTransform, ZRayTheme.BORDER);
-            // 메시지 길이에 맞춰 배경이 늘어난다.
             HorizontalLayoutGroup layout = background.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.padding = new RectOffset(14, 14, 6, 6);
             layout.childAlignment = TextAnchor.MiddleCenter;
@@ -379,7 +360,6 @@ namespace Lumera.ZRay.Editor
             TextMeshProUGUI text = AddLabel(root, "Text", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
             Stretch(text.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             text.overflowMode = TextOverflowModes.Ellipsis;
-            // RectMask2D 경계에서 첫 글자의 왼쪽 획이 잘리지 않도록 안전 여백을 둔다.
             text.margin = new Vector4(6.0f, 0.0f, 6.0f, 0.0f);
             ConsoleLineView view = root.gameObject.AddComponent<ConsoleLineView>();
             using (SerializedObject serialized = new SerializedObject(view))
@@ -492,7 +472,6 @@ namespace Lumera.ZRay.Editor
             root.pivot = TOP_LEFT;
             root.sizeDelta = new Vector2(0.0f, ROW);
             CheatRowView view = root.gameObject.AddComponent<CheatRowView>();
-            // 행 어디에 마우스를 올려도 설명이 보이도록 배경이 포인터를 받는다.
             Image background = AddImage(root, "Background", ZRayTheme.TRANSPARENT, true);
             Stretch(background.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
             Image separator = AddImage(root, "Separator", ZRayTheme.LINE, false);
@@ -537,8 +516,6 @@ namespace Lumera.ZRay.Editor
             }
         }
 
-        // 타입마다 쓰는 컨트롤을 모두 넣어 두고, 실행할 때 맞는 것만 켠다.
-        // bRightAligned: 행의 오른쪽 끝에 붙는 위젯(값 치트)은 내용도 오른쪽으로 붙인다.
         private static ValueWidget AddValueWidget(RectTransform parent, string name, Button segmentPrefab, bool bRightAligned)
         {
             const float STEP_WIDTH = 20.0f;
@@ -552,7 +529,6 @@ namespace Lumera.ZRay.Editor
             RectTransform root = Child(parent, name);
             ValueWidget widget = root.gameObject.AddComponent<ValueWidget>();
 
-            // 읽기 전용 프로퍼티 값 배지
             Image readOnlyBadge = AddImage(root, "ReadOnlyBadge", ZRayTheme.BADGE, false);
             Place(readOnlyBadge.rectTransform, side, side, 0.0f, 0.0f, 108.0f, HEIGHT);
             AddBorder(readOnlyBadge.rectTransform, ZRayTheme.LINE);
@@ -600,8 +576,6 @@ namespace Lumera.ZRay.Editor
             return widget;
         }
 
-        // 후보 목록 패널. 기본은 왼쪽 위 모서리를 기준으로 아래로 늘어난다(콘솔은 기준을 왼쪽 아래로 바꿔 위로 늘린다).
-        // 높이는 실행 중에 후보 수에 맞춘다.
         private static SuggestionListView AddSuggestionList(RectTransform parent, string name, SuggestionRowView rowPrefab, float width)
         {
             ScrollRect scroll = AddScroll(parent, name, out RectTransform content);
@@ -623,10 +597,8 @@ namespace Lumera.ZRay.Editor
             return view;
         }
 
-        // 세로로만 움직이는 스크롤 영역. 자기 자신이 보이는 범위(viewport)고, 내용은 위쪽에 붙어 아래로 늘어난다.
         private static ScrollRect AddScroll(RectTransform parent, string name, out RectTransform content)
         {
-            // 휠과 드래그를 받으려면 그래픽이 있어야 한다. 보이지 않는 이미지를 둔다.
             Image background = AddImage(parent, name, ZRayTheme.TRANSPARENT, true);
             background.gameObject.AddComponent<RectMask2D>();
             content = Child(background.rectTransform, "Content");
@@ -690,8 +662,6 @@ namespace Lumera.ZRay.Editor
             return button;
         }
 
-        // 방향키 이동(Navigation)을 끈다. 켜 두면 입력칸에서 ↑/↓를 누를 때 선택이 다른 버튼으로 넘어간다.
-        // 눌림은 색을 살짝 밝게 해서 보인다(배경색을 그대로 쓰는 버튼이 많아서 색을 곱하는 방식을 쓴다).
         private static Button AddButtonBehaviour(GameObject target, Image background)
         {
             Button button = target.AddComponent<Button>();
@@ -708,7 +678,6 @@ namespace Lumera.ZRay.Editor
             return button;
         }
 
-        // uGUI Outline 대신 4변 1px 이미지로 테두리를 그린다. 모서리 겹침과 밝기 불균일이 없다.
         private static void AddBorder(RectTransform target, Color color)
         {
             Image top = AddImage(target, "BorderTop", color, false);
@@ -771,7 +740,6 @@ namespace Lumera.ZRay.Editor
             rect.sizeDelta = new Vector2(width, height);
         }
 
-        // 부모를 채우고 네 변에서 안쪽으로 띄운다.
         private static void Stretch(RectTransform rect, float left, float bottom, float right, float top)
         {
             rect.anchorMin = Vector2.zero;
@@ -780,7 +748,6 @@ namespace Lumera.ZRay.Editor
             rect.offsetMax = new Vector2(-right, -top);
         }
 
-        // 부모의 위쪽에 붙여 가로로 채운다. top은 위에서 내려온 거리다.
         private static void PlaceTopStretch(RectTransform rect, float left, float right, float top, float height)
         {
             rect.anchorMin = TOP_LEFT;
@@ -790,7 +757,6 @@ namespace Lumera.ZRay.Editor
             rect.offsetMax = new Vector2(-right, -top);
         }
 
-        // 부모의 아래쪽에 붙여 가로로 채운다. bottom은 아래에서 올라온 거리다.
         private static void PlaceBottomStretch(RectTransform rect, float left, float right, float bottom, float height)
         {
             rect.anchorMin = Vector2.zero;

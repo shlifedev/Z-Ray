@@ -47,7 +47,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
 
             int buildIndex = SceneUtility.GetBuildIndexByScenePath(SCENE_PATH);
             Assert.That(buildIndex, Is.GreaterThanOrEqualTo(0), "샘플 씬을 Build Settings에서 열 수 있어야 한다.");
-            // 배치 모드와 Game View 포커스에 관계없이 가상 키보드의 이벤트를 게임에 전달한다.
             InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
             _keyboard = InputSystem.AddDevice<Keyboard>();
@@ -88,7 +87,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
                 yield return SceneManager.UnloadSceneAsync(_scene);
             }
 
-            // 루트에 놓인 호스트는 DontDestroyOnLoad로 옮겨질 수 있다.
             ZRayHost hostOrNull = ZRayHost.CurrentOrNull;
             if (hostOrNull != null && hostOrNull != _previousHostOrNull)
             {

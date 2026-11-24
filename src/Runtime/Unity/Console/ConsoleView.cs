@@ -6,9 +6,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 화면 아래의 개발자 콘솔. 입력 상태와 키 동작은 ConsoleSession, 힌트 문장은 ConsoleHintFormatter,
-    // 기록은 호스트의 ConsoleTranscript가 갖는다. 여기서는 키를 읽어 넘기고 결과를 그린다.
-    // 여닫는 키와 Esc는 호스트가 처리한다(ZRayHost.Update).
     public sealed class ConsoleView : MonoBehaviour
     {
         public const float HEADER_HEIGHT = 28.0f;
@@ -78,7 +75,6 @@ namespace Lumera.ZRay
             gameObject.SetActive(false);
         }
 
-        // 후보 목록이 떠 있으면 그것만 닫는다. 닫을 것이 없으면 false를 돌려주고 호스트가 콘솔을 닫는다.
         public bool HandleEscape()
         {
             bool bHandled = _session.HandleKey(EConsoleKey.Dismiss);
@@ -88,7 +84,6 @@ namespace Lumera.ZRay
 
         private void LateUpdate()
         {
-            // 입력칸은 선택된 다음 프레임부터 글자를 받는다. 여는 키가 첫 글자로 들어가지 않게 한 프레임 늦춰 포커스를 준다.
             if (_bFocusPending)
             {
                 _bFocusPending = false;
@@ -110,11 +105,9 @@ namespace Lumera.ZRay
             Render();
         }
 
-        // true를 돌려주면 그 키는 입력칸이 처리하지 않는다.
         private bool OnKey(Event keyEvent)
         {
             char character = keyEvent.character;
-            // 여닫는 키의 글자와, 콘솔이 따로 쓰는 키의 글자는 입력에 넣지 않는다.
             if (character == '`' || character == '~' || character == '₩' || character == '\t' || character == '\n' || character == '\r')
             {
                 return true;
@@ -160,7 +153,6 @@ namespace Lumera.ZRay
         {
             _session.Accept(index);
             Render();
-            // 후보를 누르면 입력칸이 포커스를 잃는다. 다음 프레임에 되돌린다.
             _bFocusPending = true;
         }
 
@@ -187,7 +179,6 @@ namespace Lumera.ZRay
 
         private void Render()
         {
-            // 세션이 글자를 바꿨으면(후보 넣기, 기록) 입력칸에 다시 쓴다.
             if (_shownInputVersion != _session.InputVersion)
             {
                 _shownInputVersion = _session.InputVersion;
@@ -231,7 +222,6 @@ namespace Lumera.ZRay
             RenderGhost();
         }
 
-        // 힌트가 없을 때는 하단 힌트 바를 숨기고 입력 줄을 콘솔 아래에 바로 붙인다.
         private void ApplyHintLayout(bool bShowHint)
         {
             _bHintVisible = bShowHint;
@@ -249,10 +239,8 @@ namespace Lumera.ZRay
             _shownViewHeight = -1.0f;
         }
 
-        // 입력한 글자를 투명하게 한 번 더 쓰고 그 뒤에 회색 글자를 잇는다. 그러면 글자 폭을 재지 않아도 커서 뒤에 정확히 붙는다.
         private void RenderGhost()
         {
-            // 조합 중인 한글까지 포함한, 지금 화면에 보이는 글자. TMP가 끝에 붙이는 폭 없는 공백은 뗀다.
             string shown = _input.textComponent.text.TrimEnd('\u200B');
             string tail = _session.TrailingHint;
             string source = shown + "\n" + tail;
@@ -272,8 +260,6 @@ namespace Lumera.ZRay
             _ghost.SetText(_builder);
         }
 
-        // 기록이 바뀌었거나 보이는 높이가 바뀌었을 때만 다시 그린다. 줄 높이가 같아서 번호로 자리를 잡는다.
-        // 줄이 화면을 채우지 못하면 아래쪽(입력 줄 바로 위)부터 쌓이게 위를 비운다.
         private void RenderLines()
         {
             ConsoleTranscript transcript = _host.Transcript;
@@ -311,7 +297,6 @@ namespace Lumera.ZRay
             _linesScroll.verticalNormalizedPosition = 0.0f;
         }
 
-        // direction: 1이면 옛 줄 쪽으로 한 화면의 대부분만큼 올린다.
         private void ScrollLines(int direction)
         {
             float hidden = _linesContent.rect.height - _linesScroll.viewport.rect.height;

@@ -177,8 +177,6 @@ namespace Lumera.ZRay
         }
     }
 
-    // 이름으로만 읽는다(대소문자 무시). 숫자를 받으면 선언되지 않은 값이 조용히 들어갈 수 있어서 받지 않는다.
-    // [Flags] 열거형은 값 하나로 나타낼 수 없어서 ValueTypeRegistry가 거부한다.
     internal sealed class EnumValueType : IValueType
     {
         private readonly Type _enumType;

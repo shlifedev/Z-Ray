@@ -5,9 +5,6 @@ using UnityEngine.UIElements;
 
 namespace Lumera.ZRay.Editor
 {
-    // ZRay 에디터 창(Tools/Lumera/ZRay/Window, Shift+F1). 게임 화면을 가리지 않고 치트 메뉴와 콘솔을 쓴다.
-    // 플레이 중인 씬의 ZRayHost에 붙어서 런타임 화면과 같은 치트, 기록, 즐겨찾기를 쓴다.
-    // 무엇을 보일지와 키 동작은 런타임과 같은 Core 모델(CheatMenuModel, ConsoleSession)이 정한다. 이 창은 UI Toolkit으로 그리기만 한다.
     public sealed class ZRayWindow : EditorWindow
     {
         private const string STYLE_PATH = "Packages/com.lumera.zray/Editor/ZRayWindow.uss";
@@ -147,7 +144,6 @@ namespace Lumera.ZRay.Editor
             }
         }
 
-        // 플레이를 시작하거나 멈추면 호스트가 바뀐다. 바뀐 호스트에 창을 다시 붙인다.
         private void Tick()
         {
             ZRayHost host = EditorApplication.isPlaying ? ZRayHost.CurrentOrNull : null;

@@ -7,7 +7,6 @@ using UnityEngine.UIElements;
 
 namespace Lumera.ZRay.Editor
 {
-    // 에디터 창의 치트 메뉴. 무엇을 보일지는 CheatMenuModel이 정하고, 실행은 런타임 메뉴와 같은 경로(ZRayHost.ExecuteFromMenu)로 한다.
     internal sealed class CheatMenuPane
     {
         private const double POLL_SECONDS = 0.25;
@@ -25,7 +24,6 @@ namespace Lumera.ZRay.Editor
 
         public VisualElement Root { get; } = new VisualElement();
 
-        // 값 치트 한 행. 화면에 보이는 동안 주기적으로 값을 다시 읽는다.
         private sealed class ValueRow
         {
             public CheatDefinition Definition;
@@ -56,7 +54,6 @@ namespace Lumera.ZRay.Editor
             collapseAll.style.flexShrink = 0.0f;
             searchRow.Add(collapseAll);
             listArea.Add(searchRow);
-            // 가로로는 스크롤하지 않는다. 행은 창 폭에 맞춰 줄어든다.
             _list.mode = ScrollViewMode.Vertical;
             _list.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             _list.AddToClassList("grow");
@@ -211,7 +208,6 @@ namespace Lumera.ZRay.Editor
             status.AddToClassList("row-status");
             main.Add(status);
 
-            // 행을 눌렀을 때의 주 동작. 런타임 메뉴와 같다: 실행, 입력칸 펴기, 스위치 뒤집기.
             System.Action primaryOrNull = null;
             if (definition.Kind == ECheatKind.Value)
             {
@@ -243,7 +239,6 @@ namespace Lumera.ZRay.Editor
                 }
             }
 
-            // 버튼과 입력칸이 아닌 곳(행의 빈 곳, 이름)을 눌렀을 때만 받는다.
             if (primaryOrNull != null)
             {
                 main.RegisterCallback<ClickEvent>(evt =>
@@ -258,7 +253,6 @@ namespace Lumera.ZRay.Editor
             return row;
         }
 
-        // 펼친 치트의 인자 입력칸. 입력한 값은 모델의 초안에 남아서 접었다 펴도 그대로다.
         private VisualElement BuildEditor(CheatDefinition definition, Label status)
         {
             VisualElement editor = new VisualElement();
@@ -287,7 +281,6 @@ namespace Lumera.ZRay.Editor
             return editor;
         }
 
-        // 인자 하나의 입력. bool은 토글, 열거형은 드롭다운, 그 밖은 글자 입력(숫자는 ±, 후보가 있으면 ▾ 목록).
         private VisualElement BuildInput(CheatDefinition definition, CheatParameter parameter, string text, System.Action<string> changed, System.Action submit, int index, string[] drafts)
         {
             VisualElement value = new VisualElement();
@@ -339,7 +332,6 @@ namespace Lumera.ZRay.Editor
             return value;
         }
 
-        // 값 치트의 위젯. 바꾸면 바로 쓴다(콘솔에서 "id 값"을 친 것과 같다).
         private VisualElement BuildValue(CheatDefinition definition, Label status)
         {
             CheatParameter parameter = definition.Parameters[0];
@@ -376,7 +368,6 @@ namespace Lumera.ZRay.Editor
                 return value;
             }
 
-            // 글자는 Enter를 누르거나 칸을 떠날 때 쓴다(isDelayed).
             TextField field = new TextField { value = current, isDelayed = true };
             field.AddToClassList("value-field");
             field.RegisterValueChangedCallback(evt => Run(definition, CheatMenuModel.BuildValueLine(definition, evt.newValue), status));
@@ -408,7 +399,6 @@ namespace Lumera.ZRay.Editor
             value.Add(plus);
         }
 
-        // 콘솔과 같은 후보(공급자, 기본값)를 메뉴로 띄운다.
         private void ShowCandidates(CheatDefinition definition, int index, string[] drafts, TextField field)
         {
             string[] previous = new string[index];
@@ -448,7 +438,6 @@ namespace Lumera.ZRay.Editor
             Refresh(() => { });
         }
 
-        // 묶음이 하나라도 펴져 있으면 모두 접고, 모두 접혀 있으면 모두 편다.
         private void ToggleAllGroups()
         {
             if (_model == null)
@@ -480,7 +469,6 @@ namespace Lumera.ZRay.Editor
                 : $"{CheatFormatter.FormatSignature(definition)}  —  {definition.Description}";
         }
 
-        // 이름(검색어 강조)과 흐린 id.
         private string BuildTitle(CheatDefinition definition)
         {
             string match = EditorGUIUtility.isProSkin ? "#FFD27A" : "#AA6400";

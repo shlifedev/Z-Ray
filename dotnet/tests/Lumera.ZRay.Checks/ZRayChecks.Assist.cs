@@ -3,7 +3,6 @@ using static Lumera.ZRay.Checks.Checker;
 
 namespace Lumera.ZRay.Checks;
 
-// 자동완성 후보, 후보 적용, 힌트, 인자 자리 안내.
 internal static partial class ZRayChecks
 {
     private static void CheckCommandSuggestions()
@@ -16,7 +15,6 @@ internal static partial class ZRayChecks
         Check(player[0].Kind == ESuggestionKind.Value && player[0].Detail == "무적" && player[0].Note == "플레이어", "후보에는 종류, 이름, 분류가 담긴다.");
         Check(player[0].InsertSpans.Length == 1 && player[0].InsertSpans[0].Length == 3, "일치한 구간을 함께 돌려준다.");
 
-        // 점수가 종류보다 먼저다. id가 처음부터 일치한 것, 조각이 일치한 것, 이름만 일치한 것 순이다.
         IReadOnlyList<Suggestion> gold = fixture.Analyze("gold").Suggestions;
         Check(gold[0].Insert == "gold.reset" && gold[1].Insert == "player.gold" && gold[2].Insert == "player.gold.add", "일치 점수 순으로 정렬한다.");
 
@@ -27,14 +25,12 @@ internal static partial class ZRayChecks
         Check(byName.Count == 1 && byName[0].Insert == "player.god" && byName[0].DetailSpans.Length == 1 && byName[0].InsertSpans.Length == 0, "한글 이름으로 찾으면 이름 쪽 구간을 돌려준다.");
         Check(IndexOf(fixture.Analyze("he").Suggestions, "help") == 0, "내장 명령도 후보에 나온다.");
 
-        // 최근에 쓴 치트는 같은 일치 방식 안에서 위로 온다. 더 나은 일치를 넘지는 않는다.
         fixture.History.RecordCheatUse("player.teleport");
         IReadOnlyList<Suggestion> recent = fixture.Analyze("pla").Suggestions;
         Check(recent[0].Insert == "player.teleport" && recent[1].Insert == "player.god", "최근에 쓴 치트가 먼저 나온다.");
         fixture.History.RecordCheatUse("player.gold.add");
         Check(fixture.Analyze("gold").Suggestions[0].Insert == "gold.reset", "최근 사용이 더 나은 일치를 넘지 않는다.");
 
-        // 커서가 줄 중간이면 커서 앞까지가 검색어다.
         AssistResult middle = fixture.Assist.Analyze("playerXX 5", 3);
         Check(middle.TokenIndex == 0 && middle.Prefix == "pla" && middle.Suggestions.Count == 6 && middle.ReplaceEnd == 8, "줄 중간에서도 명령 후보를 낸다.");
     }
@@ -43,14 +39,12 @@ internal static partial class ZRayChecks
     {
         Fixture fixture = new Fixture();
 
-        // 열거형: 기본값이 먼저, 나머지는 선언 순서.
         IReadOnlyList<Suggestion> element = fixture.Analyze("world.element ").Suggestions;
         Check(element.Count == 3 && element[0].Insert == "Ice" && element[0].Note == "기본값" && element[1].Insert == "Fire" && element[2].Insert == "Lightning", "열거형 후보는 기본값, 선언 순서로 나온다.");
         Check(element[0].Kind == ESuggestionKind.Argument, "인자 후보의 종류는 Argument다.");
         IReadOnlyList<Suggestion> filtered = fixture.Analyze("world.element li").Suggestions;
         Check(filtered.Count == 1 && filtered[0].Insert == "Lightning", "입력한 글자로 후보를 거른다.");
 
-        // bool 값 치트: 지금 값이 먼저.
         IReadOnlyList<Suggestion> god = fixture.Analyze("player.god ").Suggestions;
         Check(god.Count == 2 && god[0].Insert == "false" && god[0].Note == "현재 값" && god[1].Insert == "true", "값 치트는 지금 값을 먼저 보인다.");
         fixture.Cheats.IsGodMode = true;
@@ -58,7 +52,6 @@ internal static partial class ZRayChecks
         IReadOnlyList<Suggestion> goldValue = fixture.Analyze("player.gold ").Suggestions;
         Check(goldValue.Count == 1 && goldValue[0].Insert == "100", "숫자 값 치트도 지금 값을 후보로 낸다.");
 
-        // 공급자: 대상 객체에서 후보를 읽고, 준 순서를 지킨다.
         IReadOnlyList<Suggestion> items = fixture.Analyze("item.give ").Suggestions;
         Check(items.Count == 3 && items[0].Insert == "iron_sword" && items[0].Detail == "철검" && items[1].Insert == "long bow" && items[2].Insert == "potion", "공급자의 후보가 준 순서대로 나온다.");
         IReadOnlyList<Suggestion> byDescription = fixture.Analyze("item.give 물").Suggestions;
@@ -66,17 +59,14 @@ internal static partial class ZRayChecks
         fixture.Cheats.Items.Add(("pearl", "진주"));
         Check(fixture.Analyze("item.give p").Suggestions.Count == 2, "공급자는 분석할 때마다 다시 묻는다.");
 
-        // 둘째 인자: 기본값만 후보다.
         IReadOnlyList<Suggestion> count = fixture.Analyze("item.give potion ").Suggestions;
         Check(count.Count == 1 && count[0].Insert == "1" && count[0].Note == "기본값", "후보가 없는 타입은 기본값만 낸다.");
         Check(fixture.Analyze("item.give potion 1 ").Suggestions.Count == 0, "인자 수를 넘은 자리에는 후보가 없다.");
         Check(fixture.Analyze("player.gold.add ").Suggestions.Count == 0, "기본값도 후보도 없는 인자에는 후보가 없다.");
 
-        // 공급자가 예외를 던져도 분석은 끝나고, 그 인자의 후보만 빈다.
         AssistResult broken = fixture.Analyze("world.broken ");
         Check(broken.Suggestions.Count == 0 && broken.ProviderErrorOrNull != null && broken.ProviderErrorOrNull.Contains("공급자 고장") && broken.HintOrNull != null, "공급자의 예외는 안내로 바뀐다.");
 
-        // help의 인자는 등록된 명령이다.
         IReadOnlyList<Suggestion> help = fixture.Analyze("help pga").Suggestions;
         Check(help.Count == 1 && help[0].Insert == "player.gold.add" && help[0].Detail == "골드 추가", "help는 명령 이름을 후보로 낸다.");
         Check(fixture.Analyze("nope ").Suggestions.Count == 0 && fixture.Analyze("nope ").UnknownCommandOrNull != null, "모르는 명령의 인자에는 후보 대신 안내가 있다.");
@@ -96,26 +86,21 @@ internal static partial class ZRayChecks
         AssistResult noArgs = fixture.Analyze("gold.r");
         Check(fixture.Assist.ApplySuggestion(noArgs, noArgs.Suggestions[0], out caret) == "gold.reset" && caret == 10, "인자가 없는 명령도 공백을 붙이지 않는다.");
 
-        // 공백이 든 값은 따옴표로 감싼다. 다음 인자가 있으므로 공백을 붙인다.
         AssistResult spaced = fixture.Analyze("item.give lo");
         applied = fixture.Assist.ApplySuggestion(spaced, spaced.Suggestions[0], out caret);
         Check(applied == "item.give \"long bow\" " && caret == applied.Length, "공백이 든 후보는 따옴표로 감싼다.");
         Check(CommandLine.Parse(applied).Tokens[1].Text == "long bow", "감싼 값은 다시 읽으면 원래 값이다.");
 
-        // 이미 따옴표를 연 채로 입력하던 토큰도 통째로 바꾼다.
         AssistResult open = fixture.Analyze("item.give \"long b");
         Check(open.Suggestions.Count == 1 && fixture.Assist.ApplySuggestion(open, open.Suggestions[0], out caret) == "item.give \"long bow\" ", "따옴표를 연 토큰을 통째로 바꾼다.");
 
-        // 줄 중간: 커서가 있는 토큰만 바꾸고, 뒤에 이미 공백이 있으면 새로 넣지 않고 그 뒤로 커서를 옮긴다.
         AssistResult middle = fixture.Assist.Analyze("item.give po 3", 12);
         applied = fixture.Assist.ApplySuggestion(middle, middle.Suggestions[0], out caret);
         Check(applied == "item.give potion 3" && caret == 17, "줄 중간의 토큰만 바꾼다.");
 
-        // 마지막 인자는 공백을 붙이지 않는다.
         AssistResult last = fixture.Analyze("world.element li");
         Check(fixture.Assist.ApplySuggestion(last, last.Suggestions[0], out caret) == "world.element Lightning" && caret == 23, "마지막 인자 뒤에는 공백을 붙이지 않는다.");
 
-        // 새 토큰 자리(공백 뒤)에 넣는다.
         AssistResult fresh = fixture.Analyze("world.element ");
         Check(fixture.Assist.ApplySuggestion(fresh, fresh.Suggestions[1], out caret) == "world.element Fire", "빈 인자 자리에 후보를 넣는다.");
     }
@@ -133,7 +118,6 @@ internal static partial class ZRayChecks
         CommandHint second = fixture.Analyze("player.gold.add 5 wh").HintOrNull!;
         Check(second.ActiveIndex == 1 && second.Parameters[1].IsActive && !second.HasError, "입력 중인 인자가 활성이다.");
 
-        // 입력하는 동안 타입과 범위를 확인한다.
         CommandHint wrongType = fixture.Analyze("player.gold.add abc").HintOrNull!;
         Check(wrongType.HasError && wrongType.Parameters[0].ErrorOrNull != null && wrongType.Parameters[0].ErrorOrNull!.Contains("정수"), "타입이 틀리면 그 인자에 오류가 붙는다.");
         CommandHint outOfRange = fixture.Analyze("player.gold.add 0 why").HintOrNull!;
@@ -162,7 +146,6 @@ internal static partial class ZRayChecks
         CheckEqual(" [id:string]", fixture.Analyze("help").Placeholder, "빈 글자 기본값은 = 없이 보인다.");
         CheckEqual("player.gold.add <amount:int 1~99999> [reason:string=cheat]", CheatFormatter.FormatSignature(fixture.Registry.FindOrNull("player.gold.add")!), "시그니처에는 범위가 붙는다.");
 
-        // 회색 완성: 고른 후보에서 지금 입력 뒤에 이어질 글자.
         AssistResult typing = fixture.Analyze("player.go");
         CheckEqual("d", typing.GetGhostText(0), "첫 후보의 나머지를 보인다.");
         CheckEqual("ld", typing.GetGhostText(1), "고른 후보에 따라 달라진다.");

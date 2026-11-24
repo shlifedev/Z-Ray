@@ -4,7 +4,6 @@ using System.Text;
 
 namespace Lumera.ZRay
 {
-    // 콘솔 자체의 명령(help, clear, history). 다른 치트와 같은 방식으로 선언하고 등록한다. 메뉴에는 보이지 않는다.
     public sealed class BuiltInCheats
     {
         private const string CATEGORY = "콘솔";
@@ -176,7 +175,6 @@ namespace Lumera.ZRay
             return builder.ToString();
         }
 
-        // help의 인자 후보: 등록된 모든 명령.
         private sealed class CheatIdSuggestions : ISuggestionProvider
         {
             public void AddCandidates(SuggestionContext context, List<CandidateValue> output)

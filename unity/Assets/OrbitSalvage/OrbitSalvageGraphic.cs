@@ -10,7 +10,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage
         Core
     }
 
-    // 별 지도와 두 기체 표식은 텍스처 없이 그린다. 기체가 이동해도 배경 메시를 다시 만들 필요가 없다.
     internal sealed class OrbitSalvageGraphic : Graphic
     {
         private static readonly Color32 GRID = new Color32(36, 59, 77, 255);
@@ -59,7 +58,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage
         private static void DrawField(VertexHelper mesh, Rect rect)
         {
             Quad(mesh, rect.min, new Vector2(rect.xMin, rect.yMax), rect.max, new Vector2(rect.xMax, rect.yMin), new Color32(16, 29, 45, 255));
-            // 같은 화면 크기에서는 같은 별 지도를 보인다. 게임의 난수 상태는 쓰지 않는다.
             for (int index = 0; index < 115; index++)
             {
                 float x = Mathf.Repeat(0.37f + index * 0.618034f, 1.0f);
@@ -70,7 +68,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage
                 Triangle(mesh, star + Vector2.left * radius, star + Vector2.down * radius, star + Vector2.right * radius, EDGE);
             }
 
-            // 반원 궤도와 가스 행성은 항법 화면의 거리 기준이다.
             Vector2 planet = rect.min + Vector2.Scale(rect.size, new Vector2(0.77f, 0.67f));
             float radiusPlanet = rect.height * 0.17f;
             Ring(mesh, planet, radiusPlanet * 1.55f, 12.0f, 272.0f, 56, 1.0f, GRID);

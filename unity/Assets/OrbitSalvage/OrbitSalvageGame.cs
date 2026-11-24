@@ -108,7 +108,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage
                 ShipPosition = new Vector2(Mathf.Clamp(nextPosition.x, -HALF_WIDTH, HALF_WIDTH), Mathf.Clamp(nextPosition.y, -HALF_HEIGHT, HALF_HEIGHT));
             }
 
-            // 프레임 사이에 코어를 지나친 경우도 수집한다.
             Vector2 travel = ShipPosition - previousPosition;
             float fraction = travel.sqrMagnitude > 0.0f ? Mathf.Clamp01(Vector2.Dot(CorePosition - previousPosition, travel) / travel.sqrMagnitude) : 0.0f;
             Vector2 nearest = previousPosition + travel * fraction;
@@ -149,7 +148,6 @@ namespace Lumera.ZRay.Samples.OrbitSalvage
             return direction;
         }
 
-        // 라운드의 시간과 진행도만 초기화한다. 속도와 시간 정지 설정은 이 게임 인스턴스의 수명 동안 유지한다.
 #if UNITY_EDITOR || LUMERA_ZRAY
         [Cheat("salvage.restart", Name = "라운드 재시작", Category = "궤도 구조", Description = "속도와 시간 정지 설정을 유지한 채 처음부터 시작한다.")]
 #endif

@@ -5,9 +5,6 @@ using System.Text;
 
 namespace Lumera.ZRay
 {
-    // 명령 한 줄을 실행한다. 콘솔과 메뉴가 모두 이 경로 하나로 실행한다.
-    // 메뉴는 위젯의 값을 BuildLine으로 명령 줄로 만들어 넘긴다. 그래서 검증, 기본값, 결과 메시지가 어디서 실행하든 같고,
-    // 메뉴에서 실행한 것도 콘솔 기록에 같은 명령 줄로 남는다.
     public sealed class CheatExecutor
     {
         private const int SIMILAR_COMMAND_COUNT = 3;
@@ -16,10 +13,8 @@ namespace Lumera.ZRay
         private readonly CommandHistory? _historyOrNull;
         private readonly CheatDraftStore? _draftsOrNull;
 
-        // 줄이 비어 있지 않은 모든 실행 뒤에 불린다(실패 포함).
         public event Action<ExecutionResult>? Executed;
 
-        // draftsOrNull: 실행한 인자 글자를 기억해 둘 곳. 메뉴의 입력칸이 마지막으로 실행한 값으로 시작하게 한다.
         public CheatExecutor(CheatRegistry registry, CommandHistory? historyOrNull = null, CheatDraftStore? draftsOrNull = null)
         {
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
@@ -27,7 +22,6 @@ namespace Lumera.ZRay
             _draftsOrNull = draftsOrNull;
         }
 
-        // sourceLabel: 실행한 명령 줄 앞에 붙일 출처(예: "[메뉴] "). 콘솔에서 직접 친 줄은 비운다.
         public ExecutionResult Execute(string? line, string sourceLabel = "")
         {
             ExecutionResult result = new ExecutionResult();
@@ -62,7 +56,6 @@ namespace Lumera.ZRay
             return result;
         }
 
-        // 인자가 올바르게 읽힌 실행만 기억한다. 값 치트는 지금 값이 곧 입력칸의 값이라 기억할 것이 없다.
         private void RememberArguments(CheatDefinition definition, IReadOnlyList<CommandToken> tokens)
         {
             if (_draftsOrNull == null || definition.Kind != ECheatKind.Action || tokens.Count <= 1)
@@ -79,7 +72,6 @@ namespace Lumera.ZRay
             _draftsOrNull.Remember(definition, texts);
         }
 
-        // 정의와 인자 글자로 명령 줄을 만든다. 공백이 든 값은 따옴표로 감싼다.
         public static string BuildLine(CheatDefinition definition, IReadOnlyList<string> argumentTexts)
         {
             StringBuilder builder = new StringBuilder(definition.Id);
@@ -92,7 +84,6 @@ namespace Lumera.ZRay
             return builder.ToString();
         }
 
-        // 인자는 위치 순서로 꽂는다. 빠진 인자는 기본값으로 채우고, 채운 기본값을 defaultsUsed에 적는다.
         private static bool TryBind(CheatDefinition definition, IReadOnlyList<CommandToken> tokens, out object?[] arguments, out string defaultsUsed, out string? errorOrNull)
         {
             IReadOnlyList<CheatParameter> parameters = definition.Parameters;
@@ -153,11 +144,9 @@ namespace Lumera.ZRay
             }
             catch (Exception exception)
             {
-                // 리플렉션 호출이 감싼 예외를 풀어 실제 원인을 보인다.
                 Exception cause = exception is TargetInvocationException && exception.InnerException != null ? exception.InnerException : exception;
                 if (cause is CheatException)
                 {
-                    // 치트가 일부러 알린 실패다. 메시지만 보인다.
                     result.Add(cause.Message, EConsoleLineKind.Error);
                 }
                 else
@@ -167,14 +156,12 @@ namespace Lumera.ZRay
                 }
             }
 
-            // 콘솔 전용 명령(help, clear)은 최근 사용에 넣지 않는다.
             if (definition.IsShownInMenu)
             {
                 _historyOrNull?.RecordCheatUse(definition.Id);
             }
         }
 
-        // 인자가 없으면 읽고, 있으면 쓴 뒤 다시 읽어 실제로 들어간 값을 보인다(setter가 값을 고칠 수 있다).
         private static CheatResult RunValue(CheatDefinition definition, object?[] arguments, int argumentCount, ExecutionResult result)
         {
             if (argumentCount == 0)
@@ -211,7 +198,6 @@ namespace Lumera.ZRay
             }
             else if (definition.Kind == ECheatKind.Action)
             {
-                // 메시지를 돌려주지 않는 치트도 실행됐다는 것은 보인다.
                 result.Add($"{definition.Name} 완료", EConsoleLineKind.Success);
             }
         }

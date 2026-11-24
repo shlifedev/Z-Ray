@@ -9,7 +9,6 @@ using UnityEditor.UnityLinker;
 
 namespace Lumera.ZRay.Editor
 {
-    // 리플렉션으로 호출할 치트를 스트리핑에서 보존한다. 개별 빌드의 추가 심볼까지 적용된 플레이어 DLL을 읽는다.
     internal sealed class ZRayLinkerProcessor : IUnityLinkerProcessor
     {
         private const string CORE_ASSEMBLY = "Lumera.ZRay";

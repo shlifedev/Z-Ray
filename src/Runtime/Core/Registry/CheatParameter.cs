@@ -3,8 +3,6 @@ using System.Numerics;
 
 namespace Lumera.ZRay
 {
-    // 치트 인자 하나. 값 치트는 "value" 인자 하나를 갖는다(생략하면 읽기, 주면 쓰기).
-    // 글자를 값으로 바꾸고 범위를 확인하는 일(TryParse)은 여기서만 한다. 콘솔과 메뉴가 같은 검증을 쓴다.
     public sealed class CheatParameter
     {
         public string Name { get; }
@@ -14,7 +12,6 @@ namespace Lumera.ZRay
         public IValueType ValueType { get; }
         public bool HasDefault { get; }
         public object? DefaultValue { get; }
-        // 기본값이 없어도 생략할 수 있는 인자(값 치트의 value)는 false다.
         public bool IsRequired { get; }
         public double Min { get; }
         public double Max { get; }
@@ -82,8 +79,6 @@ namespace Lumera.ZRay
             return true;
         }
 
-        // 숫자 인자의 ± 한 칸. 지금 값에 Step(없으면 1)을 더하거나 빼고 범위 안으로 맞춘 글자를 돌려준다.
-        // 지금 값이 숫자가 아니면 하한(없으면 0)에서 시작한다. 숫자 인자가 아니면 글자를 그대로 돌려준다.
         public string StepText(string text, int direction)
         {
             if (!IsNumber)
@@ -103,7 +98,6 @@ namespace Lumera.ZRay
 
                 BigInteger currentInteger = bParsed ? Convert.ToInt64(parsed) : (HasMin ? minimum : BigInteger.Zero);
                 BigInteger nextInteger = currentInteger + ToWholeNumber(offset);
-                // 정수부를 먼저 더해야 큰 long에서도 1 단위와 중간값의 짝수 반올림을 지킬 수 있다.
                 double fraction = offset % 1.0;
                 if (Math.Abs(fraction) > 0.5 || (Math.Abs(fraction) == 0.5 && !nextInteger.IsEven))
                 {
@@ -147,7 +141,6 @@ namespace Lumera.ZRay
 
         private static BigInteger ToWholeNumber(double number)
         {
-            // 2^64만큼 이동하면 어느 long에서 시작해도 타입의 끝에 닿는다. 무한대도 이 범위로 제한한다.
             const double MAX_DISTANCE = 18446744073709551616.0;
             return new BigInteger(Math.Max(-MAX_DISTANCE, Math.Min(number, MAX_DISTANCE)));
         }

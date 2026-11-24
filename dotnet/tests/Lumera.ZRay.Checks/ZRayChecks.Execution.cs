@@ -4,7 +4,6 @@ using static Lumera.ZRay.Checks.Checker;
 
 namespace Lumera.ZRay.Checks;
 
-// 명령 실행, 내장 명령, 메뉴 경로, 기록과 저장.
 internal static partial class ZRayChecks
 {
     private static void CheckExecuteAction()
@@ -33,7 +32,6 @@ internal static partial class ZRayChecks
 
         Check(fixture.Executor.Execute("").Lines.Count == 0 && fixture.Executor.Execute("   ").Lines.Count == 0 && executedCount == 6, "빈 줄은 실행하지 않고 알리지도 않는다.");
 
-        // 메뉴에 보이는 치트만 최근 사용에 남는다. 방금 쓴 것이 앞이다.
         IReadOnlyList<string> recent = fixture.History.RecentCheatIds;
         Check(recent.Count == 3 && recent[0] == "item.give" && recent[1] == "world.element" && recent[2] == "player.gold.add", $"최근에 쓴 치트를 기록한다: {string.Join(",", recent)}");
         fixture.Executor.Execute("help");
@@ -59,12 +57,10 @@ internal static partial class ZRayChecks
         Check(!unknown.IsSuccess && unknown.Lines.Count == 3 && unknown.Lines[1].Kind == EConsoleLineKind.Error && unknown.Lines[2].Text == "비슷한 명령: player.gold, player.gold.add", $"모르는 명령에는 비슷한 명령을 알려 준다: {unknown.Message}");
         Check(fixture.Executor.Execute("zzzz").Lines.Count == 2, "비슷한 명령이 없으면 그 줄은 없다.");
 
-        // 치트가 던진 예외는 오류 줄이 되고, 원래 예외를 호스트가 로그로 남길 수 있게 돌려준다.
         ExecutionResult thrown = fixture.Executor.Execute("world.explode");
         Check(!thrown.IsSuccess && thrown.ExceptionOrNull is InvalidOperationException && thrown.Message == "InvalidOperationException: 폭발했다" && thrown.DefinitionOrNull != null, "예외를 풀어 원인을 보인다.");
         Check(fixture.Executor.Execute("gold.reset").IsSuccess && fixture.Cheats.Gold == 0, "예외 뒤에도 다음 명령을 실행한다.");
 
-        // CheatException은 치트가 일부러 알린 실패다. 메시지만 보이고 예외로 돌려주지 않는다.
         Check(fixture.Executor.Execute("player.level 3").IsSuccess && fixture.Cheats.Level == 3, "값 치트의 setter가 값을 받는다.");
         ExecutionResult refused = fixture.Executor.Execute("player.level 2");
         Check(!refused.IsSuccess && refused.ExceptionOrNull == null && refused.Message == "레벨은 내릴 수 없습니다." && fixture.Cheats.Level == 3, "CheatException은 메시지만 실패로 보인다.");
@@ -119,7 +115,6 @@ internal static partial class ZRayChecks
         Check(fixture.Registry.FindOrNull("props")!.IsShownInMenu == false, "props 내장 명령은 메뉴에 보이지 않는다.");
     }
 
-    // 메뉴는 위젯의 값을 명령 줄로 만들어 같은 Execute로 실행한다. 결과가 콘솔에서 친 것과 같아야 한다.
     private static void CheckMenuPath()
     {
         Fixture fixture = new Fixture();
@@ -135,7 +130,6 @@ internal static partial class ZRayChecks
         Check(fromMenu.Lines[0].Text == "[메뉴] > player.gold.add 5 \"big win\"" && fromConsole.Lines[0].Text == "> player.gold.add 5 \"big win\"", "출처는 실행한 줄 앞에만 붙는다.");
         Check(fromMenu.Message == fromConsole.Message && goldAfterMenu == 105 && fixture.Cheats.Gold == 110, "메뉴와 콘솔의 실행 결과가 같다.");
 
-        // 메뉴가 범위 밖의 값을 넘겨도 콘솔과 같은 검증에 걸린다.
         ExecutionResult invalid = fixture.Executor.Execute(CheatExecutor.BuildLine(addGold, new[] { "0" }), "[메뉴] ");
         Check(!invalid.IsSuccess && invalid.Message.Contains("1~99999") && fixture.Cheats.Gold == 110, "메뉴 실행도 같은 검증을 거친다.");
     }

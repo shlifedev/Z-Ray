@@ -3,7 +3,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay.Samples.OrbitSalvage
 {
-    // 게임 좌표를 Canvas에 투영한다. Raycaster를 두지 않아 입력은 게임과 ZRay가 계속 소유한다.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(OrbitSalvageGame))]
     public sealed class OrbitSalvageView : MonoBehaviour

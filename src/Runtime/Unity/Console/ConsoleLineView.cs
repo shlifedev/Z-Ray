@@ -6,7 +6,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 콘솔 기록의 한 줄. 실행한 명령을 보여 주는 줄은 누르면 그 명령을 입력 줄로 다시 가져온다.
     public sealed class ConsoleLineView : MonoBehaviour, IPointerClickHandler
     {
         [SerializeField] private Image _background = null;

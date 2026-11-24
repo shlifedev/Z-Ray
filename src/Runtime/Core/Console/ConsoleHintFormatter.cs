@@ -2,9 +2,6 @@ using System.Collections.Generic;
 
 namespace Lumera.ZRay
 {
-    // 콘솔 입력 줄 아래의 힌트 두 줄을 만든다. 첫 줄은 시그니처(입력 중인 인자를 강조, 틀린 인자는 빨강),
-    // 둘째 줄은 지금 가장 필요한 설명 하나다. 화면은 이 조각을 자기 색으로 그린다.
-    // 빈 줄처럼 보여 줄 힌트가 없으면 두 목록을 비워 둔다(화면이 힌트 영역을 숨긴다).
     public static class ConsoleHintFormatter
     {
         public static void Build(ConsoleSession session, CheatRegistry registry, List<StyledText> first, List<StyledText> second)
@@ -95,7 +92,6 @@ namespace Lumera.ZRay
             AppendDescription(hint.Definition, output);
         }
 
-        // 명령 이름을 치는 중이면 Tab으로 들어갈 후보의 시그니처를 흐리게 미리 보인다.
         private static bool TryAppendPreview(ConsoleSession session, CheatRegistry registry, List<StyledText> first, List<StyledText> second)
         {
             AssistResult analysis = session.Analysis;

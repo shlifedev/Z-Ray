@@ -7,11 +7,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 치트 메뉴의 한 행. 행을 누르면 주 동작을 한다(인자 없는 치트는 실행, 인자 있는 치트는 입력칸 펴기, 스위치는 뒤집기).
-    // 종류에 따라 오른쪽에 다른 것을 둔다.
-    // - 인자 없는 치트: 초록 [실행]
-    // - 인자 있는 치트: 파랑 [입력]. 누르면 행 아래로 인자 입력칸과 [실행]이 펼쳐진다. 입력하던 값은 접어도 남는다(CheatMenuModel).
-    // - 값 치트: 타입에 맞는 위젯. 바꾸면 바로 쓴다.
     public sealed class CheatRowView : MonoBehaviour, IValueWidgetOwner, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         public const float ARG_ROW_HEIGHT = 26.0f;
@@ -46,7 +41,6 @@ namespace Lumera.ZRay
         public IReadOnlyList<string> Drafts => _drafts;
         public string ValueText => _valueWidget.Text;
 
-        // drafts: 이 치트의 인자마다 입력하던 글자(CheatMenuModel이 갖는다). 행이 다시 쓰여도 남는다.
         public void Bind(CheatMenuView menu, ZRayCanvas canvas, CheatDefinition definition, string query, bool bFavorite, bool bExpanded, string[] drafts)
         {
             if (!_bListening)
@@ -58,7 +52,6 @@ namespace Lumera.ZRay
             }
 
             _menu = menu;
-            // 같은 치트를 다시 그리는 것이면 방금 보인 실행 결과 표시를 지우지 않는다.
             if (Definition != definition)
             {
                 _status.text = "";
@@ -109,7 +102,6 @@ namespace Lumera.ZRay
             RefreshBackground();
         }
 
-        // 값 치트의 지금 값을 다시 읽는다. 입력하는 중이면 건드리지 않는다.
         public void RefreshValue()
         {
             if (Definition.Kind == ECheatKind.Value && !_valueWidget.IsEditing)
@@ -125,7 +117,6 @@ namespace Lumera.ZRay
             _statusHideAt = Time.unscaledTime + STATUS_SECONDS;
         }
 
-        // 값 치트가 스위치면 뒤집는다(행을 눌렀을 때).
         public bool TryToggleValue()
         {
             return Definition.Kind == ECheatKind.Value && _valueWidget.TryToggle();
@@ -148,8 +139,6 @@ namespace Lumera.ZRay
             FocusField(Definition.Parameters.Count, -1);
         }
 
-        // fromIndex번째 인자에서 direction 쪽으로 가장 가까운 글자 입력칸에 포커스를 준다. 스위치와 선택지 버튼은 건너뛴다.
-        // 그쪽에 입력칸이 더 없으면 false를 돌려준다.
         public bool FocusField(int fromIndex, int direction)
         {
             for (int index = fromIndex + direction; _bExpanded && index >= 0 && index < Definition.Parameters.Count; index += direction)
@@ -164,7 +153,6 @@ namespace Lumera.ZRay
             return false;
         }
 
-        // 키보드 포커스가 [실행] 버튼에 있다는 것을 색으로 보인다. 이때 Space나 Enter로 실행한다(CheatMenuView).
         public void SetExecuteFocused(bool bFocused)
         {
             _execute.image.color = bFocused ? ZRayTheme.RUN_FOCUS : ZRayTheme.RUN;
@@ -198,7 +186,6 @@ namespace Lumera.ZRay
             _menu.OnWidgetChanged(this, widget);
         }
 
-        // 값 치트는 확정하는 즉시 쓴다. 치트의 인자는 [실행]이나 Enter로만 실행한다(스위치·선택지를 고른 것만으로 실행하지 않는다).
         public void OnWidgetCommitted(ValueWidget widget)
         {
             if (Definition.Kind == ECheatKind.Value)
@@ -225,8 +212,6 @@ namespace Lumera.ZRay
             RefreshBackground();
         }
 
-        // 행을 누르면 주 동작을 한다. 버튼과 입력칸은 자기 클릭을 따로 받으므로 여기로 오지 않는다.
-        // 목록을 끌어 스크롤하면 uGUI가 클릭을 취소한다(누른 대상과 끄는 대상이 다르기 때문). dragging은 그 밖의 경우를 위한 확인이다.
         public void OnPointerClick(PointerEventData eventData)
         {
             if (eventData.button != PointerEventData.InputButton.Left || eventData.dragging)
@@ -234,7 +219,6 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 펼친 입력칸 영역의 빈 곳을 눌러서는 접히지 않게, 맨 위 한 줄만 받는다.
             RectTransform rect = (RectTransform)transform;
             if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, eventData.position, eventData.pressEventCamera, out Vector2 local)
                 || local.y < -ZRayTheme.MENU_ROW_HEIGHT)
@@ -291,7 +275,6 @@ namespace Lumera.ZRay
             execute.anchoredPosition = new Vector2(execute.anchoredPosition.x, -(parameters.Count * ARG_ROW_HEIGHT) - 2.0f);
         }
 
-        // 값을 읽다 난 예외로 메뉴 전체가 멈추지 않게 한다. 실행하면 같은 예외가 오류로 보인다.
         private string ReadValueOrEmpty()
         {
             try

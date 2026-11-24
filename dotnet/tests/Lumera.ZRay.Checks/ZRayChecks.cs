@@ -4,8 +4,6 @@ using static Lumera.ZRay.Checks.Checker;
 
 namespace Lumera.ZRay.Checks;
 
-// ZRay의 Core(화면을 모르는 부분)를 게임 없이 검사한다. 대상은 TestCheats다.
-// 화면(Unity 쪽)은 여기서 검사한 계산 결과를 그리기만 한다.
 internal static partial class ZRayChecks
 {
     public static void RunAll()
@@ -70,7 +68,6 @@ internal static partial class ZRayChecks
             Executor = new CheatExecutor(Registry, History);
         }
 
-        // 커서를 줄 끝에 두고 분석한다.
         public AssistResult Analyze(string line)
         {
             return Assist.Analyze(line, line.Length);
@@ -156,7 +153,6 @@ internal static partial class ZRayChecks
         MatchSpan[] segment = TextMatcher.FindSpans("player.gold.add", "gold");
         Check(segment.Length == 1 && segment[0].Start == 7 && segment[0].Length == 4, "조각 일치는 그 조각의 구간을 돌려준다.");
 
-        // 같은 글자가 앞에서 중간 일치로 먼저 나와도, 조각 처음에서 시작하는 일치를 고른다.
         MatchSpan[] later = TextMatcher.FindSpans("bold.old", "old");
         Check(later.Length == 1 && later[0].Start == 5, "중간 일치보다 조각 처음 일치를 먼저 고른다.");
 
@@ -164,7 +160,6 @@ internal static partial class ZRayChecks
         Check(initials.Length == 2 && initials[0].Start == 0 && initials[0].Length == 2 && initials[1].Start == 7 && initials[1].Length == 2, "머리글자 일치는 조각마다 구간을 돌려준다.");
         Check(TextMatcher.FindSpans("player.gold.add", "zzz").Length == 0 && TextMatcher.FindSpans("player", "").Length == 0, "일치하지 않거나 검색어가 비면 구간이 없다.");
 
-        // 일치에 실패하면 받은 목록을 건드리지 않는다.
         List<MatchSpan> spans = new List<MatchSpan> { new MatchSpan(9, 9) };
         TextMatcher.Match("player.gold.add", "pgz", spans);
         Check(spans.Count == 1 && spans[0].Start == 9, "실패한 머리글자 일치는 더하던 구간을 되돌린다.");
@@ -207,13 +202,11 @@ internal static partial class ZRayChecks
         Check(gold.Parameters.Count == 1 && !gold.Parameters[0].IsRequired && !gold.Parameters[0].HasDefault && gold.Parameters[0].Max == 1000, "값 치트는 생략할 수 있는 value 인자 하나를 갖는다.");
         Check(fixture.Registry.FindOrNull("world.element")!.Category == "월드" && new CheatAttribute("x").Category == "", "분류를 비우면 정의에서 기본 분류가 된다.");
 
-        // 분류, 순서, id 순으로 정렬한다. gold.reset은 Order가 -1이라 같은 분류의 맨 앞이다.
         IReadOnlyList<CheatDefinition> definitions = fixture.Registry.Definitions;
         int resetIndex = IndexOf(definitions, "gold.reset");
         int addIndex = IndexOf(definitions, "player.gold.add");
         Check(resetIndex >= 0 && resetIndex + 1 == IndexOf(definitions, "player.gold") && addIndex == resetIndex + 2, "같은 분류 안에서는 Order, 그다음 id 순이다.");
 
-        // 같은 id는 먼저 등록한 것만 남는다. 핸들을 Dispose하면 그 핸들이 등록한 것만 빠진다.
         int versionBefore = fixture.Registry.Version;
         IDisposable duplicate = fixture.Registry.Register(new DuplicateCheats());
         Check(fixture.Problems.Count == 1 && fixture.Registry.FindOrNull("player.gold.add") == addGold, "중복 id는 거부하고 이유를 알린다.");
@@ -251,7 +244,6 @@ internal static partial class ZRayChecks
         byType.RegisterStatic(typeof(TestCheats));
         Check(byType.Definitions.Count == 1, "정적 등록은 인스턴스 멤버를 읽지 않는다.");
 
-        // 이 검사 어셈블리는 ZRay를 참조하므로 훑고, 시스템 어셈블리는 건너뛴다.
         CheatRegistry byAssembly = new CheatRegistry(null, problems.Add);
         byAssembly.RegisterStatic(new[] { typeof(string).Assembly, typeof(ZRayChecks).Assembly });
         CheatExecutor executor = new CheatExecutor(byAssembly);
