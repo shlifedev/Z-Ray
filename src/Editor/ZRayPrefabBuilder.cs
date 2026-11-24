@@ -18,7 +18,9 @@ namespace Lumera.ZRay.Editor
         private const string FOLDER = ROOT + "/Prefabs";
         private const string CANVAS_PATH = FOLDER + "/ZRayCanvas.prefab";
         private const string FONT_PATH = ROOT + "/Fonts/Galmuri11.ttf";
-        private const string BITMAP_SHADER = "TextMeshPro/Mobile/Bitmap";
+        private const string TMP_RESOURCES = "Packages/com.unity.ugui/Package Resources";
+        private const string BITMAP_SHADER_PATH = TMP_RESOURCES + "/Shaders/TMP_Bitmap-Mobile.shader";
+        private const string DEFAULT_FONT_PATH = TMP_RESOURCES + "/Fonts & Materials/LiberationSans SDF.asset";
         private const int SORTING_ORDER = 30000;
 
         private const float HEIGHT = ZRayTheme.WIDGET_HEIGHT;
@@ -59,10 +61,10 @@ namespace Lumera.ZRay.Editor
             }
 
             Font font = AssetDatabase.LoadAssetAtPath<Font>(FONT_PATH);
-            Shader bitmapShader = Shader.Find(BITMAP_SHADER);
+            Shader bitmapShader = AssetDatabase.LoadAssetAtPath<Shader>(BITMAP_SHADER_PATH);
             if (font == null || bitmapShader == null)
             {
-                throw new InvalidOperationException($"툴킷 글꼴({FONT_PATH}) 또는 TMP 비트맵 셰이더({BITMAP_SHADER})가 없습니다. TMP Essential Resources를 임포트했는지 확인하세요.");
+                throw new InvalidOperationException($"툴킷 글꼴({FONT_PATH}) 또는 TMP 비트맵 셰이더({BITMAP_SHADER_PATH})가 없습니다.");
             }
 
             Button segment = SavePrefab("SegmentButton", BuildSegmentButton).GetComponent<Button>();
@@ -747,6 +749,7 @@ namespace Lumera.ZRay.Editor
 
         private static void SetLabel(TextMeshProUGUI label, string text, Color color, TextAlignmentOptions alignment)
         {
+            label.font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DEFAULT_FONT_PATH);
             label.text = text;
             label.fontSize = ZRayTheme.FONT_SIZE;
             label.enableAutoSizing = false;
