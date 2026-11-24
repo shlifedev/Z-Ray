@@ -1,15 +1,15 @@
+using System;
 using System.IO;
-using System.Text;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Xml.Linq;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
-using UnityEditor.Compilation;
 using UnityEditor.UnityLinker;
 
 namespace Lumera.ZRay.Editor
 {
-    // 치트는 리플렉션으로만 불리므로, 코드 스트리핑(IL2CPP 빌드)이 쓰이지 않는 코드로 보고 지울 수 있다.
-    // 빌드할 때 ZRay를 참조하는 어셈블리를 통째로 보존하는 link.xml을 만들어 링커에 넘긴다.
-    // ZRay는 Development Build에서만 컴파일되므로, 릴리스 빌드에서는 보존할 어셈블리가 없어 아무것도 하지 않는다.
+    // 리플렉션으로 호출할 치트를 스트리핑에서 보존한다. 개별 빌드의 추가 심볼까지 적용된 플레이어 DLL을 읽는다.
     internal sealed class ZRayLinkerProcessor : IUnityLinkerProcessor
     {
         private const string CORE_ASSEMBLY = "Lumera.ZRay";
@@ -19,42 +19,54 @@ namespace Lumera.ZRay.Editor
 
         public string GenerateAdditionalLinkXmlFile(BuildReport report, UnityLinkerBuildPipelineData data)
         {
-            StringBuilder xml = new StringBuilder("<linker>\n");
-            int count = 0;
-            foreach (Assembly assembly in CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies))
-            {
-                if (assembly.name != CORE_ASSEMBLY && !References(assembly))
-                {
-                    continue;
-                }
-
-                xml.Append("  <assembly fullname=\"").Append(assembly.name).Append("\" preserve=\"all\" />\n");
-                count++;
-            }
-
-            if (count == 0)
+            BuildFile[] files = report.GetFiles();
+            if (!Array.Exists(files, static file => file.role == CommonRoles.managedLibrary && Path.GetFileName(file.path) == CORE_ASSEMBLY + ".dll"))
             {
                 return null;
             }
 
-            xml.Append("</linker>\n");
-            string path = Path.GetFullPath(OUTPUT_PATH);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, xml.ToString());
-            return path;
-        }
-
-        private static bool References(Assembly assembly)
-        {
-            foreach (Assembly reference in assembly.assemblyReferences)
+            XElement linker = new XElement("linker");
+            foreach (BuildFile file in files)
             {
-                if (reference.name == CORE_ASSEMBLY)
+                if (file.role != CommonRoles.managedLibrary && file.role != CommonRoles.dependentManagedLibrary)
                 {
-                    return true;
+                    continue;
+                }
+
+                string name = GetCheatAssemblyNameOrNull(file.path);
+                if (name != null)
+                {
+                    linker.Add(new XElement("assembly", new XAttribute("fullname", name), new XAttribute("preserve", "all")));
                 }
             }
 
-            return false;
+            string path = Path.GetFullPath(OUTPUT_PATH);
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            linker.Save(path);
+            return path;
+        }
+
+        private static string GetCheatAssemblyNameOrNull(string path)
+        {
+            using FileStream stream = File.OpenRead(path);
+            using PEReader reader = new PEReader(stream);
+            MetadataReader metadata = reader.GetMetadataReader();
+            string name = metadata.GetString(metadata.GetAssemblyDefinition().Name);
+            if (name == CORE_ASSEMBLY)
+            {
+                return name;
+            }
+
+            foreach (AssemblyReferenceHandle handle in metadata.AssemblyReferences)
+            {
+                AssemblyReference reference = metadata.GetAssemblyReference(handle);
+                if (metadata.StringComparer.Equals(reference.Name, CORE_ASSEMBLY))
+                {
+                    return name;
+                }
+            }
+
+            return null;
         }
     }
 }
