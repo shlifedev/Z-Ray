@@ -102,6 +102,7 @@ namespace Lumera.ZRay
             _readOnly.text = _text;
             if (_switch.gameObject.activeSelf)
             {
+                _text = _parameter.FormatChoice(_text);
                 bool bOn = _text == "true";
                 _switch.image.color = bOn ? ZRayTheme.SWITCH_ON : ZRayTheme.SWITCH_OFF;
                 RectTransform track = (RectTransform)_switch.transform;

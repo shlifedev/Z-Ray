@@ -42,6 +42,12 @@ namespace Lumera.ZRay
             SuggestionProviderOrNull = suggestionProviderOrNull;
         }
 
+        // 선택 위젯은 콘솔에서 쓴 별칭도 같은 값으로 표시한다. 해석할 수 없는 초안은 그대로 둔다.
+        public string FormatChoice(string text)
+        {
+            return ValueType.TryParse(text, out object? value, out _) ? ValueType.Format(value) : text;
+        }
+
         public bool TryParse(string text, out object? value, out string? errorOrNull)
         {
             if (!ValueType.TryParse(text, out value, out errorOrNull))
