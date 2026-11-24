@@ -1,5 +1,8 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem.UI;
+using UnityEngine.SceneManagement;
 using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
@@ -24,6 +27,8 @@ namespace Lumera.ZRay
     public sealed class ZRayCanvas : MonoBehaviour
     {
         private const int ATLAS_SIZE = 1024;
+        // 씬 로드 뒤 런타임에 만들어지는 게임 쪽 EventSystem도 찾아서 입력을 넘겨준다.
+        private const float EVENT_SYSTEM_CHECK_INTERVAL = 0.5f;
 
         [SerializeField] private ConsoleView _console = null;
         [SerializeField] private CheatMenuView _menu = null;
@@ -33,6 +38,8 @@ namespace Lumera.ZRay
         [SerializeField] private Shader _bitmapShader = null;
 
         private ZRayHost _host;
+        private MultiplayerEventSystem _fallbackEventSystemOrNull;
+        private float _nextEventSystemCheckAt;
         private CanvasScaler _scaler;
         private TMP_FontAsset _fontAssetOrNull;
         private EDebuggerOverlay _current = EDebuggerOverlay.None;
@@ -80,6 +87,7 @@ namespace Lumera.ZRay
             }
 
             _current = overlay;
+            UpdateEventSystem();
             if (overlay == EDebuggerOverlay.Console)
             {
                 _console.Open();
@@ -116,8 +124,93 @@ namespace Lumera.ZRay
             return instance;
         }
 
+        private void OnEnable()
+        {
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnDisable()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            ReleaseFallbackEventSystem();
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            _nextEventSystemCheckAt = 0.0f;
+            UpdateEventSystem();
+        }
+
+        private void UpdateEventSystem()
+        {
+            if (!IsOpen)
+            {
+                ReleaseFallbackEventSystem();
+                return;
+            }
+
+            if (EventSystem.current == null)
+            {
+                // 게임이 자기 시스템을 추가하는 동안에도 임시 모듈은 ZRay 캔버스만 처리한다.
+                GameObject fallback = new GameObject("ZRay EventSystem", typeof(MultiplayerEventSystem), typeof(InputSystemUIInputModule));
+                fallback.transform.SetParent(transform, false);
+                _fallbackEventSystemOrNull = fallback.GetComponent<MultiplayerEventSystem>();
+                _fallbackEventSystemOrNull.playerRoot = gameObject;
+                _nextEventSystemCheckAt = Time.unscaledTime + EVENT_SYSTEM_CHECK_INTERVAL;
+                return;
+            }
+
+            if (_fallbackEventSystemOrNull == null)
+            {
+                return;
+            }
+
+            if (EventSystem.current != _fallbackEventSystemOrNull)
+            {
+                ReleaseFallbackEventSystem();
+                return;
+            }
+
+            if (Time.unscaledTime >= _nextEventSystemCheckAt)
+            {
+                _nextEventSystemCheckAt = Time.unscaledTime + EVENT_SYSTEM_CHECK_INTERVAL;
+                foreach (EventSystem candidate in FindObjectsByType<EventSystem>())
+                {
+                    if (candidate != _fallbackEventSystemOrNull && candidate.isActiveAndEnabled)
+                    {
+                        ReleaseFallbackEventSystem();
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void ReleaseFallbackEventSystem()
+        {
+            if (_fallbackEventSystemOrNull == null)
+            {
+                return;
+            }
+
+            GameObject fallback = _fallbackEventSystemOrNull.gameObject;
+            GameObject selected = _fallbackEventSystemOrNull.currentSelectedGameObject;
+            _fallbackEventSystemOrNull = null;
+            // Destroy는 프레임 끝에 실행된다. 게임의 입력 모듈이 지금부터 이벤트를 받게 먼저 비활성화한다.
+            if (fallback.activeInHierarchy)
+            {
+                fallback.SetActive(false);
+            }
+
+            Destroy(fallback);
+            if (IsOpen && EventSystem.current != null && selected != null && selected.transform.IsChildOf(transform))
+            {
+                EventSystem.current.SetSelectedGameObject(selected);
+            }
+        }
+
         private void Update()
         {
+            UpdateEventSystem();
             ApplyScale();
         }
 

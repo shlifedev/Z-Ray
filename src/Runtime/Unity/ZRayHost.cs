@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 
 namespace Lumera.ZRay
 {
@@ -203,12 +201,10 @@ namespace Lumera.ZRay
             // 단축키와 Esc는 어느 입력칸에 포커스가 있든 여기서만 처리한다. 입력의 주인이 하나여야 창이 겹쳐 열리지 않는다.
             if (_toggleConsole.WasPressedThisFrame())
             {
-                EnsureEventSystem();
                 _canvas.Toggle(EDebuggerOverlay.Console);
             }
             else if (_toggleMenu.WasPressedThisFrame())
             {
-                EnsureEventSystem();
                 _canvas.Toggle(EDebuggerOverlay.Menu);
             }
             else if (_close.WasPressedThisFrame())
@@ -330,18 +326,6 @@ namespace Lumera.ZRay
 #else
             return AppDomain.CurrentDomain.GetAssemblies();
 #endif
-        }
-
-        // 입력칸과 버튼은 EventSystem이 있어야 동작한다. 씬에 없으면 하나 만든다.
-        private void EnsureEventSystem()
-        {
-            if (EventSystem.current != null)
-            {
-                return;
-            }
-
-            GameObject eventSystem = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
-            eventSystem.transform.SetParent(transform, false);
         }
     }
 }
