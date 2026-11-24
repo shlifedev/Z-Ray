@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
 using UnityEngine.UI;
@@ -145,6 +146,7 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
         [UnityTest]
         public IEnumerator ConsoleShortcutOpensTheConsoleWithTheKoreanFont()
         {
+            Assert.That(GraphicsSettings.currentRenderPipeline, Is.Not.Null, "게임과 오버레이를 그릴 렌더 파이프라인이 필요하다.");
             InputSystem.QueueStateEvent(_keyboard, new KeyboardState(Key.Backquote));
             yield return null;
             yield return null;
