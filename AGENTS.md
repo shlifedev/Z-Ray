@@ -30,7 +30,8 @@
 
 - `src/Runtime/Core`(`Lumera.ZRay`)는 UnityEngine을 쓰지 않는 C# 9, .NET Standard 2.1 코드다. `dotnet/Lumera.ZRay`이 같은 소스를 컴파일해 검사한다.
 - csproj는 `dotnet/`에만 둔다. `src/` 안에 두면 `bin/`·`obj/`의 `.cs`를 Unity가 함께 컴파일한다.
-- 세 asmdef는 `defineConstraints`로 에디터와 Development Build(또는 `LUMERA_ZRAY` 심볼)에서만 컴파일된다.
+- 런타임 asmdef 두 개는 `UNITY_EDITOR || LUMERA_ZRAY`를 사용하고, Editor asmdef는 Editor 플랫폼만 포함한다. Unity 7에서는 개발용 Build Profile의 Scripting Defines 또는 개별 개발 빌드의 `extraScriptingDefines`에 `LUMERA_ZRAY`를 지정한다.
+- 소비 프로젝트의 ZRay 참조도 같은 조건으로 감싼다. 일반 배포 프로필에는 심볼을 지정하지 않는다.
 - .NET 명령: `dotnet build dotnet/Lumera.ZRay.sln -c Release`, `dotnet run --project dotnet/tests/Lumera.ZRay.Checks -c Release`.
 - `src/` 안에 파일을 더하거나 지우면 Unity가 만든 `.meta`를 같은 커밋에 넣는다.
 
