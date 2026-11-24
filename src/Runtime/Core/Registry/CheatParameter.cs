@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 
 namespace Lumera.ZRay
 {
@@ -60,8 +61,19 @@ namespace Lumera.ZRay
                 return true;
             }
 
-            double number = Convert.ToDouble(value);
-            if ((HasMin && number < Min) || (HasMax && number > Max))
+            bool bInRange;
+            if (value is long integer)
+            {
+                GetIntegerLimits(out BigInteger minimum, out BigInteger maximum);
+                bInRange = integer >= minimum && integer <= maximum;
+            }
+            else
+            {
+                double number = Convert.ToDouble(value);
+                bInRange = !(HasMin && number < Min || HasMax && number > Max);
+            }
+
+            if (!bInRange)
             {
                 errorOrNull = $"{CheatFormatter.FormatRange(this)} 사이의 값을 입력하세요.";
                 return false;
@@ -79,8 +91,31 @@ namespace Lumera.ZRay
                 return text;
             }
 
-            double current = ValueType.TryParse(text ?? "", out object? parsed, out _) && parsed != null ? Convert.ToDouble(parsed) : (HasMin ? Min : 0.0);
-            double next = current + (direction * (HasStep ? Step : 1.0));
+            bool bParsed = ValueType.TryParse(text ?? "", out object? parsed, out _) && parsed != null;
+            double offset = direction == 0 ? 0.0 : direction * (HasStep ? Step : 1.0);
+            if (Type == typeof(int) || Type == typeof(long))
+            {
+                GetIntegerLimits(out BigInteger minimum, out BigInteger maximum);
+                if (minimum > maximum)
+                {
+                    return text ?? "";
+                }
+
+                BigInteger currentInteger = bParsed ? Convert.ToInt64(parsed) : (HasMin ? minimum : BigInteger.Zero);
+                BigInteger nextInteger = currentInteger + ToWholeNumber(offset);
+                // 정수부를 먼저 더해야 큰 long에서도 1 단위와 중간값의 짝수 반올림을 지킬 수 있다.
+                double fraction = offset % 1.0;
+                if (Math.Abs(fraction) > 0.5 || (Math.Abs(fraction) == 0.5 && !nextInteger.IsEven))
+                {
+                    nextInteger += Math.Sign(fraction);
+                }
+
+                nextInteger = BigInteger.Max(minimum, BigInteger.Min(nextInteger, maximum));
+                return Type == typeof(int) ? ValueType.Format((int)nextInteger) : ValueType.Format((long)nextInteger);
+            }
+
+            double current = bParsed ? Convert.ToDouble(parsed) : (HasMin ? Min : 0.0);
+            double next = current + offset;
             if (HasMin && next < Min)
             {
                 next = Min;
@@ -91,9 +126,30 @@ namespace Lumera.ZRay
                 next = Max;
             }
 
-            // 정수 인자는 소수 Step이어도 정수로 반올림한다.
-            object value = Type == typeof(int) || Type == typeof(long) ? Convert.ChangeType(Math.Round(next), Type) : Convert.ChangeType(next, Type);
-            return ValueType.Format(value);
+            double limit = Type == typeof(float) ? float.MaxValue : double.MaxValue;
+            return ValueType.Format(Convert.ChangeType(Math.Max(-limit, Math.Min(next, limit)), Type));
+        }
+
+        private void GetIntegerLimits(out BigInteger minimum, out BigInteger maximum)
+        {
+            minimum = Type == typeof(int) ? int.MinValue : long.MinValue;
+            maximum = Type == typeof(int) ? int.MaxValue : long.MaxValue;
+            if (HasMin)
+            {
+                minimum = BigInteger.Max(minimum, ToWholeNumber(Math.Ceiling(Min)));
+            }
+
+            if (HasMax)
+            {
+                maximum = BigInteger.Min(maximum, ToWholeNumber(Math.Floor(Max)));
+            }
+        }
+
+        private static BigInteger ToWholeNumber(double number)
+        {
+            // 2^64만큼 이동하면 어느 long에서 시작해도 타입의 끝에 닿는다. 무한대도 이 범위로 제한한다.
+            const double MAX_DISTANCE = 18446744073709551616.0;
+            return new BigInteger(Math.Max(-MAX_DISTANCE, Math.Min(number, MAX_DISTANCE)));
         }
 
         public string FormatDefault()

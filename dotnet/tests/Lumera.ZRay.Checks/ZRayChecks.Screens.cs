@@ -279,6 +279,39 @@ internal static partial class ZRayChecks
     }
 
     // 입력값 보관소: 메뉴 두 개(런타임, 에디터 창)와 콘솔 실행이 같은 값을 본다.
+    private sealed class NumericCheats
+    {
+        [Cheat("limits")]
+        public void SetLimits(int count, long total, [Arg("범위", Min = -9007199254740992.0, Max = 9007199254740992.0)] long bounded,
+            [Arg("반 칸", Step = 0.5)] long half, [Arg("실수", Step = double.MaxValue)] float single,
+            [Arg("배정밀도", Step = double.MaxValue)] double real)
+        {
+        }
+    }
+
+    private static void CheckNumericLimits()
+    {
+        CheatRegistry registry = new CheatRegistry();
+        registry.Register(new NumericCheats());
+        IReadOnlyList<CheatParameter> parameters = registry.FindOrNull("limits")!.Parameters;
+        CheatParameter integer = parameters[0];
+        CheatParameter total = parameters[1];
+        CheatParameter bounded = parameters[2];
+
+        CheckEqual("2147483647", integer.StepText("2147483647", 1), "int 상한에서 더하면 상한을 유지한다.");
+        CheckEqual("-2147483648", integer.StepText("-2147483648", -1), "int 하한에서 빼면 하한을 유지한다.");
+        CheckEqual("9007199254740993", total.StepText("9007199254740992", 1), "큰 long에서도 1씩 움직인다.");
+        CheckEqual("9223372036854775806", total.StepText("9223372036854775807", -1), "long 상한에서 한 칸 내릴 수 있다.");
+        CheckEqual("-9223372036854775808", total.StepText("-9223372036854775808", -1), "long 하한을 넘어가지 않는다.");
+        CheckEqual("9007199254740994", parameters[3].StepText("9007199254740993", 1), "큰 홀수에 반 칸을 더해도 짝수로 반올림한다.");
+        CheckEqual("9007199254740992", parameters[3].StepText("9007199254740993", -1), "반 칸을 내려도 짝수로 반올림한다.");
+        Check(bounded.TryParse("9007199254740992", out _, out _), "선언한 long 상한을 입력할 수 있다.");
+        Check(!bounded.TryParse("9007199254740993", out _, out _), "상한보다 1 큰 long을 거부한다.");
+        Check(!bounded.TryParse("-9007199254740993", out _, out _), "하한보다 1 작은 long을 거부한다.");
+        Check(parameters[4].TryParse(parameters[4].StepText("0", 1), out object? single, out _) && (float)single! == float.MaxValue, "큰 Step으로 이동한 float를 다시 읽을 수 있다.");
+        Check(parameters[5].TryParse(parameters[5].StepText("1.7E308", 1), out object? real, out _) && (double)real! == double.MaxValue, "덧셈이 넘친 double은 최댓값을 쓴다.");
+    }
+
     private static void CheckDraftStore()
     {
         Fixture fixture = new Fixture();
