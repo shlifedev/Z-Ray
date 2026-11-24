@@ -41,6 +41,7 @@ internal static partial class ZRayChecks
         Run(CheckSessionSelection);
         Run(CheckSessionSubmit);
         Run(CheckSessionHistory);
+        Run(CheckIndependentHistoryNavigation);
         Run(CheckHintFormatter);
         Run(CheckTranscript);
         Run(CheckMenuModel);

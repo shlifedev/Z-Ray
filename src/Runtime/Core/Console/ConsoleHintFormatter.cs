@@ -16,7 +16,7 @@ namespace Lumera.ZRay
             CommandHint? hint = analysis.HintOrNull;
             if (history.IsNavigating)
             {
-                first.Add(new StyledText($"기록 {history.NavigationNumber}/{history.Lines.Count}", ETextStyle.Accent));
+                first.Add(new StyledText($"기록 {history.NavigationNumber}/{history.NavigationCount}", ETextStyle.Accent));
                 second.Add(new StyledText("↑↓ 이동 · 입력하면 탐색을 끝낸다", ETextStyle.Muted));
             }
             else if (analysis.UnknownCommandOrNull != null)

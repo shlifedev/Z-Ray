@@ -66,7 +66,7 @@ namespace Lumera.ZRay
         {
             _assist = assist ?? throw new ArgumentNullException(nameof(assist));
             _executor = executor ?? throw new ArgumentNullException(nameof(executor));
-            _history = history ?? throw new ArgumentNullException(nameof(history));
+            _history = history?.CreateSessionHistory() ?? throw new ArgumentNullException(nameof(history));
             Analysis = _assist.Analyze("", 0);
         }
 
