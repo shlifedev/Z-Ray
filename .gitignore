@@ -3,17 +3,21 @@ bin/
 obj/
 *.user
 
-# Unity 임시 프로젝트가 만드는 폴더와 파일
-unity/*/[Ll]ibrary/
-unity/*/[Tt]emp/
-unity/*/[Oo]bj/
-unity/*/[Ll]ogs/
-unity/*/[Uu]ser[Ss]ettings/
-unity/*/[Bb]uild/
-unity/*/[Bb]uilds/
-unity/*/*.csproj
-unity/*/*.sln
-unity/*/*.slnx
+# Unity 샘플 프로젝트의 캐시, 빌드 결과와 IDE 파일
+/unity/[Ll]ibrary/
+/unity/[Tt]emp/
+/unity/[Oo]bj/
+/unity/[Ll]ogs/
+/unity/[Uu]ser[Ss]ettings/
+/unity/[Bb]uild/
+/unity/[Bb]uilds/
+/unity/*.csproj
+/unity/*.sln
+/unity/*.slnx
+/unity/[Mm]emoryCaptures/
+/unity/[Rr]ecordings/
+/unity/TestResults*.xml
+/unity/test-results*.xml
 
 # OS와 IDE
 .DS_Store

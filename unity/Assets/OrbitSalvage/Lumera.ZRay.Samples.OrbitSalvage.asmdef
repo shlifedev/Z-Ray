@@ -1,0 +1,10 @@
+{
+    "name": "Lumera.ZRay.Samples.OrbitSalvage",
+    "rootNamespace": "Lumera.ZRay.Samples.OrbitSalvage",
+    "references": [
+        "Lumera.ZRay",
+        "Lumera.ZRay.Unity",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ]
+}
