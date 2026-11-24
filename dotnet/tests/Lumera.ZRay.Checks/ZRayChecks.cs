@@ -222,9 +222,12 @@ internal static partial class ZRayChecks
         duplicate.Dispose();
         Check(fixture.Registry.Version == versionBefore + 2, "두 번 Dispose해도 한 번만 뺀다.");
 
+        ISuggestionProvider? originalProvider = fixture.Registry.FindOrNull("item.give")!.Parameters[0].SuggestionProviderOrNull;
         int countBefore = fixture.Registry.Definitions.Count;
         fixture.Registration.Dispose();
         Check(fixture.Registry.FindOrNull("player.gold.add") == null && fixture.Registry.Definitions.Count < countBefore && fixture.Registry.FindOrNull("help") != null, "대상의 등록을 풀어도 내장 명령은 남는다.");
+        using IDisposable registration = fixture.Registry.Register(fixture.Cheats);
+        Check(originalProvider != null && originalProvider == fixture.Registry.FindOrNull("item.give")!.Parameters[0].SuggestionProviderOrNull, "재등록할 때 같은 타입의 공급자를 재사용한다.");
         CheckThrows<ArgumentNullException>(() => fixture.Registry.Register(null!), "null 대상은 거부한다.");
     }
 
@@ -234,7 +237,7 @@ internal static partial class ZRayChecks
         CheatRegistry registry = new CheatRegistry(null, problems.Add);
         registry.Register(new BadCheats());
         Check(registry.Definitions.Count == 0, "잘못된 선언은 하나도 등록하지 않는다.");
-        Check(problems.Count == 6, $"잘못된 선언마다 이유를 알린다. 받은 것: {problems.Count}개 / {string.Join(" / ", problems)}");
+        Check(problems.Count == 9, $"잘못된 선언마다 이유를 알린다. 받은 것: {problems.Count}개 / {string.Join(" / ", problems)}");
         Check(problems.TrueForAll(static problem => problem.Contains(nameof(BadCheats))), "문제에는 선언한 타입 이름이 들어간다.");
     }
 
@@ -250,8 +253,13 @@ internal static partial class ZRayChecks
         // 이 검사 어셈블리는 ZRay를 참조하므로 훑고, 시스템 어셈블리는 건너뛴다.
         CheatRegistry byAssembly = new CheatRegistry(null, problems.Add);
         byAssembly.RegisterStatic(new[] { typeof(string).Assembly, typeof(ZRayChecks).Assembly });
-        Check(byAssembly.FindOrNull("static.ping") != null && problems.Count == 0, "참조하는 어셈블리의 정적 치트를 찾는다.");
-        Check(byAssembly.Definitions.Count == 1, "인스턴스 치트는 어셈블리를 훑어도 등록되지 않는다.");
+        CheatExecutor executor = new CheatExecutor(byAssembly);
+        Check(executor.Execute("static.ping").Message == "pong" && byAssembly.Definitions.Count == 1, "같은 어셈블리에 잘못된 선언이 있어도 정상적인 정적 치트는 실행된다.");
+        Check(problems.Count == 4 && problems.Exists(static problem => problem.Contains(nameof(BadStaticCheats.Broken)) && problem.Contains("공급자 생성 실패")), "실패한 선언마다 이유를 알리고 공급자 생성자의 원래 오류를 남긴다.");
+
+        byAssembly.RegisterStatic(typeof(GenericTestCheats<int>));
+        Check(executor.Execute("generic.action").Message == "Int32", "닫힌 제네릭 타입을 명시적으로 등록하면 정적 메서드를 호출할 수 있다.");
+        Check(executor.Execute("generic.property").IsSuccess && executor.Execute("generic.field").IsSuccess, "닫힌 제네릭 타입의 정적 프로퍼티와 필드를 읽을 수 있다.");
     }
 
     private static void CheckCustomValueType()

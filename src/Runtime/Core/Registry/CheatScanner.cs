@@ -25,7 +25,7 @@ namespace Lumera.ZRay
             foreach (MethodInfo method in type.GetMethods(flags))
             {
                 CheatAttribute? attribute = method.GetCustomAttribute<CheatAttribute>();
-                if (attribute != null)
+                if (attribute != null && IsClosedDeclaration(method))
                 {
                     TryAdd(CreateActionOrNull(method, attribute, targetOrNull), output);
                 }
@@ -34,7 +34,7 @@ namespace Lumera.ZRay
             foreach (PropertyInfo property in type.GetProperties(flags))
             {
                 CheatPropertyAttribute? attribute = property.GetCustomAttribute<CheatPropertyAttribute>();
-                if (attribute != null)
+                if (attribute != null && IsClosedDeclaration(property))
                 {
                     TryAdd(CreatePropertyValueOrNull(property, attribute, targetOrNull), output);
                 }
@@ -43,11 +43,22 @@ namespace Lumera.ZRay
             foreach (FieldInfo field in type.GetFields(flags))
             {
                 CheatPropertyAttribute? attribute = field.GetCustomAttribute<CheatPropertyAttribute>();
-                if (attribute != null)
+                if (attribute != null && IsClosedDeclaration(field))
                 {
                     TryAdd(CreateFieldValueOrNull(field, attribute, targetOrNull), output);
                 }
             }
+        }
+
+        private bool IsClosedDeclaration(MemberInfo member)
+        {
+            if (member.DeclaringType?.ContainsGenericParameters == true || (member is MethodInfo method && method.ContainsGenericParameters))
+            {
+                _reportProblem($"{Describe(member.DeclaringType, member.Name)}: 제네릭 타입 인자가 정해지지 않은 치트는 등록할 수 없다.");
+                return false;
+            }
+
+            return true;
         }
 
         private static void TryAdd(CheatDefinition? definitionOrNull, List<CheatDefinition> output)
@@ -182,19 +193,31 @@ namespace Lumera.ZRay
             }
 
             Type providerType = attributeOrNull.ProviderType;
-            if (_providers.TryGetValue(providerType, out ISuggestionProvider cached))
+            if (providerType != null && _providers.TryGetValue(providerType, out ISuggestionProvider cached))
             {
                 providerOrNull = cached;
                 return true;
             }
 
-            if (providerType == null || !typeof(ISuggestionProvider).IsAssignableFrom(providerType) || providerType.GetConstructor(Type.EmptyTypes) == null)
+            if (providerType == null || providerType.IsAbstract || providerType.ContainsGenericParameters
+                || !typeof(ISuggestionProvider).IsAssignableFrom(providerType) || providerType.GetConstructor(Type.EmptyTypes) == null)
             {
-                _reportProblem($"{where}: [Suggest] 타입은 ISuggestionProvider를 구현하고 매개변수 없는 생성자가 있어야 한다.");
+                _reportProblem($"{where}: [Suggest] 타입은 생성 가능한 ISuggestionProvider 구현이어야 하며 public 매개변수 없는 생성자가 필요하다.");
                 return false;
             }
 
-            ISuggestionProvider provider = (ISuggestionProvider)Activator.CreateInstance(providerType);
+            ISuggestionProvider provider;
+            try
+            {
+                provider = (ISuggestionProvider)Activator.CreateInstance(providerType);
+            }
+            catch (Exception exception)
+            {
+                Exception cause = exception is TargetInvocationException && exception.InnerException != null ? exception.InnerException : exception;
+                _reportProblem($"{where}: [Suggest] 공급자 {providerType.FullName}을 만들 수 없다. {cause.GetType().Name}: {cause.Message}");
+                return false;
+            }
+
             _providers.Add(providerType, provider);
             providerOrNull = provider;
             return true;

@@ -180,6 +180,41 @@ internal static class StaticTestCheats
     }
 }
 
+internal sealed class FailingSuggestions<T> : ISuggestionProvider
+{
+    public FailingSuggestions()
+    {
+        throw new InvalidOperationException("공급자 생성 실패");
+    }
+
+    public void AddCandidates(SuggestionContext context, List<CandidateValue> output)
+    {
+    }
+}
+
+internal static class BadStaticCheats
+{
+    [Cheat("bad.constructor")]
+    public static void Broken([Suggest(typeof(FailingSuggestions<int>))] string value)
+    {
+    }
+}
+
+internal static class GenericTestCheats<T>
+{
+    [Cheat("generic.action")]
+    public static string Action()
+    {
+        return typeof(T).Name;
+    }
+
+    [CheatProperty("generic.property")]
+    public static string Property => typeof(T).Name;
+
+    [CheatProperty("generic.field")]
+    public static readonly string FIELD = typeof(T).Name;
+}
+
 // 잘못된 선언만 모았다. 하나도 등록되지 않고 선언마다 이유가 보고되어야 한다.
 internal sealed class BadCheats
 {
@@ -206,6 +241,21 @@ internal sealed class BadCheats
 
     [Cheat("bad.provider")]
     public void BadProvider([Suggest(typeof(string))] string value)
+    {
+    }
+
+    [Cheat("bad.generic")]
+    public void OpenMethod<T>()
+    {
+    }
+
+    [Cheat("bad.open-provider")]
+    public void OpenProvider([Suggest(typeof(FailingSuggestions<>))] string value)
+    {
+    }
+
+    [Cheat("bad.null-provider")]
+    public void MissingProvider([Suggest(null!)] string value)
     {
     }
 
