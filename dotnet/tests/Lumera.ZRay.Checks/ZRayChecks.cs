@@ -45,6 +45,7 @@ internal static partial class ZRayChecks
         Run(CheckTranscript);
         Run(CheckMenuModel);
         Run(CheckMenuDrafts);
+        Run(CheckNumericLimits);
         Run(CheckDraftStore);
     }
 
