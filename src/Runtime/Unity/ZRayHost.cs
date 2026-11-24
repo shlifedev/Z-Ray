@@ -172,6 +172,12 @@ namespace Lumera.ZRay
             _toggleMenu.Disable();
             _close.Disable();
             EnableZoomActions(false);
+            if (_canvas != null)
+            {
+                _canvas.Show(EDebuggerOverlay.None);
+            }
+
+            UpdateBlockingState();
         }
 
         private void OnDestroy()
@@ -213,6 +219,11 @@ namespace Lumera.ZRay
             }
 
             UpdateZoom();
+            UpdateBlockingState();
+        }
+
+        private void UpdateBlockingState()
+        {
             bool bBlocking = IsBlockingGameInput;
             if (bBlocking != _bWasBlocking)
             {
