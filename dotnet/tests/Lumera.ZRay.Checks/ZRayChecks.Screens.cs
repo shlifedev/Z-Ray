@@ -335,6 +335,16 @@ internal static partial class ZRayChecks
         executor.Execute("player.gold 500");
         Check(store.Get(fixture.Registry.FindOrNull("player.gold")!)[0] == "", "값 치트는 기억하지 않는다(지금 값이 입력칸의 값이다).");
 
+        CheatDefinition element = fixture.Registry.FindOrNull("world.element")!;
+        executor.Execute("world.element lightning");
+        string enumDraft = editor.GetDrafts(element)[0];
+        CheckEqual("Lightning", element.Parameters[0].FormatChoice(enumDraft), "소문자로 실행한 열거형도 같은 드롭다운 항목을 가리킨다.");
+        CheckEqual("world.element lightning", editor.BuildLine(element), "선택지를 표시해도 실행할 초안은 그대로다.");
+        CheatParameter toggle = fixture.Registry.FindOrNull("player.god")!.Parameters[0];
+        CheckEqual("true", toggle.FormatChoice("YES"), "콘솔의 참 별칭은 켜진 스위치로 표시한다.");
+        CheckEqual("false", toggle.FormatChoice("0"), "콘솔의 거짓 별칭은 꺼진 스위치로 표시한다.");
+        CheckEqual("other", element.Parameters[0].FormatChoice("other"), "해석할 수 없는 선택지는 다른 값으로 바꾸지 않는다.");
+
         // 판이 바뀌어 치트가 다시 등록돼도 id가 같으면 값이 남는다.
         fixture.Registration.Dispose();
         fixture.Registry.Register(new TestCheats());

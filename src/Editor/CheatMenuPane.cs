@@ -296,7 +296,7 @@ namespace Lumera.ZRay.Editor
             parameter.ValueType.AddCandidates(choices);
             if (parameter.Type == typeof(bool))
             {
-                Toggle toggle = new Toggle { value = text == "true" };
+                Toggle toggle = new Toggle { value = parameter.FormatChoice(text) == "true" };
                 toggle.RegisterValueChangedCallback(evt => changed(evt.newValue ? "true" : "false"));
                 value.Add(toggle);
                 return value;
@@ -304,9 +304,17 @@ namespace Lumera.ZRay.Editor
 
             if (choices.Count > 0)
             {
-                DropdownField dropdown = new DropdownField(choices, Mathf.Max(0, choices.IndexOf(text)));
+                // 처음 만든 빈 초안만 첫 선택지로 채운다. 기존 초안은 열어 보기만 해도 바뀌면 안 된다.
+                string selected = parameter.FormatChoice(text);
+                if (text.Length == 0 && !choices.Contains(selected))
+                {
+                    selected = choices[0];
+                    changed(selected);
+                }
+
+                DropdownField dropdown = new DropdownField { choices = choices };
+                dropdown.SetValueWithoutNotify(selected);
                 dropdown.AddToClassList("value-dropdown");
-                changed(dropdown.value);
                 dropdown.RegisterValueChangedCallback(evt => changed(evt.newValue));
                 value.Add(dropdown);
                 return value;
