@@ -73,7 +73,7 @@ namespace Lumera.ZRay
 
         public void Close()
         {
-            _host.History.ResetNavigation();
+            _session.History.ResetNavigation();
             _input.DeactivateInputField();
             gameObject.SetActive(false);
         }

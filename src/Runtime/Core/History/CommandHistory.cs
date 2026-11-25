@@ -20,71 +20,86 @@ namespace Lumera.ZRay
         private const string LINES_KEY = "Lumera.ZRay.History.v1";
         private const string RECENT_KEY = "Lumera.ZRay.RecentCheats.v1";
 
-        // 오래된 줄이 앞, 새 줄이 뒤
-        private readonly List<string> _lines = new List<string>();
-        // 방금 쓴 치트가 앞
-        private readonly List<string> _recentCheatIds = new List<string>();
+        // 저장할 기록만 공유한다. 탐색 중에는 다른 콘솔이 줄을 추가하거나 지워도 같은 순서로 초안까지 돌아간다.
+        private readonly HistoryEntries _entries;
+        private readonly List<string> _navigationLines = new List<string>();
         // 탐색 중인 줄의 번호. 탐색 중이 아니면 -1이다.
         private int _cursor = -1;
         private string _draft = "";
 
-        public IReadOnlyList<string> Lines => _lines;
-        public IReadOnlyList<string> RecentCheatIds => _recentCheatIds;
+        public IReadOnlyList<string> Lines => _entries.Lines;
+        public IReadOnlyList<string> RecentCheatIds => _entries.RecentCheatIds;
         public bool IsNavigating => _cursor >= 0;
         // 탐색 중일 때 "n/N"의 n(가장 새 줄이 1)
-        public int NavigationNumber => IsNavigating ? _lines.Count - _cursor : 0;
+        public int NavigationNumber => IsNavigating ? _navigationLines.Count - _cursor : 0;
+        internal int NavigationCount => _navigationLines.Count;
         // 최근 치트 목록이 바뀔 때마다 오른다. 메뉴가 "최근 사용" 묶음을 다시 그릴지 판단한다.
-        public int RecentVersion { get; private set; }
+        public int RecentVersion => _entries.RecentVersion;
+
+        public CommandHistory() : this(new HistoryEntries())
+        {
+        }
+
+        private CommandHistory(HistoryEntries entries)
+        {
+            _entries = entries;
+        }
+
+        internal CommandHistory CreateSessionHistory()
+        {
+            return new CommandHistory(_entries);
+        }
 
         // 실행한 줄을 더한다. 바로 앞 줄과 같으면 더하지 않는다. 탐색은 끝난다.
         public void Add(string line)
         {
             ResetNavigation();
             string trimmed = (line ?? "").Trim();
-            if (trimmed.Length == 0 || (_lines.Count > 0 && _lines[_lines.Count - 1] == trimmed))
+            if (trimmed.Length == 0 || (_entries.Lines.Count > 0 && _entries.Lines[_entries.Lines.Count - 1] == trimmed))
             {
                 return;
             }
 
-            _lines.Add(trimmed);
-            if (_lines.Count > MAX_LINES)
+            _entries.Lines.Add(trimmed);
+            if (_entries.Lines.Count > MAX_LINES)
             {
-                _lines.RemoveAt(0);
+                _entries.Lines.RemoveAt(0);
             }
         }
 
         public void RecordCheatUse(string id)
         {
-            for (int index = _recentCheatIds.Count - 1; index >= 0; index--)
+            for (int index = _entries.RecentCheatIds.Count - 1; index >= 0; index--)
             {
-                if (string.Equals(_recentCheatIds[index], id, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(_entries.RecentCheatIds[index], id, StringComparison.OrdinalIgnoreCase))
                 {
-                    _recentCheatIds.RemoveAt(index);
+                    _entries.RecentCheatIds.RemoveAt(index);
                 }
             }
 
-            _recentCheatIds.Insert(0, id);
-            if (_recentCheatIds.Count > MAX_RECENT_CHEATS)
+            _entries.RecentCheatIds.Insert(0, id);
+            if (_entries.RecentCheatIds.Count > MAX_RECENT_CHEATS)
             {
-                _recentCheatIds.RemoveAt(_recentCheatIds.Count - 1);
+                _entries.RecentCheatIds.RemoveAt(_entries.RecentCheatIds.Count - 1);
             }
 
-            RecentVersion++;
+            _entries.RecentVersion++;
         }
 
         // 한 줄 더 옛 기록으로 간다. 탐색을 시작할 때 작성 중이던 입력(currentInput)을 보관한다.
         public bool TryNavigateOlder(string currentInput, out string line)
         {
             line = "";
-            if (_lines.Count == 0)
-            {
-                return false;
-            }
-
             if (!IsNavigating)
             {
+                if (_entries.Lines.Count == 0)
+                {
+                    return false;
+                }
+
+                _navigationLines.AddRange(_entries.Lines);
                 _draft = currentInput ?? "";
-                _cursor = _lines.Count;
+                _cursor = _navigationLines.Count;
             }
 
             if (_cursor == 0)
@@ -93,7 +108,7 @@ namespace Lumera.ZRay
             }
 
             _cursor--;
-            line = _lines[_cursor];
+            line = _navigationLines[_cursor];
             return true;
         }
 
@@ -107,19 +122,20 @@ namespace Lumera.ZRay
             }
 
             _cursor++;
-            if (_cursor >= _lines.Count)
+            if (_cursor >= _navigationLines.Count)
             {
                 line = _draft;
                 ResetNavigation();
                 return true;
             }
 
-            line = _lines[_cursor];
+            line = _navigationLines[_cursor];
             return true;
         }
 
         public void ResetNavigation()
         {
+            _navigationLines.Clear();
             _cursor = -1;
             _draft = "";
         }
@@ -127,15 +143,15 @@ namespace Lumera.ZRay
         public void Load(IKeyValueStore store)
         {
             ResetNavigation();
-            ReadLines(store.GetStringOrNull(LINES_KEY), _lines, MAX_LINES);
-            ReadLines(store.GetStringOrNull(RECENT_KEY), _recentCheatIds, MAX_RECENT_CHEATS);
-            RecentVersion++;
+            ReadLines(store.GetStringOrNull(LINES_KEY), _entries.Lines, MAX_LINES);
+            ReadLines(store.GetStringOrNull(RECENT_KEY), _entries.RecentCheatIds, MAX_RECENT_CHEATS);
+            _entries.RecentVersion++;
         }
 
         public void Save(IKeyValueStore store)
         {
-            store.SetString(LINES_KEY, string.Join("\n", _lines));
-            store.SetString(RECENT_KEY, string.Join("\n", _recentCheatIds));
+            store.SetString(LINES_KEY, string.Join("\n", _entries.Lines));
+            store.SetString(RECENT_KEY, string.Join("\n", _entries.RecentCheatIds));
         }
 
         // 입력 줄과 치트 id에는 줄바꿈이 들어갈 수 없어서 줄바꿈으로 나눠 저장한다.
@@ -155,6 +171,15 @@ namespace Lumera.ZRay
                     output.Add(parts[index]);
                 }
             }
+        }
+
+        private sealed class HistoryEntries
+        {
+            // 오래된 줄이 앞, 새 줄이 뒤
+            public readonly List<string> Lines = new List<string>();
+            // 방금 쓴 치트가 앞
+            public readonly List<string> RecentCheatIds = new List<string>();
+            public int RecentVersion;
         }
     }
 }

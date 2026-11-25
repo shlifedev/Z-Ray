@@ -119,6 +119,41 @@ internal static partial class ZRayChecks
         Check(session.Text == "item.give potion 2" && session.Caret == session.Text.Length, "기록의 명령 줄을 다시 가져온다.");
     }
 
+    private static void CheckIndependentHistoryNavigation()
+    {
+        Fixture fixture = new Fixture();
+        ConsoleSession runtime = CreateSession(fixture);
+        ConsoleSession editor = CreateSession(fixture);
+        fixture.History.Add("help");
+        fixture.History.Add("player.gold");
+
+        Type(runtime, "런타임 초안");
+        Type(editor, "에디터 초안");
+        runtime.HandleKey(EConsoleKey.Up);
+        editor.HandleKey(EConsoleKey.Down);
+        Check(editor.Text == "에디터 초안" && runtime.History.IsNavigating, "한 콘솔의 ↓가 다른 콘솔의 초안을 가져오지 않는다.");
+
+        Type(editor, "편집 중");
+        editor.HandleKey(EConsoleKey.Up);
+        Check(editor.Text == "player.gold" && runtime.Text == "player.gold", "같은 기록을 두 콘솔이 독립적으로 탐색한다.");
+        editor.HandleKey(EConsoleKey.Up);
+        runtime.HandleKey(EConsoleKey.Down);
+        Check(runtime.Text == "런타임 초안" && editor.Text == "help" && editor.History.IsNavigating, "다른 콘솔에서 편집하거나 탐색해도 자신의 초안으로 돌아온다.");
+
+        Type(runtime, "player.gold 7");
+        runtime.HandleKey(EConsoleKey.ForceSubmit);
+        Check(editor.History.Lines.Count == 3 && editor.History.RecentCheatIds[0] == "player.gold"
+            && fixture.History.RecentVersion == editor.History.RecentVersion, "실행한 줄과 최근 사용은 모든 콘솔과 호스트가 공유한다.");
+        List<StyledText> hint = new List<StyledText>();
+        ConsoleHintFormatter.Build(editor, fixture.Registry, hint, new List<StyledText>());
+        Check(Joined(hint) == "기록 2/2", "탐색 번호와 전체 개수는 그 콘솔이 탐색을 시작했을 때의 기록을 기준으로 한다.");
+        editor.HandleKey(EConsoleKey.Down);
+        editor.HandleKey(EConsoleKey.Down);
+        Check(editor.Text == "편집 중", "다른 콘솔에서 명령을 실행해도 처음 탐색하던 기록에서 초안으로 돌아온다.");
+        editor.HandleKey(EConsoleKey.Up);
+        Check(editor.Text == "player.gold 7", "새로 탐색하면 다른 콘솔이 실행한 최신 명령을 찾는다.");
+    }
+
     private static void CheckHintFormatter()
     {
         Fixture fixture = new Fixture();
