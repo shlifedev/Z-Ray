@@ -291,7 +291,14 @@ namespace Lumera.ZRay.Editor
 
             if (_session.Selected >= 0)
             {
-                _suggestions.schedule.Execute(() => _suggestions.ScrollTo(_suggestions.contentContainer[_session.Selected]));
+                VisualElement selectedRow = _suggestions.contentContainer[_session.Selected];
+                _suggestions.schedule.Execute(() =>
+                {
+                    if (selectedRow.parent == _suggestions.contentContainer)
+                    {
+                        _suggestions.ScrollTo(selectedRow);
+                    }
+                });
             }
         }
 
