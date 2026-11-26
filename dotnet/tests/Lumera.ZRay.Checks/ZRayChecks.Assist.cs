@@ -137,9 +137,10 @@ internal static partial class ZRayChecks
     private static void CheckPlaceholderAndGhost()
     {
         Fixture fixture = new Fixture();
-        CheckEqual(" <amount:int> [reason:string=cheat]", fixture.Analyze("player.gold.add").Placeholder, "명령 이름 뒤에는 한 칸 띄우고 모든 인자 자리를 보인다.");
-        CheckEqual("<amount:int> [reason:string=cheat]", fixture.Analyze("player.gold.add ").Placeholder, "공백 뒤에는 바로 이어서 보인다.");
-        CheckEqual(" [reason:string=cheat]", fixture.Analyze("player.gold.add 5").Placeholder, "입력한 인자는 빼고 보인다.");
+        CheckEqual(" <amount:int>", fixture.Analyze("player.gold.add").Placeholder, "명령 이름 뒤에는 한 칸 띄우고 다음 인자 자리 하나만 보인다.");
+        CheckEqual("<amount:int>", fixture.Analyze("player.gold.add ").Placeholder, "공백 뒤에는 바로 이어서 보인다.");
+        CheckEqual(" [reason:string=cheat]", fixture.Analyze("player.gold.add 5").Placeholder, "입력한 인자 다음 자리를 보인다.");
+        CheckEqual("[reason:string=cheat]", fixture.Analyze("player.gold.add 5 ").Placeholder, "다음 인자를 칠 자리에서도 그 인자 하나만 보인다.");
         CheckEqual("", fixture.Analyze("player.gold.add 5 why").Placeholder, "남은 인자가 없으면 비어 있다.");
         CheckEqual("", fixture.Assist.Analyze("player.gold.add 5", 3).Placeholder, "커서가 줄 끝이 아니면 보이지 않는다.");
         CheckEqual(" [value:int]", fixture.Analyze("player.gold").Placeholder, "값 치트의 value는 생략할 수 있는 자리다.");

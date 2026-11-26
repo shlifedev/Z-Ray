@@ -57,22 +57,6 @@ namespace Lumera.ZRay
             return parameter.HasMax ? $"{FormatNumber(parameter.Max)} 이하" : "";
         }
 
-        public static string FormatRemainingParameters(CheatDefinition definition, int fromIndex)
-        {
-            StringBuilder builder = new StringBuilder();
-            for (int index = fromIndex < 0 ? 0 : fromIndex; index < definition.Parameters.Count; index++)
-            {
-                if (builder.Length > 0)
-                {
-                    builder.Append(' ');
-                }
-
-                builder.Append(FormatParameter(definition.Parameters[index], false));
-            }
-
-            return builder.ToString();
-        }
-
         private static string FormatNumber(double number)
         {
             return number.ToString("0.###", CultureInfo.InvariantCulture);

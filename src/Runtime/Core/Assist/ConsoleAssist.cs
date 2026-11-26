@@ -241,9 +241,15 @@ namespace Lumera.ZRay
                 return "";
             }
 
-            string remaining = CheatFormatter.FormatRemainingParameters(definitionOrNull, tokens.Count - 1);
+            int nextIndex = tokens.Count - 1;
+            if (nextIndex >= definitionOrNull.Parameters.Count)
+            {
+                return "";
+            }
+
+            string next = CheatFormatter.FormatParameter(definitionOrNull.Parameters[nextIndex], false);
             bool bOnNewToken = position.Index >= tokens.Count;
-            return remaining.Length == 0 || bOnNewToken ? remaining : " " + remaining;
+            return bOnNewToken ? next : " " + next;
         }
 
         private bool ExpectsMoreArguments(AssistResult result, Suggestion suggestion)

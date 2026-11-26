@@ -25,7 +25,7 @@ internal static partial class ZRayChecks
         int inputVersion = session.InputVersion;
         Check(session.HandleKey(EConsoleKey.Complete) && session.Text == "player.gold.add " && session.Caret == 16, "Tab은 첫 후보를 넣고 다음 인자로 간다.");
         Check(session.InputVersion == inputVersion + 1, "세션이 글자를 바꾸면 InputVersion이 올라 화면이 입력칸을 다시 쓴다.");
-        CheckEqual("<amount:int> [reason:string=cheat]", session.TrailingHint, "후보가 없으면 남은 인자 자리를 흐리게 보인다.");
+        CheckEqual("<amount:int>", session.TrailingHint, "후보가 없으면 다음 인자 자리를 흐리게 보인다.");
 
         Type(session, "player.go");
         CheckEqual("d", session.GhostText, "회색 완성은 첫 후보의 나머지다.");
