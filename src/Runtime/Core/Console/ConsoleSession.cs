@@ -6,6 +6,7 @@ namespace Lumera.ZRay
     public enum EConsoleKey
     {
         Complete,
+        AcceptSelected,
         Submit,
         ForceSubmit,
         Up,
@@ -90,6 +91,14 @@ namespace Lumera.ZRay
             {
                 case EConsoleKey.Complete:
                     Accept(Selected >= 0 ? Selected : 0);
+                    return true;
+                case EConsoleKey.AcceptSelected:
+                    if (Selected < 0 || !IsSuggestionListVisible)
+                    {
+                        return false;
+                    }
+
+                    Accept(Selected);
                     return true;
                 case EConsoleKey.Submit:
                     Submit(false);

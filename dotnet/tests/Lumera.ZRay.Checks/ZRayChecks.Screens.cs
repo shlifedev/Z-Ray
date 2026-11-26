@@ -63,6 +63,15 @@ internal static partial class ZRayChecks
         Check(session.Text == "player.god " && !fixture.Cheats.IsGodMode, "후보를 고른 채 Enter는 실행하지 않고 후보를 넣는다.");
 
         Type(session, "pla");
+        Check(!session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "pla", "고른 후보가 없으면 스페이스는 입력칸이 처리한다.");
+        session.HandleKey(EConsoleKey.Down);
+        Check(session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "player.god ", "후보를 고른 채 스페이스는 그 후보를 넣는다.");
+        Type(session, "pla");
+        session.HandleKey(EConsoleKey.Down);
+        session.HandleKey(EConsoleKey.Dismiss);
+        Check(!session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "pla", "후보 목록을 닫은 뒤의 스페이스는 입력칸이 처리한다.");
+
+        Type(session, "pla");
         Check(session.HandleKey(EConsoleKey.Dismiss) && !session.IsSuggestionListVisible, "Esc는 후보 목록만 닫는다.");
         Check(!session.HandleKey(EConsoleKey.Dismiss), "닫을 후보가 없으면 Esc를 처리하지 않는다(콘솔이 닫힌다).");
         Type(session, "play");

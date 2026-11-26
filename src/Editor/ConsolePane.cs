@@ -147,6 +147,12 @@ namespace Lumera.ZRay.Editor
                 return;
             }
 
+            if (evt.character == ' ' && Handle(EConsoleKey.AcceptSelected))
+            {
+                evt.StopImmediatePropagation();
+                return;
+            }
+
             bool bHandled;
             switch (evt.keyCode)
             {

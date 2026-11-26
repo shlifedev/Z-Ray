@@ -113,6 +113,12 @@ namespace Lumera.ZRay
                 return true;
             }
 
+            if (character == ' ' && _session.HandleKey(EConsoleKey.AcceptSelected))
+            {
+                Render();
+                return true;
+            }
+
             bool bHandled;
             switch (keyEvent.keyCode)
             {
