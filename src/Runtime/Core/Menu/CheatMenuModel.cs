@@ -3,12 +3,10 @@ using System.Collections.Generic;
 
 namespace Lumera.ZRay
 {
-    // 치트 메뉴 왼쪽의 분류 한 줄.
     public readonly struct MenuCategory
     {
         public string Key { get; }
         public string Title { get; }
-        // '/'로 나눈 경로의 깊이(최상위가 0)
         public int Depth { get; }
         public int Count { get; }
 
@@ -21,10 +19,8 @@ namespace Lumera.ZRay
         }
     }
 
-    // 치트 메뉴 오른쪽 목록의 한 줄. 묶음 제목이거나 치트 하나다.
     public readonly struct MenuEntry
     {
-        // 치트 줄이면 정의, 묶음 제목이면 null
         public CheatDefinition? DefinitionOrNull { get; }
         public string GroupKey { get; }
         public string GroupTitle { get; }
@@ -53,13 +49,9 @@ namespace Lumera.ZRay
         }
     }
 
-    // 치트 메뉴에 보일 것을 정한다: 분류 목록, 고른 분류와 검색어에 맞는 목록, 접힌 묶음, 펼친 치트, 입력 중인 인자 값.
-    // 화면을 모른다. 런타임 메뉴와 에디터 창이 각자 하나씩 갖고 Entries를 그린다.
-    // 등록된 정의에서 모두 만들어지므로, 치트를 더해도 이 클래스와 화면은 고칠 것이 없다.
     public sealed class CheatMenuModel
     {
         public const string ALL_KEY = "";
-        // 분류 이름과 겹치지 않게 제어 문자로 시작한다.
         public const string FAVORITES_KEY = "\u0001favorites";
         public const string RECENT_KEY = "\u0001recent";
         public const string PROPERTIES_KEY = "\u0001properties";
@@ -78,20 +70,19 @@ namespace Lumera.ZRay
         private readonly List<CheatDefinition> _shown = new List<CheatDefinition>();
         private readonly List<string> _paths = new List<string>();
         private readonly List<KeyValuePair<int, CheatDefinition>> _ranked = new List<KeyValuePair<int, CheatDefinition>>();
-        private readonly HashSet<string> _collapsed = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _expanded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        // 치트마다 인자 입력칸에 쓰던 글자. 호스트의 것을 받으면 런타임 메뉴, 에디터 창, 콘솔 실행이 같은 값을 본다.
         private readonly CheatDraftStore _drafts;
-        private string _category = ALL_KEY;
+        private readonly CheatMenuState _state;
+        private string _category;
         private string _query = "";
         private bool _bDirty = true;
         private int _registryVersion = -1;
         private int _favoritesVersion = -1;
         private int _recentVersion = -1;
+        private int _stateVersion = -1;
 
         public IReadOnlyList<MenuCategory> Categories => _categories;
         public IReadOnlyList<MenuEntry> Entries => _entries;
-        // 목록을 다시 만들 때마다 오른다. 화면은 이 값이 바뀌었을 때만 다시 그린다.
         public int Version { get; private set; }
 
         public string Category
@@ -99,11 +90,14 @@ namespace Lumera.ZRay
             get => _category;
             set
             {
-                if (_category != value)
+                string category = value ?? ALL_KEY;
+                if (_category != category)
                 {
-                    _category = value ?? ALL_KEY;
+                    _category = category;
                     _bDirty = true;
                 }
+
+                _state.Category = category;
             }
         }
 
@@ -123,20 +117,20 @@ namespace Lumera.ZRay
 
         public bool IsSearching => _query.Length > 0;
 
-        // draftsOrNull: 다른 화면과 함께 쓸 입력값 보관소. 없으면 이 모델만의 것을 만든다.
-        public CheatMenuModel(CheatRegistry registry, FavoriteSet favorites, CommandHistory history, CheatDraftStore? draftsOrNull = null)
+        public CheatMenuModel(CheatRegistry registry, FavoriteSet favorites, CommandHistory history, CheatDraftStore? draftsOrNull = null, CheatMenuState? stateOrNull = null)
         {
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
             _favorites = favorites ?? throw new ArgumentNullException(nameof(favorites));
             _history = history ?? throw new ArgumentNullException(nameof(history));
             _drafts = draftsOrNull ?? new CheatDraftStore();
+            _state = stateOrNull ?? new CheatMenuState();
+            _category = _state.Category;
         }
 
-        // 바뀐 것이 있으면 목록을 다시 만들고 true를 돌려준다. 화면은 매 프레임 불러도 된다.
-        // 판이 바뀌어 치트가 다시 등록되거나, 콘솔에서 치트를 써서 최근 사용이 바뀌는 것도 여기서 알아챈다.
         public bool Refresh()
         {
-            if (!_bDirty && _registryVersion == _registry.Version && _favoritesVersion == _favorites.Version && _recentVersion == _history.RecentVersion)
+            if (!_bDirty && _registryVersion == _registry.Version && _favoritesVersion == _favorites.Version && _recentVersion == _history.RecentVersion
+                && _stateVersion == _state.Version)
             {
                 return false;
             }
@@ -145,6 +139,7 @@ namespace Lumera.ZRay
             _registryVersion = _registry.Version;
             _favoritesVersion = _favorites.Version;
             _recentVersion = _history.RecentVersion;
+            _stateVersion = _state.Version;
             BuildCategories();
             BuildEntries();
             Version++;
@@ -161,7 +156,6 @@ namespace Lumera.ZRay
             return _expanded.Contains(definition.Id);
         }
 
-        // 인자 있는 치트의 입력칸을 펴거나 접는다. 바뀐 뒤의 상태를 돌려준다.
         public bool ToggleExpanded(CheatDefinition definition)
         {
             bool bExpand = !_expanded.Remove(definition.Id);
@@ -176,22 +170,31 @@ namespace Lumera.ZRay
 
         public void ToggleCollapsed(string groupKey)
         {
-            if (!_collapsed.Remove(groupKey))
-            {
-                _collapsed.Add(groupKey);
-            }
-
-            _bDirty = true;
+            _state.SetCollapsed(groupKey, !_state.IsCollapsed(groupKey));
         }
 
-        // 치트의 인자마다 입력 중인 글자. 처음에는 인자의 기본값으로 채운다(그대로 실행하면 기본값이 쓰인다).
-        // 돌려받은 배열을 고치면 그대로 남는다.
+        public void ToggleAllGroups()
+        {
+            bool bAnyExpanded = false;
+            for (int index = 0; index < _entries.Count; index++)
+            {
+                bAnyExpanded |= _entries[index].IsGroup && !_entries[index].IsGroupCollapsed;
+            }
+
+            for (int index = 0; index < _entries.Count; index++)
+            {
+                if (_entries[index].IsGroup)
+                {
+                    _state.SetCollapsed(_entries[index].GroupKey, bAnyExpanded);
+                }
+            }
+        }
+
         public string[] GetDrafts(CheatDefinition definition)
         {
             return _drafts.Get(definition);
         }
 
-        // 입력 중인 글자로 실행할 명령 줄을 만든다. 비워 둔 뒤쪽 인자는 생략해서 기본값이 쓰이게 한다.
         public string BuildLine(CheatDefinition definition)
         {
             string[] drafts = GetDrafts(definition);
@@ -206,13 +209,11 @@ namespace Lumera.ZRay
             return CheatExecutor.BuildLine(definition, arguments);
         }
 
-        // 값 치트에 값을 쓰는 명령 줄.
         public static string BuildValueLine(CheatDefinition definition, string value)
         {
             return CheatExecutor.BuildLine(definition, new[] { value });
         }
 
-        // 분류를 고르면 그 하위 분류의 치트도 함께 보인다.
         public static bool IsInCategory(CheatDefinition definition, string path)
         {
             string category = definition.Category;
@@ -220,7 +221,6 @@ namespace Lumera.ZRay
                 || (category.Length > path.Length && category[path.Length] == '/' && category.StartsWith(path, StringComparison.Ordinal));
         }
 
-        // 고정 항목 셋(전체, 즐겨찾기, 최근 사용)과, 등록된 분류 경로(상위 경로 포함).
         private void BuildCategories()
         {
             IReadOnlyList<CheatDefinition> definitions = _registry.Definitions;
@@ -244,7 +244,7 @@ namespace Lumera.ZRay
             }
 
             _paths.Sort(string.CompareOrdinal);
-            // 고른 분류가 사라졌으면(판이 바뀌어 치트가 빠짐) 전체로 돌아간다.
+            _category = _state.Category;
             if (_category != ALL_KEY && _category != FAVORITES_KEY && _category != RECENT_KEY && _category != PROPERTIES_KEY && !_paths.Contains(_category))
             {
                 _category = ALL_KEY;
@@ -281,7 +281,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // 고른 분류와 검색어로 보일 줄을 순서대로 만든다.
         private void BuildEntries()
         {
             _entries.Clear();
@@ -333,7 +332,6 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 전체를 볼 때는 맨 위에 즐겨찾기 묶음을 둔다.
             if (_category == ALL_KEY)
             {
                 List<CheatDefinition> favorites = new List<CheatDefinition>();
@@ -341,7 +339,6 @@ namespace Lumera.ZRay
                 AddGroup(FAVORITES_KEY, FAVORITES_TITLE, favorites, 0, favorites.Count);
             }
 
-            // 정의는 분류 순으로 정렬되어 있어서, 분류가 바뀌는 자리마다 묶음을 끊는다.
             int groupStart = 0;
             for (int index = 1; index <= _shown.Count; index++)
             {
@@ -354,7 +351,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // 검색 중에는 묶음을 풀고 일치 순위대로 보인다(콘솔 자동완성과 같은 순위). 순위가 같으면 원래 순서를 지킨다.
         private void AddRanked()
         {
             _ranked.Clear();
@@ -381,7 +377,7 @@ namespace Lumera.ZRay
                 return;
             }
 
-            bool bCollapsed = _collapsed.Contains(key);
+            bool bCollapsed = _state.IsCollapsed(key);
             _entries.Add(MenuEntry.Group(key, title, end - start, bCollapsed));
             if (bCollapsed)
             {
@@ -394,7 +390,6 @@ namespace Lumera.ZRay
             }
         }
 
-        // 저장된 id 중 지금 등록되어 있고 메뉴에 보이는 것만, 저장된 순서대로.
         private void CollectShown(IReadOnlyList<string> ids, List<CheatDefinition> output)
         {
             for (int index = 0; index < ids.Count; index++)

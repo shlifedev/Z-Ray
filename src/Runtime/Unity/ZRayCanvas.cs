@@ -15,26 +15,18 @@ namespace Lumera.ZRay
         Menu
     }
 
-    // 콘솔과 치트 메뉴를 담은 캔버스. 둘 중 하나만 열고, Esc는 열린 창의 맨 위 단계 하나만 닫는다.
-    //
-    // 픽셀 글꼴을 위해 두 가지를 한다.
-    // - 글꼴을 실행할 때 TTF에서 비트맵(래스터) TMP 글꼴로 만든다. 글자는 12픽셀 그대로 굽는다.
-    //   에셋으로 두지 않는 것은 동적 아틀라스가 글자를 더할 때마다 에셋이 바뀌어 저장소에 변경이 남기 때문이다.
-    // - 배율은 기본이 정수(화면 높이 540마다 1배)다. 정수 배율에서는 아틀라스를 점 필터로 읽어 픽셀이 또렷하다.
-    //   사용자가 소수 배율(0.25 단위)을 고르면 픽셀이 고르게 나뉘지 않으므로, 획 굵기가 들쭉날쭉해지지 않게 선형 필터로 바꾼다.
     [DisallowMultipleComponent]
     [RequireComponent(typeof(CanvasScaler))]
     public sealed class ZRayCanvas : MonoBehaviour
     {
         private const int ATLAS_SIZE = 1024;
-        // 씬 로드 뒤 런타임에 만들어지는 게임 쪽 EventSystem도 찾아서 입력을 넘겨준다.
         private const float EVENT_SYSTEM_CHECK_INTERVAL = 0.5f;
+        private const float CHECKER_CELL = 4.0f;
 
         [SerializeField] private ConsoleView _console = null;
         [SerializeField] private CheatMenuView _menu = null;
         [SerializeField] private ToastView _toast = null;
         [SerializeField, Tooltip("툴킷 글꼴(갈무리11). 실행할 때 비트맵 TMP 글꼴로 만든다.")] private Font _font = null;
-        // 비트맵 글꼴 셰이더. TMP는 이름으로 찾는데, 빌드에 들어가려면 누군가 참조해야 해서 여기서 참조한다.
         [SerializeField] private Shader _bitmapShader = null;
 
         private ZRayHost _host;
@@ -42,20 +34,22 @@ namespace Lumera.ZRay
         private float _nextEventSystemCheckAt;
         private CanvasScaler _scaler;
         private TMP_FontAsset _fontAssetOrNull;
+        private Texture2D _checkerOrNull;
         private EDebuggerOverlay _current = EDebuggerOverlay.None;
 
         public ConsoleView Console => _console;
         public ToastView Toast => _toast;
         public bool IsOpen => _current != EDebuggerOverlay.None;
         public EDebuggerOverlay Current => _current;
-        // 지금 적용된 배율
         public float Scale { get; private set; } = 1.0f;
+        public Texture CheckerTexture => _checkerOrNull;
 
         public void Initialize(ZRayHost host)
         {
             _host = host;
             _scaler = GetComponent<CanvasScaler>();
             _fontAssetOrNull = CreateFontAssetOrNull();
+            _checkerOrNull = CreateChecker();
             ApplyFont(gameObject);
             ApplyScale();
             _console.Initialize(host, this);
@@ -116,7 +110,11 @@ namespace Lumera.ZRay
             }
         }
 
-        // 프리팹을 인스턴스로 만들고 툴킷 글꼴을 입힌다. 뷰가 줄·행을 만들 때 쓴다.
+        public Rect GetCheckerUV(Vector2 size)
+        {
+            return new Rect(0.0f, 0.0f, size.x / (CHECKER_CELL * 2.0f), size.y / (CHECKER_CELL * 2.0f));
+        }
+
         public T Create<T>(T prefab, Transform parent) where T : Component
         {
             T instance = Instantiate(prefab, parent, false);
@@ -151,7 +149,6 @@ namespace Lumera.ZRay
 
             if (EventSystem.current == null)
             {
-                // 게임이 자기 시스템을 추가하는 동안에도 임시 모듈은 ZRay 캔버스만 처리한다.
                 GameObject fallback = new GameObject("ZRay EventSystem", typeof(MultiplayerEventSystem), typeof(InputSystemUIInputModule));
                 fallback.transform.SetParent(transform, false);
                 _fallbackEventSystemOrNull = fallback.GetComponent<MultiplayerEventSystem>();
@@ -195,7 +192,6 @@ namespace Lumera.ZRay
             GameObject fallback = _fallbackEventSystemOrNull.gameObject;
             GameObject selected = _fallbackEventSystemOrNull.currentSelectedGameObject;
             _fallbackEventSystemOrNull = null;
-            // Destroy는 프레임 끝에 실행된다. 게임의 입력 모듈이 지금부터 이벤트를 받게 먼저 비활성화한다.
             if (fallback.activeInHierarchy)
             {
                 fallback.SetActive(false);
@@ -216,6 +212,8 @@ namespace Lumera.ZRay
 
         private void OnDestroy()
         {
+            Destroy(_checkerOrNull);
+            _checkerOrNull = null;
             if (_fontAssetOrNull == null)
             {
                 return;
@@ -227,7 +225,6 @@ namespace Lumera.ZRay
             _fontAssetOrNull = null;
         }
 
-        // 호스트가 정한 배율(0이면 화면 높이에 맞춘 자동 정수 배율)을 캔버스에 바로 적용한다. 화면 크기가 바뀔 수 있어 매 프레임 확인한다.
         public void ApplyScale()
         {
             Scale = _host.UiScale > 0.0f ? _host.UiScale : Mathf.Max(1, Mathf.FloorToInt(Screen.height / ZRayTheme.SCALE_UNIT_HEIGHT));
@@ -241,13 +238,26 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 정수 배율에서만 글자 픽셀이 화면 픽셀에 딱 맞는다. 그때만 점 필터를 쓴다.
             FilterMode filter = Mathf.Approximately(Scale, Mathf.Round(Scale)) ? FilterMode.Point : FilterMode.Bilinear;
             Texture2D atlas = _fontAssetOrNull.atlasTexture;
             if (atlas.filterMode != filter)
             {
                 atlas.filterMode = filter;
             }
+        }
+
+        private static Texture2D CreateChecker()
+        {
+            Texture2D checker = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+            {
+                name = "ZRayChecker",
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Repeat,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            checker.SetPixels32(new Color32[] { ZRayTheme.CHECKER_LIGHT, ZRayTheme.CHECKER_DARK, ZRayTheme.CHECKER_DARK, ZRayTheme.CHECKER_LIGHT });
+            checker.Apply(false, true);
+            return checker;
         }
 
         private TMP_FontAsset CreateFontAssetOrNull()
@@ -278,7 +288,6 @@ namespace Lumera.ZRay
                 return;
             }
 
-            // 입력칸은 자기 글꼴을 따로 기억했다가 글자에 다시 입힌다. 먼저 맞춘다.
             foreach (TMP_InputField input in root.GetComponentsInChildren<TMP_InputField>(true))
             {
                 input.fontAsset = _fontAssetOrNull;

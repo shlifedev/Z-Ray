@@ -7,10 +7,10 @@ using UnityEngine.UIElements;
 
 namespace Lumera.ZRay.Editor
 {
-    // 에디터 창의 치트 메뉴. 무엇을 보일지는 CheatMenuModel이 정하고, 실행은 런타임 메뉴와 같은 경로(ZRayHost.ExecuteFromMenu)로 한다.
     internal sealed class CheatMenuPane
     {
         private const double POLL_SECONDS = 0.25;
+        private const long COLOR_COMMIT_DELAY_MS = 250;
 
         private readonly ScrollView _categories = new ScrollView();
         private readonly ToolbarSearchField _search = new ToolbarSearchField();
@@ -25,7 +25,6 @@ namespace Lumera.ZRay.Editor
 
         public VisualElement Root { get; } = new VisualElement();
 
-        // 값 치트 한 행. 화면에 보이는 동안 주기적으로 값을 다시 읽는다.
         private sealed class ValueRow
         {
             public CheatDefinition Definition;
@@ -56,7 +55,6 @@ namespace Lumera.ZRay.Editor
             collapseAll.style.flexShrink = 0.0f;
             searchRow.Add(collapseAll);
             listArea.Add(searchRow);
-            // 가로로는 스크롤하지 않는다. 행은 창 폭에 맞춰 줄어든다.
             _list.mode = ScrollViewMode.Vertical;
             _list.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             _list.AddToClassList("grow");
@@ -70,7 +68,7 @@ namespace Lumera.ZRay.Editor
         public void Bind(ZRayHost hostOrNull)
         {
             _hostOrNull = hostOrNull;
-            _model = hostOrNull == null ? null : new CheatMenuModel(hostOrNull.Registry, hostOrNull.Favorites, hostOrNull.History, hostOrNull.Drafts);
+            _model = hostOrNull == null ? null : new CheatMenuModel(hostOrNull.Registry, hostOrNull.Favorites, hostOrNull.History, hostOrNull.Drafts, hostOrNull.MenuState);
             _model?.Refresh();
             if (_model != null)
             {
@@ -149,7 +147,7 @@ namespace Lumera.ZRay.Editor
                 row.Add(title);
                 row.Add(count);
                 string key = category.Key;
-                row.RegisterCallback<ClickEvent>(_ => Refresh(() => _model.Category = key));
+                row.RegisterCallback<ClickEvent>(_ => ChangeMenuState(() => _model.Category = key));
                 _categories.Add(row);
             }
         }
@@ -185,7 +183,7 @@ namespace Lumera.ZRay.Editor
             group.Add(title);
             group.Add(count);
             string key = entry.GroupKey;
-            group.RegisterCallback<ClickEvent>(_ => Refresh(() => _model.ToggleCollapsed(key)));
+            group.RegisterCallback<ClickEvent>(_ => ChangeMenuState(() => _model.ToggleCollapsed(key)));
             return group;
         }
 
@@ -211,7 +209,6 @@ namespace Lumera.ZRay.Editor
             status.AddToClassList("row-status");
             main.Add(status);
 
-            // 행을 눌렀을 때의 주 동작. 런타임 메뉴와 같다: 실행, 입력칸 펴기, 스위치 뒤집기.
             System.Action primaryOrNull = null;
             if (definition.Kind == ECheatKind.Value)
             {
@@ -243,7 +240,6 @@ namespace Lumera.ZRay.Editor
                 }
             }
 
-            // 버튼과 입력칸이 아닌 곳(행의 빈 곳, 이름)을 눌렀을 때만 받는다.
             if (primaryOrNull != null)
             {
                 main.RegisterCallback<ClickEvent>(evt =>
@@ -258,7 +254,6 @@ namespace Lumera.ZRay.Editor
             return row;
         }
 
-        // 펼친 치트의 인자 입력칸. 입력한 값은 모델의 초안에 남아서 접었다 펴도 그대로다.
         private VisualElement BuildEditor(CheatDefinition definition, Label status)
         {
             VisualElement editor = new VisualElement();
@@ -287,7 +282,6 @@ namespace Lumera.ZRay.Editor
             return editor;
         }
 
-        // 인자 하나의 입력. bool은 토글, 열거형은 드롭다운, 그 밖은 글자 입력(숫자는 ±, 후보가 있으면 ▾ 목록).
         private VisualElement BuildInput(CheatDefinition definition, CheatParameter parameter, string text, System.Action<string> changed, System.Action submit, int index, string[] drafts)
         {
             VisualElement value = new VisualElement();
@@ -299,6 +293,15 @@ namespace Lumera.ZRay.Editor
                 Toggle toggle = new Toggle { value = text == "true" };
                 toggle.RegisterValueChangedCallback(evt => changed(evt.newValue ? "true" : "false"));
                 value.Add(toggle);
+                return value;
+            }
+
+            if (ColorValueType.IsColor(parameter.Type))
+            {
+                ColorField color = CreateColorField(text);
+                changed(ColorValueType.FormatColor(color.value));
+                color.RegisterValueChangedCallback(evt => changed(ColorValueType.FormatColor(evt.newValue)));
+                value.Add(color);
                 return value;
             }
 
@@ -339,7 +342,6 @@ namespace Lumera.ZRay.Editor
             return value;
         }
 
-        // 값 치트의 위젯. 바꾸면 바로 쓴다(콘솔에서 "id 값"을 친 것과 같다).
         private VisualElement BuildValue(CheatDefinition definition, Label status)
         {
             CheatParameter parameter = definition.Parameters[0];
@@ -366,6 +368,21 @@ namespace Lumera.ZRay.Editor
                 return value;
             }
 
+            if (ColorValueType.IsColor(parameter.Type))
+            {
+                ColorField color = CreateColorField(current);
+                IVisualElementScheduledItem pendingOrNull = null;
+                color.RegisterValueChangedCallback(evt =>
+                {
+                    string line = CheatMenuModel.BuildValueLine(definition, ColorValueType.FormatColor(evt.newValue));
+                    pendingOrNull?.Pause();
+                    pendingOrNull = color.schedule.Execute(() => Run(definition, line, status)).StartingIn(COLOR_COMMIT_DELAY_MS);
+                });
+                value.Add(color);
+                _valueRows.Add(new ValueRow { Definition = definition, SetShown = text => ShowColor(color, text), IsEditing = () => pendingOrNull != null && pendingOrNull.isActive });
+                return value;
+            }
+
             if (choices.Count > 0)
             {
                 DropdownField dropdown = new DropdownField(choices, Mathf.Max(0, choices.IndexOf(current)));
@@ -376,7 +393,6 @@ namespace Lumera.ZRay.Editor
                 return value;
             }
 
-            // 글자는 Enter를 누르거나 칸을 떠날 때 쓴다(isDelayed).
             TextField field = new TextField { value = current, isDelayed = true };
             field.AddToClassList("value-field");
             field.RegisterValueChangedCallback(evt => Run(definition, CheatMenuModel.BuildValueLine(definition, evt.newValue), status));
@@ -398,6 +414,22 @@ namespace Lumera.ZRay.Editor
             return value;
         }
 
+        private static ColorField CreateColorField(string text)
+        {
+            ColorField field = new ColorField { showAlpha = true, hdr = false };
+            field.AddToClassList("value-color");
+            ShowColor(field, text);
+            return field;
+        }
+
+        private static void ShowColor(ColorField field, string text)
+        {
+            if (ColorValueType.TryParseColor(text, out Color32 color))
+            {
+                field.SetValueWithoutNotify(color);
+            }
+        }
+
         private static void AddStepper(VisualElement value, CheatParameter parameter, TextField field)
         {
             Button minus = new Button(() => field.value = parameter.StepText(field.value, -1)) { text = "-" };
@@ -408,7 +440,6 @@ namespace Lumera.ZRay.Editor
             value.Add(plus);
         }
 
-        // 콘솔과 같은 후보(공급자, 기본값)를 메뉴로 띄운다.
         private void ShowCandidates(CheatDefinition definition, int index, string[] drafts, TextField field)
         {
             string[] previous = new string[index];
@@ -448,28 +479,20 @@ namespace Lumera.ZRay.Editor
             Refresh(() => { });
         }
 
-        // 묶음이 하나라도 펴져 있으면 모두 접고, 모두 접혀 있으면 모두 편다.
         private void ToggleAllGroups()
+        {
+            ChangeMenuState(() => _model.ToggleAllGroups());
+        }
+
+        private void ChangeMenuState(System.Action change)
         {
             if (_model == null)
             {
                 return;
             }
 
-            bool bAnyExpanded = false;
-            foreach (MenuEntry entry in _model.Entries)
-            {
-                bAnyExpanded |= entry.IsGroup && !entry.IsGroupCollapsed;
-            }
-
-            foreach (MenuEntry entry in new List<MenuEntry>(_model.Entries))
-            {
-                if (entry.IsGroup && entry.IsGroupCollapsed != bAnyExpanded)
-                {
-                    _model.ToggleCollapsed(entry.GroupKey);
-                }
-            }
-
+            change();
+            _hostOrNull.SaveMenuState();
             Refresh(() => { });
         }
 
@@ -480,7 +503,6 @@ namespace Lumera.ZRay.Editor
                 : $"{CheatFormatter.FormatSignature(definition)}  —  {definition.Description}";
         }
 
-        // 이름(검색어 강조)과 흐린 id.
         private string BuildTitle(CheatDefinition definition)
         {
             string match = EditorGUIUtility.isProSkin ? "#FFD27A" : "#AA6400";

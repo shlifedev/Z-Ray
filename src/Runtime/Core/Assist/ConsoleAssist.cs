@@ -3,13 +3,10 @@ using System.Collections.Generic;
 
 namespace Lumera.ZRay
 {
-    // 입력 줄과 커서 위치를 받아 자동완성 후보, 힌트, 인자 자리 안내를 만든다. 화면을 모르는 계산만 한다.
-    // 화면은 입력이 바뀔 때마다 Analyze를 한 번 부르고, 후보를 고르면 ApplySuggestion으로 새 입력 줄을 받는다.
     public sealed class ConsoleAssist
     {
         public const int MAX_SUGGESTIONS = 50;
 
-        // 최근에 쓴 치트를 같은 일치 방식 안에서 위로 올리는 점수. "처음부터 일치"와 "조각 처음부터 일치"의 차이(20)를 넘지 않게 둔다.
         private const int RECENT_BONUS_MAX = 15;
         private const int RECENT_BONUS_STEP = 3;
         private const string DEFAULT_NOTE = "기본값";
@@ -36,7 +33,6 @@ namespace Lumera.ZRay
             int clampedCaret = caret < 0 ? 0 : (caret > text.Length ? text.Length : caret);
             TokenPosition position = commandLine.FindTokenAt(clampedCaret);
             IReadOnlyList<CommandToken> tokens = commandLine.Tokens;
-            // 빈 줄에서는 후보를 띄우지 않는다. 빈 줄의 ↑/↓는 기록 탐색이다.
             if (tokens.Count == 0)
             {
                 return new AssistResult(text, clampedCaret, null, position, null, null, "", null);
@@ -68,8 +64,6 @@ namespace Lumera.ZRay
                 BuildPlaceholder(definition, tokens, position, bCaretAtEnd), providerError);
         }
 
-        // 후보를 입력 줄에 넣는다. 커서가 있는 토큰 전체를 바꾸고, 공백이 든 값은 따옴표로 감싼다.
-        // 이어서 입력할 인자가 있으면 공백을 하나 두고 그 뒤로 커서를 옮긴다.
         public string ApplySuggestion(AssistResult result, Suggestion suggestion, out int caret)
         {
             string before = result.Line.Substring(0, result.ReplaceStart);
@@ -89,8 +83,6 @@ namespace Lumera.ZRay
             return applied + after;
         }
 
-        // 아직 입력하지 않은 필수 인자 중 첫 번째. 없거나 명령을 모르면 null이다.
-        // Enter를 눌렀을 때 실행할지, 다음 인자를 입력하게 할지 정하는 데 쓴다.
         public CheatParameter? FindMissingRequiredOrNull(string? line)
         {
             IReadOnlyList<CommandToken> tokens = CommandLine.Parse(line).Tokens;
@@ -111,7 +103,6 @@ namespace Lumera.ZRay
             return null;
         }
 
-        // 명령 이름 후보. 등록된 모든 치트를 검색어로 순위 매긴다.
         public List<Suggestion> SuggestCommands(string query)
         {
             List<Suggestion> suggestions = new List<Suggestion>();
@@ -135,7 +126,6 @@ namespace Lumera.ZRay
             return Finish(suggestions);
         }
 
-        // 인자 하나의 후보. 메뉴의 입력칸이 콘솔과 같은 후보를 띄울 때 쓴다.
         public List<Suggestion> SuggestArguments(CheatDefinition definition, int parameterIndex, string prefix, IReadOnlyList<string> previousArgs)
         {
             return SuggestArguments(definition, definition.Parameters[parameterIndex], prefix, previousArgs, out _);
@@ -168,7 +158,6 @@ namespace Lumera.ZRay
             }
 
             List<Suggestion> suggestions = new List<Suggestion>();
-            // 기본값과 현재 값을 먼저 넣어 같은 값의 후보보다 앞서게 한다(중복은 Finish가 앞의 것만 남긴다).
             if (parameter.HasDefault)
             {
                 AddArgument(suggestions, parameter.FormatDefault(), "", DEFAULT_NOTE, prefix, -2);
@@ -204,7 +193,6 @@ namespace Lumera.ZRay
                 TextMatcher.FindSpans(value, prefix), TextMatcher.FindSpans(description, prefix)));
         }
 
-        // 값을 읽다가 난 예외는 삼킨다. 자동완성 때문에 입력이 막히면 안 된다(실행할 때는 오류로 보인다).
         private static string ReadCurrentValueOrEmpty(CheatDefinition definition)
         {
             try
@@ -246,7 +234,6 @@ namespace Lumera.ZRay
             return new CommandHint(definition, hints, activeIndex, lineError);
         }
 
-        // 커서가 줄 끝일 때, 아직 입력하지 않은 인자 자리를 흐린 글자로 안내한다.
         private static string BuildPlaceholder(CheatDefinition? definitionOrNull, IReadOnlyList<CommandToken> tokens, TokenPosition position, bool bCaretAtEnd)
         {
             if (definitionOrNull == null || !bCaretAtEnd)
@@ -254,10 +241,15 @@ namespace Lumera.ZRay
                 return "";
             }
 
-            string remaining = CheatFormatter.FormatRemainingParameters(definitionOrNull, tokens.Count - 1);
-            // 커서가 토큰 끝에 붙어 있으면 한 칸 띄운다. 새 토큰 자리(공백 뒤)면 바로 이어 쓴다.
+            int nextIndex = tokens.Count - 1;
+            if (nextIndex >= definitionOrNull.Parameters.Count)
+            {
+                return "";
+            }
+
+            string next = CheatFormatter.FormatParameter(definitionOrNull.Parameters[nextIndex], false);
             bool bOnNewToken = position.Index >= tokens.Count;
-            return remaining.Length == 0 || bOnNewToken ? remaining : " " + remaining;
+            return bOnNewToken ? next : " " + next;
         }
 
         private bool ExpectsMoreArguments(AssistResult result, Suggestion suggestion)
@@ -270,7 +262,6 @@ namespace Lumera.ZRay
                     return false;
                 }
 
-                // 읽기 전용 값은 이름만으로 완성된다.
                 return definition.Kind == ECheatKind.Value ? definition.CanWrite : definition.HasParameters;
             }
 
@@ -313,7 +304,6 @@ namespace Lumera.ZRay
             return previous;
         }
 
-        // 정렬하고, 같은 값은 앞선 것만 남기고, 개수를 자른다.
         private static List<Suggestion> Finish(List<Suggestion> suggestions)
         {
             suggestions.Sort(SUGGESTION_ORDER);
@@ -332,7 +322,6 @@ namespace Lumera.ZRay
             return suggestions;
         }
 
-        // 일치 점수가 먼저다. 점수가 같으면 선언·공급 순서, 그다음 글자 순이다.
         private static int CompareSuggestions(Suggestion left, Suggestion right)
         {
             int rank = left.Rank.CompareTo(right.Rank);

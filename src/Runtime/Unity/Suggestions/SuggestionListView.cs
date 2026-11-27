@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 자동완성 후보 목록. 콘솔의 입력 줄 아래와 메뉴의 입력칸 아래에서 같은 것을 쓴다.
-    // 줄 높이가 같아서 레이아웃 그룹 없이 직접 자리를 잡는다. 한 번에 MAX_VISIBLE_SUGGESTIONS줄까지 보이고 나머지는 스크롤한다.
     public sealed class SuggestionListView : MonoBehaviour
     {
         [SerializeField] private RectTransform _panel = null;
@@ -24,7 +22,6 @@ namespace Lumera.ZRay
         public int Count => IsVisible ? _count : 0;
         public RectTransform Panel => _panel;
 
-        // createRow: 프리팹을 인스턴스로 만드는 방법(호스트의 폰트를 입힌다). clicked: 후보를 눌렀을 때.
         public void Initialize(Func<SuggestionRowView, RectTransform, SuggestionRowView> createRow, Action<int> clicked)
         {
             _createRow = createRow;
@@ -95,7 +92,6 @@ namespace Lumera.ZRay
             _panel.gameObject.SetActive(false);
         }
 
-        // 고른 줄이 보이는 범위 안에 들어오게 한다. 고른 줄이 없으면 맨 위로 돌아간다.
         private void ScrollToSelected()
         {
             float viewHeight = _panel.sizeDelta.y;

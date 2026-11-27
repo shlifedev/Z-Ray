@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Lumera.ZRay
 {
-    // 펼친 치트 행 안의 인자 한 줄: 이름(범위)과 입력 위젯.
     public sealed class ArgRowView : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _label = null;

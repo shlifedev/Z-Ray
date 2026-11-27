@@ -4,8 +4,6 @@ using System.Reflection;
 
 namespace Lumera.ZRay
 {
-    // 리플렉션으로 [Cheat]·[CheatProperty] 선언을 읽어 정의를 만든다.
-    // 지원하지 않는 선언(타입, 반환형, 공급자)은 정의를 만들지 않고 이유를 알린다. 잘못 붙인 특성이 조용히 사라지지 않게 하려는 것이다.
     internal sealed class CheatScanner
     {
         private readonly ValueTypeRegistry _valueTypes;
@@ -18,7 +16,6 @@ namespace Lumera.ZRay
             _reportProblem = reportProblem;
         }
 
-        // targetOrNull이 null이면 정적 멤버를, 아니면 그 객체의 인스턴스 멤버를 읽는다.
         public void Scan(Type type, object? targetOrNull, List<CheatDefinition> output)
         {
             BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | (targetOrNull == null ? BindingFlags.Static | BindingFlags.DeclaredOnly : BindingFlags.Instance);
@@ -165,7 +162,6 @@ namespace Lumera.ZRay
             return CheatDefinition.CreateValue(attribute, parameter, targetOrNull, () => field.GetValue(targetOrNull), setterOrNull);
         }
 
-        // 값 치트의 "value" 인자. 생략하면 읽기라서 필수가 아니고 기본값도 없다.
         private CheatParameter? CreateValueParameterOrNull(Type type, CheatPropertyAttribute attribute, MemberInfo member, string where)
         {
             IValueType? valueType = _valueTypes.FindOrNull(type);
@@ -183,7 +179,6 @@ namespace Lumera.ZRay
             return new CheatParameter("value", "값", "", type, valueType, false, null, false, attribute.Min, attribute.Max, attribute.Step, provider);
         }
 
-        // 공급자는 타입마다 하나만 만들어 같이 쓴다. 상태가 필요하면 SuggestionContext.TargetOrNull에서 찾는다.
         private bool TryGetProvider(SuggestAttribute? attributeOrNull, string where, out ISuggestionProvider? providerOrNull)
         {
             providerOrNull = null;
@@ -243,7 +238,6 @@ namespace Lumera.ZRay
             return true;
         }
 
-        // 열거형 매개변수의 기본값은 리플렉션에서 정수로 나온다. 열거형 값으로 되돌린다.
         private static object? NormalizeDefault(Type type, object? value)
         {
             if (value != null && type.IsEnum && value.GetType() != type)

@@ -6,22 +6,16 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 위젯에서 일어난 일을 받는 쪽(치트 행).
     public interface IValueWidgetOwner
     {
-        // 값이 바뀌었다(글자 입력 포함).
         void OnWidgetChanged(ValueWidget widget);
-        // 값을 확정했다(스위치·선택지·± 누름).
         void OnWidgetCommitted(ValueWidget widget);
-        // 입력칸의 키. true를 돌려주면 입력칸이 처리하지 않는다.
         bool OnWidgetKey(ValueWidget widget, Event keyEvent);
+        void OnWidgetPicker(ValueWidget widget);
     }
 
-    // 치트 인자 하나를 입력하는 위젯. 타입에 따라 스위치(bool), 선택지 버튼(열거형), 숫자 입력(±), 글자 입력 중 하나를 보인다.
-    // 값은 언제나 글자(Text)로 주고받는다. 글자를 값으로 바꾸고 검증하는 일은 실행기가 콘솔과 같은 방법으로 한다.
     public sealed class ValueWidget : MonoBehaviour
     {
-        // 선택지가 이 수를 넘으면 버튼 대신 글자 입력과 후보 목록을 쓴다.
         public const int MAX_SEGMENTS = 6;
 
         private const float SEGMENT_PADDING = 12.0f;
@@ -36,6 +30,9 @@ namespace Lumera.ZRay
         [SerializeField] private KeyFilteredInputField _field = null;
         [SerializeField] private Button _minus = null;
         [SerializeField] private Button _plus = null;
+        [SerializeField] private Button _swatch = null;
+        [SerializeField] private RawImage _swatchChecker = null;
+        [SerializeField] private Image _swatchColor = null;
         [SerializeField] private GameObject _readOnlyBadge = null;
         [SerializeField] private TextMeshProUGUI _readOnly = null;
 
@@ -47,13 +44,13 @@ namespace Lumera.ZRay
         private bool _bListening;
 
         public CheatParameter Parameter => _parameter;
-        // 이 위젯이 몇 번째 인자인가(행이 정한다).
         public int ParameterIndex { get; private set; }
         public string Text => _text;
         public bool IsEditing => _fieldGroup.gameObject.activeSelf && _field.isFocused;
         public RectTransform FieldRect => (RectTransform)_field.transform;
-        // 글자를 입력하는 칸이 보이는가(Tab으로 옮겨 갈 수 있는가)
         public bool HasField => _fieldGroup.gameObject.activeSelf;
+        public bool IsColor { get; private set; }
+        public RectTransform PickerAnchor => (RectTransform)_swatch.transform;
 
         public void Bind(ZRayCanvas canvas, IValueWidgetOwner owner, CheatParameter parameter, int parameterIndex, bool bWritable, string text)
         {
@@ -68,6 +65,10 @@ namespace Lumera.ZRay
                 _plus.onClick.AddListener(() => Step(1));
                 _field.onValueChanged.AddListener(OnFieldChanged);
                 _field.KeyFilterOrNull = OnFieldKey;
+                if (_swatch != null)
+                {
+                    _swatch.onClick.AddListener(() => _owner.OnWidgetPicker(this));
+                }
             }
 
             _choices.Clear();
@@ -87,6 +88,17 @@ namespace Lumera.ZRay
             _fieldGroup.gameObject.SetActive(bWritable && !bBool && !bSegments);
             _minus.gameObject.SetActive(parameter.IsNumber);
             _plus.gameObject.SetActive(parameter.IsNumber);
+            IsColor = _swatch != null && ColorValueType.IsColor(parameter.Type);
+            if (_swatch != null)
+            {
+                _swatch.gameObject.SetActive(IsColor);
+            }
+
+            if (IsColor)
+            {
+                _swatchChecker.texture = canvas.CheckerTexture;
+                _swatchChecker.uvRect = canvas.GetCheckerUV(_swatchChecker.rectTransform.rect.size);
+            }
             if (bWritable && bSegments)
             {
                 BuildSegments(canvas);
@@ -95,7 +107,6 @@ namespace Lumera.ZRay
             SetText(text);
         }
 
-        // 값을 바꾸되 주인에게 알리지 않는다(주기적으로 다시 읽은 값, 보관해 둔 초안).
         public void SetText(string text)
         {
             _text = text ?? "";
@@ -123,9 +134,10 @@ namespace Lumera.ZRay
             {
                 _field.SetTextWithoutNotify(_text);
             }
+
+            RefreshSwatch();
         }
 
-        // 스위치(bool)면 뒤집고 true를 돌려준다. 행을 눌렀을 때 쓴다.
         public bool TryToggle()
         {
             if (!_switch.gameObject.activeSelf)
@@ -198,7 +210,16 @@ namespace Lumera.ZRay
         private void OnFieldChanged(string text)
         {
             _text = text;
+            RefreshSwatch();
             _owner.OnWidgetChanged(this);
+        }
+
+        private void RefreshSwatch()
+        {
+            if (IsColor && ColorValueType.TryParseColor(_text, out Color32 color))
+            {
+                _swatchColor.color = color;
+            }
         }
 
         private bool OnFieldKey(Event keyEvent)

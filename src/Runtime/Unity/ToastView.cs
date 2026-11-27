@@ -4,7 +4,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 메뉴에서 실행한 치트의 결과를 화면 아래에 잠깐 보인다. 성공도 실패도 보인다.
     public sealed class ToastView : MonoBehaviour
     {
         private const float SHOWN_SECONDS = 2.5f;
@@ -12,7 +11,6 @@ namespace Lumera.ZRay
         [SerializeField] private Image _background = null;
         [SerializeField] private TextMeshProUGUI _text = null;
 
-        // 게임 시간이 멈춰도 사라지도록 unscaled 시간으로 잰다.
         private float _hideAt;
 
         public void Show(string message, bool bSuccess)

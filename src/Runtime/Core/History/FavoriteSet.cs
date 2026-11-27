@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Lumera.ZRay
 {
-    // 즐겨찾기한 치트 id. 더한 순서를 지킨다. 지금 등록되지 않은 id(다른 씬의 치트)도 지우지 않고 갖고 있는다.
     public sealed class FavoriteSet
     {
         private const string KEY = "Lumera.ZRay.Favorites.v1";
@@ -18,7 +17,6 @@ namespace Lumera.ZRay
             return IndexOf(id) >= 0;
         }
 
-        // 있으면 빼고 없으면 더한다. 바뀐 뒤의 상태(즐겨찾기인가)를 돌려준다.
         public bool Toggle(string id)
         {
             int index = IndexOf(id);

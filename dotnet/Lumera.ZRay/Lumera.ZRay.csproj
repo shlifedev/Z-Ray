@@ -1,13 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- 다른 라이브러리 참조 없이 Unity와 같은 C# 9와 .NET Standard 2.1로 빌드한다. -->
     <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>9.0</LangVersion>
     <RootNamespace>Lumera.ZRay</RootNamespace>
     <AssemblyName>Lumera.ZRay</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
-    <!-- 소스 원본은 Unity 패키지(src)의 Runtime/Core다. UnityEngine을 쓰는 Runtime/Unity와 Editor는 넣지 않는다. -->
     <Compile Include="../../src/Runtime/Core/**/*.cs" LinkBase="Runtime" />
   </ItemGroup>
 </Project>

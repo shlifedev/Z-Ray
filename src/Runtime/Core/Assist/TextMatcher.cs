@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Lumera.ZRay
 {
-    // 후보 글자 안에서 검색어와 일치한 구간. 화면이 이 구간을 강조한다.
     public readonly struct MatchSpan
     {
         public int Start { get; }
@@ -19,18 +18,12 @@ namespace Lumera.ZRay
     public enum EMatchKind
     {
         None,
-        // 처음부터 일치: pla → player.gold.add
         Prefix,
-        // 구분자 뒤 조각의 처음부터 일치: gold → player.gold.add
         SegmentPrefix,
-        // 중간 어디든 일치: old → player.gold.add
         Substring,
-        // 조각 머리글자를 순서대로: pga → player.gold.add
         Initials
     }
 
-    // 콘솔 자동완성과 메뉴 검색이 함께 쓰는 일치 규칙. 대소문자는 무시한다.
-    // 검색 규칙을 늘리려면(예: 한글 초성) 이 클래스만 고친다.
     public static class TextMatcher
     {
         private static readonly MatchSpan[] NO_SPANS = new MatchSpan[0];
@@ -40,7 +33,6 @@ namespace Lumera.ZRay
             return Match(candidate, query, null);
         }
 
-        // spansOrNull을 주면 일치한 구간을 더한다(지우지 않는다). 일치하지 않으면 아무것도 더하지 않는다.
         public static EMatchKind Match(string candidate, string query, List<MatchSpan>? spansOrNull)
         {
             if (string.IsNullOrEmpty(query))
@@ -104,8 +96,6 @@ namespace Lumera.ZRay
             return spans.Count == 0 ? NO_SPANS : spans.ToArray();
         }
 
-        // 검색어의 글자를 순서대로, 각 조각의 앞에서부터 이어 맞춘다. 한 조각에서 여러 글자를 이어 써도 된다(plgo → PLayer.GOld).
-        // 조각 중간에서 새로 시작하는 일치는 받지 않는다. 그러면 거의 모든 후보가 걸려서 순위가 쓸모없어진다.
         private static bool MatchInitials(string candidate, string query, List<MatchSpan>? spansOrNull)
         {
             int spanCountBefore = spansOrNull?.Count ?? 0;

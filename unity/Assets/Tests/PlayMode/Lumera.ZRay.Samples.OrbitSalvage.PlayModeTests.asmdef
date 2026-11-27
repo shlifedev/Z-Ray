@@ -1,0 +1,23 @@
+{
+    "name": "Lumera.ZRay.Samples.OrbitSalvage.PlayModeTests",
+    "rootNamespace": "Lumera.ZRay.Samples.OrbitSalvage.Tests",
+    "references": [
+        "Lumera.ZRay.Samples.OrbitSalvage",
+        "Lumera.ZRay",
+        "Lumera.ZRay.Unity",
+        "Unity.InputSystem",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS",
+        "UNITY_EDITOR || LUMERA_ZRAY"
+    ]
+}

@@ -4,8 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace Lumera.ZRay.Checks;
 
-// 모든 검사가 함께 쓰는 확인 함수와 집계. 각 검사 파일은 `using static Lumera.ZRay.Checks.Checker;`로 가져다 쓴다.
-// 확인이 실패해도 멈추지 않고 기록만 한다. 예상하지 못한 예외는 Run이 잡아 실패로 기록하고 다음 검사로 넘어간다.
 internal static class Checker
 {
     private static int _checkCount;
@@ -14,7 +12,6 @@ internal static class Checker
     public static int CheckCount => _checkCount;
     public static int FailureCount => _failureCount;
 
-    // 검사 하나를 실행한다. 이름은 호출한 식(메서드 이름이나 람다 본문)을 그대로 쓴다.
     public static void Run(Action test, [CallerArgumentExpression(nameof(test))] string name = "")
     {
         try

@@ -4,7 +4,6 @@ using static Lumera.ZRay.Checks.Checker;
 
 namespace Lumera.ZRay.Checks;
 
-// 런타임 화면과 에디터 창이 함께 쓰는 모델: 콘솔 입력 상태, 힌트 문장, 출력 기록, 치트 메뉴 목록.
 internal static partial class ZRayChecks
 {
     private static ConsoleSession CreateSession(Fixture fixture)
@@ -26,7 +25,7 @@ internal static partial class ZRayChecks
         int inputVersion = session.InputVersion;
         Check(session.HandleKey(EConsoleKey.Complete) && session.Text == "player.gold.add " && session.Caret == 16, "Tab은 첫 후보를 넣고 다음 인자로 간다.");
         Check(session.InputVersion == inputVersion + 1, "세션이 글자를 바꾸면 InputVersion이 올라 화면이 입력칸을 다시 쓴다.");
-        CheckEqual("<amount:int> [reason:string=cheat]", session.TrailingHint, "후보가 없으면 남은 인자 자리를 흐리게 보인다.");
+        CheckEqual("<amount:int>", session.TrailingHint, "후보가 없으면 다음 인자 자리를 흐리게 보인다.");
 
         Type(session, "player.go");
         CheckEqual("d", session.GhostText, "회색 완성은 첫 후보의 나머지다.");
@@ -49,7 +48,6 @@ internal static partial class ZRayChecks
         session.HandleKey(EConsoleKey.Up);
         Check(session.Selected == -1 && session.Text == "pla", "첫 후보에서 ↑는 입력 줄로 돌아온다.");
 
-        // 후보가 떠 있으면 ↑/↓는 입력 줄까지 포함해 한 바퀴 돈다. 입력 줄에서 ↑는 기록이 아니라 맨 아래 후보다.
         fixture.History.Add("help");
         int last = session.Suggestions.Count - 1;
         session.HandleKey(EConsoleKey.Up);
@@ -63,6 +61,15 @@ internal static partial class ZRayChecks
         session.HandleKey(EConsoleKey.Down);
         session.HandleKey(EConsoleKey.Submit);
         Check(session.Text == "player.god " && !fixture.Cheats.IsGodMode, "후보를 고른 채 Enter는 실행하지 않고 후보를 넣는다.");
+
+        Type(session, "pla");
+        Check(!session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "pla", "고른 후보가 없으면 스페이스는 입력칸이 처리한다.");
+        session.HandleKey(EConsoleKey.Down);
+        Check(session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "player.god ", "후보를 고른 채 스페이스는 그 후보를 넣는다.");
+        Type(session, "pla");
+        session.HandleKey(EConsoleKey.Down);
+        session.HandleKey(EConsoleKey.Dismiss);
+        Check(!session.HandleKey(EConsoleKey.AcceptSelected) && session.Text == "pla", "후보 목록을 닫은 뒤의 스페이스는 입력칸이 처리한다.");
 
         Type(session, "pla");
         Check(session.HandleKey(EConsoleKey.Dismiss) && !session.IsSuggestionListVisible, "Esc는 후보 목록만 닫는다.");
@@ -151,7 +158,6 @@ internal static partial class ZRayChecks
         ConsoleHintFormatter.Build(session, fixture.Registry, first, second);
         Check(Joined(second) == "양 입력 필요", "Enter로 다음 인자로 옮겼으면 무엇을 입력할지 알린다.");
 
-        // 리치 텍스트: 글자는 noparse로 감싸 태그로 읽히지 않는다.
         StringBuilder builder = new StringBuilder();
         RichText.AppendStyled(builder, new[] { new StyledText("<b>", ETextStyle.Error) }, static style => style == ETextStyle.Error ? "#F00" : "#FFF");
         CheckEqual("<color=#F00><noparse><b></noparse></color>", builder.ToString(), "조각마다 색을 입히고 글자는 noparse로 감싼다.");
@@ -190,7 +196,6 @@ internal static partial class ZRayChecks
         CheatMenuModel model = new CheatMenuModel(fixture.Registry, favorites, fixture.History);
         Check(model.Refresh() && !model.Refresh(), "처음에는 목록을 만들고, 바뀐 것이 없으면 다시 만들지 않는다.");
 
-        // 분류: 고정 항목 넷 + 경로(상위 경로 포함). 콘솔 명령은 세지 않는다.
         IReadOnlyList<MenuCategory> categories = model.Categories;
         Check(categories[0].Key == CheatMenuModel.ALL_KEY && categories[0].Count == 11 && categories[1].Key == CheatMenuModel.FAVORITES_KEY && categories[2].Key == CheatMenuModel.RECENT_KEY && categories[3].Key == CheatMenuModel.PROPERTIES_KEY, "맨 위는 전체, 즐겨찾기, 최근 사용, 프로퍼티다.");
         Check(categories[3].Count == 4, "프로퍼티 분류는 값 치트 수를 센다.");
@@ -198,7 +203,6 @@ internal static partial class ZRayChecks
         MenuCategory child = FindCategory(model, "플레이어/재화");
         Check(parent.Count == 7 && parent.Depth == 0 && child.Count == 3 && child.Depth == 1 && child.Title == "재화", "상위 분류는 하위 분류의 치트까지 세고, 하위 분류는 이름만 보인다.");
 
-        // 전체: 분류마다 묶음. 즐겨찾기가 없으면 즐겨찾기 묶음은 없다.
         Check(model.Entries[0].IsGroup && model.Entries[0].GroupKey == "아이템" && model.Entries[1].DefinitionOrNull!.Id == "item.give", "분류마다 묶음 제목과 치트가 이어진다.");
         Check(FindGroup(model, "플레이어/재화") >= 0 && FindGroup(model, CheatMenuModel.FAVORITES_KEY) < 0, "즐겨찾기가 없으면 그 묶음을 만들지 않는다.");
 
@@ -225,7 +229,6 @@ internal static partial class ZRayChecks
             }
         }
 
-        // 검색: 묶음 없이 순위대로.
         model.Category = CheatMenuModel.ALL_KEY;
         model.Query = "  gold ";
         model.Refresh();
@@ -235,13 +238,11 @@ internal static partial class ZRayChecks
         Check(model.Entries.Count == 0, "일치하는 것이 없으면 비어 있다.");
         model.Query = "";
 
-        // 최근 사용: 실행기가 남긴 순서대로.
         fixture.Executor.Execute("player.god on");
         fixture.Executor.Execute("gold.reset");
         model.Category = CheatMenuModel.RECENT_KEY;
         Check(model.Refresh() && model.Entries.Count == 2 && model.Entries[0].DefinitionOrNull!.Id == "gold.reset" && FindCategory(model, CheatMenuModel.RECENT_KEY).Count == 2, "최근 사용은 방금 쓴 것부터 보인다.");
 
-        // 판이 바뀌어 고른 분류의 치트가 모두 빠지면 전체로 돌아간다.
         model.Category = "플레이어/재화";
         model.Refresh();
         fixture.Registration.Dispose();
@@ -264,7 +265,6 @@ internal static partial class ZRayChecks
         CheckEqual("player.gold.add \"\"", model.BuildLine(addGold), "비워 둔 필수 인자는 자리를 지켜 실행기가 이유를 알리게 한다.");
         CheckEqual("player.gold 30", CheatMenuModel.BuildValueLine(fixture.Registry.FindOrNull("player.gold")!, "30"), "값 치트에 쓰는 명령 줄.");
 
-        // ± 스테퍼: Step과 범위를 지키고, 숫자가 아니면 하한에서 시작한다.
         CheatParameter amount = addGold.Parameters[0];
         CheckEqual("2", amount.StepText("1", 1), "Step이 없으면 1씩 움직인다.");
         CheckEqual("1", amount.StepText("1", -1), "하한 밑으로 내려가지 않는다.");
@@ -278,7 +278,6 @@ internal static partial class ZRayChecks
         Check(model.Refresh(), "펴고 접으면 목록을 다시 만든다.");
     }
 
-    // 입력값 보관소: 메뉴 두 개(런타임, 에디터 창)와 콘솔 실행이 같은 값을 본다.
     private sealed class NumericCheats
     {
         [Cheat("limits")]
@@ -335,12 +334,77 @@ internal static partial class ZRayChecks
         executor.Execute("player.gold 500");
         Check(store.Get(fixture.Registry.FindOrNull("player.gold")!)[0] == "", "값 치트는 기억하지 않는다(지금 값이 입력칸의 값이다).");
 
-        // 판이 바뀌어 치트가 다시 등록돼도 id가 같으면 값이 남는다.
         fixture.Registration.Dispose();
         fixture.Registry.Register(new TestCheats());
         CheatDefinition again = fixture.Registry.FindOrNull("player.gold.add")!;
         Check(again != addGold && store.Get(again)[0] == "30", "다시 등록된 치트도 같은 입력값을 쓴다.");
         Check(new CheatMenuModel(fixture.Registry, new FavoriteSet(), fixture.History).GetDrafts(again)[0] == "", "보관소를 주지 않은 모델은 자기 것만 쓴다.");
+    }
+
+    private static void CheckMenuState()
+    {
+        Fixture fixture = new Fixture();
+        FavoriteSet favorites = new FavoriteSet();
+        favorites.Toggle("world.element");
+        CheatMenuState state = new CheatMenuState();
+        CheatMenuModel runtime = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, state);
+        CheatMenuModel editor = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, state);
+        runtime.Refresh();
+        editor.Refresh();
+
+        runtime.ToggleCollapsed("월드");
+        Check(editor.Refresh() && editor.Entries[FindGroup(editor, "월드")].IsGroupCollapsed, "상태를 함께 쓰는 메뉴는 접은 묶음을 같이 본다.");
+        runtime.Category = "플레이어";
+        Check(editor.Refresh() && editor.Category == "플레이어", "고른 분류도 같이 본다.");
+
+        runtime.Refresh();
+        runtime.ToggleAllGroups();
+        runtime.Refresh();
+        Check(CountGroups(runtime, true) == 2 && CountGroups(runtime, false) == 0, "펴진 묶음이 있으면 보이는 묶음을 모두 접는다.");
+        runtime.ToggleAllGroups();
+        runtime.Refresh();
+        Check(CountGroups(runtime, true) == 0 && CountGroups(runtime, false) == 2, "모두 접혀 있으면 모두 편다.");
+        Check(state.IsCollapsed("월드"), "보이지 않는 묶음은 그대로 둔다.");
+
+        runtime.ToggleCollapsed(CheatMenuModel.FAVORITES_KEY);
+        runtime.ToggleCollapsed("플레이어/재화");
+        runtime.Category = "플레이어/재화";
+        MemoryStore store = new MemoryStore();
+        state.Save(store);
+        Check(store.GetStringOrNull("Lumera.ZRay.CollapsedGroups.v1")!.IndexOf('\u0001') < 0, "저장한 글자에는 제어 문자가 없다.");
+
+        CheatMenuState loaded = new CheatMenuState();
+        loaded.Load(store);
+        Check(loaded.Category == "플레이어/재화" && loaded.IsCollapsed(CheatMenuModel.FAVORITES_KEY) && loaded.IsCollapsed("플레이어/재화") && loaded.IsCollapsed("월드") && !loaded.IsCollapsed("플레이어"),
+            "접은 묶음과 고른 분류를 저장하고 다시 읽는다.");
+        CheatMenuModel reopened = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, loaded);
+        Check(reopened.Refresh() && reopened.Category == "플레이어/재화", "다시 열면 고른 분류에서 시작한다.");
+        reopened.Category = CheatMenuModel.ALL_KEY;
+        reopened.Refresh();
+        Check(reopened.Entries[FindGroup(reopened, CheatMenuModel.FAVORITES_KEY)].IsGroupCollapsed && reopened.Entries[FindGroup(reopened, "월드")].IsGroupCollapsed
+            && !reopened.Entries[FindGroup(reopened, "플레이어")].IsGroupCollapsed, "다시 열어도 접은 묶음은 접혀 있다.");
+
+        CheatMenuState early = new CheatMenuState();
+        early.Load(store);
+        fixture.Registration.Dispose();
+        CheatMenuModel beforeRegister = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, early);
+        Check(beforeRegister.Refresh() && beforeRegister.Category == CheatMenuModel.ALL_KEY && early.Category == "플레이어/재화", "고른 분류의 치트가 아직 없으면 전체를 보이되 고른 분류는 잊지 않는다.");
+        fixture.Registry.Register(new TestCheats());
+        Check(beforeRegister.Refresh() && beforeRegister.Category == "플레이어/재화", "그 분류의 치트가 등록되면 다시 그 분류를 보인다.");
+    }
+
+    private static int CountGroups(CheatMenuModel model, bool bCollapsed)
+    {
+        int count = 0;
+        foreach (MenuEntry entry in model.Entries)
+        {
+            if (entry.IsGroup && entry.IsGroupCollapsed == bCollapsed)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static MenuCategory FindCategory(CheatMenuModel model, string key)

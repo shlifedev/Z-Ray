@@ -3,10 +3,8 @@ using System.Text;
 
 namespace Lumera.ZRay
 {
-    // 입력 줄의 토큰 하나. Start~End는 원문에서 따옴표까지 포함한 범위다(자동완성이 이 범위를 통째로 바꾼다).
     public readonly struct CommandToken
     {
-        // 따옴표와 이스케이프를 푼 값
         public string Text { get; }
         public int Start { get; }
         public int End { get; }
@@ -21,11 +19,9 @@ namespace Lumera.ZRay
         }
     }
 
-    // 커서가 가리키는 토큰. 커서가 공백 위나 줄 끝 공백 뒤에 있으면 아직 없는 새 토큰(빈 접두어)을 가리킨다.
     public readonly struct TokenPosition
     {
         public int Index { get; }
-        // 토큰 시작부터 커서까지의 값(이스케이프를 푼 것). 자동완성은 이 접두어로 후보를 고른다.
         public string Prefix { get; }
         public int ReplaceStart { get; }
         public int ReplaceEnd { get; }
@@ -39,10 +35,6 @@ namespace Lumera.ZRay
         }
     }
 
-    // 콘솔 입력 한 줄을 토큰으로 나눈다. 셸과 비슷한 규칙이다.
-    // - 공백으로 나눈다. "..." 안의 공백은 나누지 않는다. 따옴표는 토큰 중간에 와도 된다(a"b c" → ab c).
-    // - \" 와 \\ 만 이스케이프다. 그 밖의 \ 는 글자 그대로 둔다(경로 입력이 편하도록).
-    // - 닫는 따옴표가 없으면 줄 끝까지 한 토큰이다. 입력하는 중간 상태도 자동완성할 수 있어야 하기 때문이다.
     public sealed class CommandLine
     {
         private readonly List<CommandToken> _tokens;
@@ -124,7 +116,6 @@ namespace Lumera.ZRay
             return new TokenPosition(_tokens.Count, "", clamped, clamped);
         }
 
-        // 공백이나 따옴표, 역슬래시가 든 값을 다시 읽어도 같은 값이 되도록 따옴표로 감싼다. 빈 값은 ""가 된다.
         public static string Quote(string value)
         {
             bool bNeedsQuote = value.Length == 0;

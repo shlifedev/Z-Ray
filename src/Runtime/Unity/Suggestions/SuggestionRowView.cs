@@ -7,9 +7,6 @@ using UnityEngine.UI;
 
 namespace Lumera.ZRay
 {
-    // 자동완성 후보 한 줄. 왼쪽에 값과 설명, 오른쪽에 분류나 "기본값" 같은 짧은 표시를 보인다.
-    // 클릭(뗄 때)이 아니라 누르는 순간에 고른다. 누르면 입력칸이 포커스를 잃고, 포커스를 잃은 입력칸의 후보 목록은
-    // 다음 프레임에 닫힌다. 뗄 때를 기다리면 그 사이 목록이 사라져 클릭이 들어오지 않는다.
     public sealed class SuggestionRowView : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private Image _background = null;
