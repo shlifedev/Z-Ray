@@ -60,6 +60,10 @@ namespace Lumera.ZRay
         public static readonly Color SWITCH_OFF = new Color32(58, 66, 82, 255);
         public static readonly Color SWITCH_ON = new Color32(64, 140, 236, 255);
         public static readonly Color KNOB = new Color32(242, 245, 250, 255);
+        public static readonly Color32 CHECKER_LIGHT = new Color32(204, 204, 204, 255);
+        public static readonly Color32 CHECKER_DARK = new Color32(140, 140, 140, 255);
+        public static readonly Color CURSOR = new Color32(255, 255, 255, 255);
+        public static readonly Color CURSOR_EDGE = new Color32(0, 0, 0, 255);
 
         public static Color GetLineColor(EConsoleLineKind kind)
         {

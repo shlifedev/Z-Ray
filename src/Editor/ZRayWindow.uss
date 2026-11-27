@@ -267,6 +267,7 @@
     border-radius: 3px;
 }
 .zray .value-dropdown { width: 128px; margin: 0; }
+.zray .value-color { width: 128px; margin: 0; }
 .zray .value-readonly {
     color: var(--zray-accent);
     background-color: var(--zray-badge);

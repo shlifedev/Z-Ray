@@ -11,6 +11,7 @@ namespace Lumera.ZRay
         void OnWidgetChanged(ValueWidget widget);
         void OnWidgetCommitted(ValueWidget widget);
         bool OnWidgetKey(ValueWidget widget, Event keyEvent);
+        void OnWidgetPicker(ValueWidget widget);
     }
 
     public sealed class ValueWidget : MonoBehaviour
@@ -29,6 +30,9 @@ namespace Lumera.ZRay
         [SerializeField] private KeyFilteredInputField _field = null;
         [SerializeField] private Button _minus = null;
         [SerializeField] private Button _plus = null;
+        [SerializeField] private Button _swatch = null;
+        [SerializeField] private RawImage _swatchChecker = null;
+        [SerializeField] private Image _swatchColor = null;
         [SerializeField] private GameObject _readOnlyBadge = null;
         [SerializeField] private TextMeshProUGUI _readOnly = null;
 
@@ -45,6 +49,8 @@ namespace Lumera.ZRay
         public bool IsEditing => _fieldGroup.gameObject.activeSelf && _field.isFocused;
         public RectTransform FieldRect => (RectTransform)_field.transform;
         public bool HasField => _fieldGroup.gameObject.activeSelf;
+        public bool IsColor { get; private set; }
+        public RectTransform PickerAnchor => (RectTransform)_swatch.transform;
 
         public void Bind(ZRayCanvas canvas, IValueWidgetOwner owner, CheatParameter parameter, int parameterIndex, bool bWritable, string text)
         {
@@ -59,6 +65,10 @@ namespace Lumera.ZRay
                 _plus.onClick.AddListener(() => Step(1));
                 _field.onValueChanged.AddListener(OnFieldChanged);
                 _field.KeyFilterOrNull = OnFieldKey;
+                if (_swatch != null)
+                {
+                    _swatch.onClick.AddListener(() => _owner.OnWidgetPicker(this));
+                }
             }
 
             _choices.Clear();
@@ -78,6 +88,17 @@ namespace Lumera.ZRay
             _fieldGroup.gameObject.SetActive(bWritable && !bBool && !bSegments);
             _minus.gameObject.SetActive(parameter.IsNumber);
             _plus.gameObject.SetActive(parameter.IsNumber);
+            IsColor = _swatch != null && ColorValueType.IsColor(parameter.Type);
+            if (_swatch != null)
+            {
+                _swatch.gameObject.SetActive(IsColor);
+            }
+
+            if (IsColor)
+            {
+                _swatchChecker.texture = canvas.CheckerTexture;
+                _swatchChecker.uvRect = canvas.GetCheckerUV(_swatchChecker.rectTransform.rect.size);
+            }
             if (bWritable && bSegments)
             {
                 BuildSegments(canvas);
@@ -113,6 +134,8 @@ namespace Lumera.ZRay
             {
                 _field.SetTextWithoutNotify(_text);
             }
+
+            RefreshSwatch();
         }
 
         public bool TryToggle()
@@ -187,7 +210,16 @@ namespace Lumera.ZRay
         private void OnFieldChanged(string text)
         {
             _text = text;
+            RefreshSwatch();
             _owner.OnWidgetChanged(this);
+        }
+
+        private void RefreshSwatch()
+        {
+            if (IsColor && ColorValueType.TryParseColor(_text, out Color32 color))
+            {
+                _swatchColor.color = color;
+            }
         }
 
         private bool OnFieldKey(Event keyEvent)

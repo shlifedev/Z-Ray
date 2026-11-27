@@ -30,6 +30,8 @@ namespace Lumera.ZRay.Editor
         private static readonly Vector2 TOP_RIGHT = new Vector2(1.0f, 1.0f);
         private static readonly Vector2 MIDDLE_LEFT = new Vector2(0.0f, 0.5f);
         private static readonly Vector2 MIDDLE_RIGHT = new Vector2(1.0f, 0.5f);
+        private static readonly Vector2 MIDDLE_CENTER = new Vector2(0.5f, 0.5f);
+        private static readonly Vector2 BOTTOM_CENTER = new Vector2(0.5f, 0.0f);
         private static readonly Vector2 BOTTOM_LEFT = Vector2.zero;
         private static readonly Vector2 BOTTOM_RIGHT = new Vector2(1.0f, 0.0f);
 
@@ -263,9 +265,11 @@ namespace Lumera.ZRay.Editor
             footer.margin = new Vector4(2.0f, 0.0f, 2.0f, 0.0f);
 
             SuggestionListView popup = AddSuggestionList(panel.rectTransform, "Popup", suggestionRow, 320.0f);
+            ColorPickerView picker = AddColorPicker(root);
 
             using (SerializedObject serialized = new SerializedObject(view))
             {
+                Wire(serialized, "_picker", picker);
                 Wire(serialized, "_search", search);
                 Wire(serialized, "_close", close);
                 Wire(serialized, "_openConsole", openConsole);
@@ -557,6 +561,13 @@ namespace Lumera.ZRay.Editor
             Button plus = AddButton(fieldGroup, "Plus", "+", ZRayTheme.BUTTON, ZRayTheme.TEXT, out _);
             Place((RectTransform)plus.transform, MIDDLE_LEFT, MIDDLE_LEFT, FIELD_WIDTH + STEP_WIDTH + 4.0f, 0.0f, STEP_WIDTH, HEIGHT);
             AddBorder((RectTransform)plus.transform, ZRayTheme.BORDER);
+            RawImage swatchChecker = AddRawImage(fieldGroup, "Swatch", true);
+            Place(swatchChecker.rectTransform, MIDDLE_LEFT, MIDDLE_LEFT, FIELD_WIDTH + 2.0f, 0.0f, (STEP_WIDTH * 2.0f) + 2.0f, HEIGHT);
+            Button swatch = AddButtonBehaviour(swatchChecker.gameObject, swatchChecker);
+            Image swatchColor = AddImage(swatchChecker.rectTransform, "Color", Color.white, false);
+            Stretch(swatchColor.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
+            AddBorder(swatchChecker.rectTransform, ZRayTheme.BORDER);
+            swatch.gameObject.SetActive(false);
 
             using (SerializedObject serialized = new SerializedObject(widget))
             {
@@ -568,12 +579,112 @@ namespace Lumera.ZRay.Editor
                 Wire(serialized, "_field", field);
                 Wire(serialized, "_minus", minus);
                 Wire(serialized, "_plus", plus);
+                Wire(serialized, "_swatch", swatch);
+                Wire(serialized, "_swatchChecker", swatchChecker);
+                Wire(serialized, "_swatchColor", swatchColor);
                 Wire(serialized, "_readOnlyBadge", readOnlyBadge.gameObject);
                 Wire(serialized, "_readOnly", readOnly);
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
 
             return widget;
+        }
+
+        private static ColorPickerView AddColorPicker(RectTransform parent)
+        {
+            const float INSET = 8.0f;
+            const float GAP = 6.0f;
+            const float AREA_WIDTH = 168.0f;
+            const float AREA_HEIGHT = 112.0f;
+            const float BAR_WIDTH = 14.0f;
+            const float PREVIEW_WIDTH = 44.0f;
+            const float CLOSE_WIDTH = 22.0f;
+            const float WIDTH = INSET + AREA_WIDTH + GAP + BAR_WIDTH + GAP + BAR_WIDTH + INSET;
+            const float BOTTOM_ROW = INSET + AREA_HEIGHT + INSET;
+
+            RectTransform root = Child(parent, "ColorPicker");
+            Stretch(root, 0.0f, 0.0f, 0.0f, 0.0f);
+            ColorPickerView view = root.gameObject.AddComponent<ColorPickerView>();
+            Image blockerImage = AddImage(root, "Blocker", ZRayTheme.TRANSPARENT, true);
+            Stretch(blockerImage.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
+            Button blocker = AddButtonBehaviour(blockerImage.gameObject, blockerImage);
+
+            Image panel = AddImage(root, "Panel", ZRayTheme.POPUP, true);
+            Place(panel.rectTransform, MIDDLE_CENTER, TOP_RIGHT, 0.0f, 0.0f, WIDTH, BOTTOM_ROW + HEIGHT + INSET);
+
+            RawImage area = AddRawImage(panel.rectTransform, "Area", true);
+            Place(area.rectTransform, TOP_LEFT, TOP_LEFT, INSET, -INSET, AREA_WIDTH, AREA_HEIGHT);
+            DragPad areaPad = area.gameObject.AddComponent<DragPad>();
+            RectTransform areaCursor = AddCursor(area.rectTransform, BOTTOM_LEFT, 7.0f, 7.0f);
+            AddBorder(area.rectTransform, ZRayTheme.BORDER);
+
+            RawImage hue = AddRawImage(panel.rectTransform, "Hue", true);
+            Place(hue.rectTransform, TOP_LEFT, TOP_LEFT, INSET + AREA_WIDTH + GAP, -INSET, BAR_WIDTH, AREA_HEIGHT);
+            DragPad huePad = hue.gameObject.AddComponent<DragPad>();
+            AddBorder(hue.rectTransform, ZRayTheme.BORDER);
+            RectTransform hueCursor = AddCursor(hue.rectTransform, BOTTOM_CENTER, BAR_WIDTH + 4.0f, 5.0f);
+
+            RawImage alphaChecker = AddRawImage(panel.rectTransform, "Alpha", true);
+            Place(alphaChecker.rectTransform, TOP_LEFT, TOP_LEFT, INSET + AREA_WIDTH + GAP + BAR_WIDTH + GAP, -INSET, BAR_WIDTH, AREA_HEIGHT);
+            DragPad alphaPad = alphaChecker.gameObject.AddComponent<DragPad>();
+            RawImage alphaBar = AddRawImage(alphaChecker.rectTransform, "Gradient", false);
+            Stretch(alphaBar.rectTransform, 0.0f, 0.0f, 0.0f, 0.0f);
+            AddBorder(alphaChecker.rectTransform, ZRayTheme.BORDER);
+            RectTransform alphaCursor = AddCursor(alphaChecker.rectTransform, BOTTOM_CENTER, BAR_WIDTH + 4.0f, 5.0f);
+
+            RawImage previewChecker = AddRawImage(panel.rectTransform, "Preview", false);
+            Place(previewChecker.rectTransform, TOP_LEFT, TOP_LEFT, INSET, -BOTTOM_ROW, PREVIEW_WIDTH, HEIGHT);
+            Image previewBefore = AddImage(previewChecker.rectTransform, "Before", Color.white, false);
+            previewBefore.rectTransform.anchorMin = Vector2.zero;
+            previewBefore.rectTransform.anchorMax = new Vector2(0.5f, 1.0f);
+            previewBefore.rectTransform.offsetMin = Vector2.zero;
+            previewBefore.rectTransform.offsetMax = Vector2.zero;
+            Image previewAfter = AddImage(previewChecker.rectTransform, "After", Color.white, false);
+            previewAfter.rectTransform.anchorMin = new Vector2(0.5f, 0.0f);
+            previewAfter.rectTransform.anchorMax = Vector2.one;
+            previewAfter.rectTransform.offsetMin = Vector2.zero;
+            previewAfter.rectTransform.offsetMax = Vector2.zero;
+            AddBorder(previewChecker.rectTransform, ZRayTheme.BORDER);
+
+            TextMeshProUGUI hex = AddLabel(panel.rectTransform, "Hex", "", ZRayTheme.TEXT, TextAlignmentOptions.MidlineLeft);
+            Place(hex.rectTransform, TOP_LEFT, TOP_LEFT, INSET + PREVIEW_WIDTH + GAP, -BOTTOM_ROW, WIDTH - (INSET * 2.0f) - PREVIEW_WIDTH - GAP - CLOSE_WIDTH, HEIGHT);
+            Button close = AddButton(panel.rectTransform, "Close", "×", ZRayTheme.BUTTON, ZRayTheme.BUTTON_TEXT, out _);
+            Place((RectTransform)close.transform, TOP_RIGHT, TOP_RIGHT, -INSET, -BOTTOM_ROW, CLOSE_WIDTH, HEIGHT);
+            AddBorder((RectTransform)close.transform, ZRayTheme.BORDER);
+            AddBorder(panel.rectTransform, ZRayTheme.BORDER_ACCENT);
+
+            using (SerializedObject serialized = new SerializedObject(view))
+            {
+                Wire(serialized, "_blocker", blocker);
+                Wire(serialized, "_panel", panel.rectTransform);
+                Wire(serialized, "_area", area);
+                Wire(serialized, "_areaPad", areaPad);
+                Wire(serialized, "_areaCursor", areaCursor);
+                Wire(serialized, "_hueBar", hue);
+                Wire(serialized, "_huePad", huePad);
+                Wire(serialized, "_hueCursor", hueCursor);
+                Wire(serialized, "_alphaChecker", alphaChecker);
+                Wire(serialized, "_alphaBar", alphaBar);
+                Wire(serialized, "_alphaPad", alphaPad);
+                Wire(serialized, "_alphaCursor", alphaCursor);
+                Wire(serialized, "_previewChecker", previewChecker);
+                Wire(serialized, "_previewBefore", previewBefore);
+                Wire(serialized, "_previewAfter", previewAfter);
+                Wire(serialized, "_hex", hex);
+                Wire(serialized, "_close", close);
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            return view;
+        }
+
+        private static RectTransform AddCursor(RectTransform parent, Vector2 anchor, float width, float height)
+        {
+            Image edge = AddImage(parent, "Cursor", ZRayTheme.CURSOR_EDGE, false);
+            Place(edge.rectTransform, anchor, MIDDLE_CENTER, 0.0f, 0.0f, width, height);
+            Image fill = AddImage(edge.rectTransform, "Fill", ZRayTheme.CURSOR, false);
+            Stretch(fill.rectTransform, 1.0f, 1.0f, 1.0f, 1.0f);
+            return edge.rectTransform;
         }
 
         private static SuggestionListView AddSuggestionList(RectTransform parent, string name, SuggestionRowView rowPrefab, float width)
@@ -662,7 +773,7 @@ namespace Lumera.ZRay.Editor
             return button;
         }
 
-        private static Button AddButtonBehaviour(GameObject target, Image background)
+        private static Button AddButtonBehaviour(GameObject target, Graphic background)
         {
             Button button = target.AddComponent<Button>();
             button.targetGraphic = background;
@@ -705,6 +816,13 @@ namespace Lumera.ZRay.Editor
         {
             Image image = Child(parent, name).gameObject.AddComponent<Image>();
             image.color = color;
+            image.raycastTarget = bRaycast;
+            return image;
+        }
+
+        private static RawImage AddRawImage(RectTransform parent, string name, bool bRaycast)
+        {
+            RawImage image = Child(parent, name).gameObject.AddComponent<RawImage>();
             image.raycastTarget = bRaycast;
             return image;
         }

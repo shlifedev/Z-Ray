@@ -18,6 +18,7 @@ internal static partial class ZRayChecks
         Run(CheckBadDeclarations);
         Run(CheckStaticRegistration);
         Run(CheckCustomValueType);
+        Run(CheckHexColor);
 
         Run(CheckCommandSuggestions);
         Run(CheckArgumentSuggestions);
@@ -267,6 +268,23 @@ internal static partial class ZRayChecks
         ValueTypeRegistry plain = new ValueTypeRegistry();
         Check(plain.FindOrNull(typeof(TestPoint)) == null && plain.FindOrNull(typeof(ETestFlags)) == null, "등록하지 않은 타입과 [Flags] 열거형은 지원하지 않는다.");
         Check(plain.FindOrNull(typeof(ETestElement)) == plain.FindOrNull(typeof(ETestElement)), "열거형 타입은 한 번 만들어 다시 쓴다.");
+    }
+
+    private static void CheckHexColor()
+    {
+        Check(HexColor.TryParse("#FF8800", out byte red, out byte green, out byte blue, out byte alpha) && red == 255 && green == 136 && blue == 0 && alpha == 255,
+            "#RRGGBB는 불투명한 색으로 읽는다.");
+        Check(HexColor.TryParse("#ff880080", out red, out green, out blue, out alpha) && red == 255 && green == 136 && blue == 0 && alpha == 128,
+            "#RRGGBBAA는 알파까지 읽고 소문자도 받는다.");
+        Check(HexColor.TryParse("0a1B2c", out red, out green, out blue, out alpha) && red == 10 && green == 27 && blue == 44 && alpha == 255, "#을 빼도 읽는다.");
+        Check(HexColor.TryParse("#F80", out red, out green, out blue, out alpha) && red == 255 && green == 136 && blue == 0 && alpha == 255, "#RGB는 자리마다 두 번 쓴 것으로 읽는다.");
+        Check(HexColor.TryParse("#F808", out red, out green, out blue, out alpha) && red == 255 && green == 136 && blue == 0 && alpha == 136, "#RGBA도 읽는다.");
+        Check(!HexColor.TryParse("", out _, out _, out _, out _) && !HexColor.TryParse("#", out _, out _, out _, out _) && !HexColor.TryParse(null, out _, out _, out _, out _),
+            "빈 글자는 색이 아니다.");
+        Check(!HexColor.TryParse("#FF880", out _, out _, out _, out _) && !HexColor.TryParse("#FF8800801", out _, out _, out _, out _), "자릿수가 맞지 않으면 거절한다.");
+        Check(!HexColor.TryParse("#GG8800", out _, out _, out _, out _) && !HexColor.TryParse("red", out _, out _, out _, out _), "16진수가 아니면 거절한다.");
+        CheckEqual("#FF880080", HexColor.Format(255, 136, 0, 128), "색은 #RRGGBBAA 대문자로 적는다.");
+        Check(HexColor.TryParse(HexColor.Format(1, 2, 3, 4), out red, out green, out blue, out alpha) && red == 1 && green == 2 && blue == 3 && alpha == 4, "적은 색을 다시 읽으면 같다.");
     }
 
     private static int IndexOf(IReadOnlyList<CheatDefinition> definitions, string id)

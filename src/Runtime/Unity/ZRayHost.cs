@@ -107,7 +107,9 @@ namespace Lumera.ZRay
             History.Load(_store);
             Favorites = new FavoriteSet();
             Favorites.Load(_store);
-            Registry = new CheatRegistry(null, static problem => Debug.LogWarning($"[ZRay] {problem}"));
+            ValueTypeRegistry valueTypes = new ValueTypeRegistry();
+            ColorValueType.Register(valueTypes);
+            Registry = new CheatRegistry(valueTypes, static problem => Debug.LogWarning($"[ZRay] {problem}"));
             BuiltInCheats.Register(Registry, History);
             Registry.Register(this);
             Registry.RegisterStatic(GetLoadedAssemblies());

@@ -199,6 +199,21 @@ namespace Lumera.ZRay
             return _menu.OnWidgetKey(this, widget, keyEvent);
         }
 
+        public void OnWidgetPicker(ValueWidget widget)
+        {
+            _menu.TogglePicker(this, widget);
+        }
+
+        public ValueWidget FindWidgetOrNull(int parameterIndex)
+        {
+            if (Definition.Kind == ECheatKind.Value)
+            {
+                return parameterIndex == 0 ? _valueWidget : null;
+            }
+
+            return _bExpanded && parameterIndex >= 0 && parameterIndex < Definition.Parameters.Count ? _argRows[parameterIndex].Widget : null;
+        }
+
         public void OnPointerEnter(PointerEventData eventData)
         {
             _bHovered = true;

@@ -10,6 +10,7 @@ namespace Lumera.ZRay.Editor
     internal sealed class CheatMenuPane
     {
         private const double POLL_SECONDS = 0.25;
+        private const long COLOR_COMMIT_DELAY_MS = 250;
 
         private readonly ScrollView _categories = new ScrollView();
         private readonly ToolbarSearchField _search = new ToolbarSearchField();
@@ -295,6 +296,15 @@ namespace Lumera.ZRay.Editor
                 return value;
             }
 
+            if (ColorValueType.IsColor(parameter.Type))
+            {
+                ColorField color = CreateColorField(text);
+                changed(ColorValueType.FormatColor(color.value));
+                color.RegisterValueChangedCallback(evt => changed(ColorValueType.FormatColor(evt.newValue)));
+                value.Add(color);
+                return value;
+            }
+
             if (choices.Count > 0)
             {
                 DropdownField dropdown = new DropdownField(choices, Mathf.Max(0, choices.IndexOf(text)));
@@ -358,6 +368,21 @@ namespace Lumera.ZRay.Editor
                 return value;
             }
 
+            if (ColorValueType.IsColor(parameter.Type))
+            {
+                ColorField color = CreateColorField(current);
+                IVisualElementScheduledItem pendingOrNull = null;
+                color.RegisterValueChangedCallback(evt =>
+                {
+                    string line = CheatMenuModel.BuildValueLine(definition, ColorValueType.FormatColor(evt.newValue));
+                    pendingOrNull?.Pause();
+                    pendingOrNull = color.schedule.Execute(() => Run(definition, line, status)).StartingIn(COLOR_COMMIT_DELAY_MS);
+                });
+                value.Add(color);
+                _valueRows.Add(new ValueRow { Definition = definition, SetShown = text => ShowColor(color, text), IsEditing = () => pendingOrNull != null && pendingOrNull.isActive });
+                return value;
+            }
+
             if (choices.Count > 0)
             {
                 DropdownField dropdown = new DropdownField(choices, Mathf.Max(0, choices.IndexOf(current)));
@@ -387,6 +412,22 @@ namespace Lumera.ZRay.Editor
 
             _valueRows.Add(new ValueRow { Definition = definition, SetShown = field.SetValueWithoutNotify, IsEditing = () => field.focusController?.focusedElement == field });
             return value;
+        }
+
+        private static ColorField CreateColorField(string text)
+        {
+            ColorField field = new ColorField { showAlpha = true, hdr = false };
+            field.AddToClassList("value-color");
+            ShowColor(field, text);
+            return field;
+        }
+
+        private static void ShowColor(ColorField field, string text)
+        {
+            if (ColorValueType.TryParseColor(text, out Color32 color))
+            {
+                field.SetValueWithoutNotify(color);
+            }
         }
 
         private static void AddStepper(VisualElement value, CheatParameter parameter, TextField field)

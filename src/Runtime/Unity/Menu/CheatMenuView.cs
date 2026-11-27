@@ -10,6 +10,7 @@ namespace Lumera.ZRay
     public sealed class CheatMenuView : MonoBehaviour
     {
         private const float POLL_SECONDS = 0.25f;
+        private const float PICKER_GAP = 2.0f;
 
         [SerializeField] private KeyFilteredInputField _search = null;
         [SerializeField] private Button _close = null;
@@ -24,6 +25,7 @@ namespace Lumera.ZRay
         [SerializeField] private TextMeshProUGUI _empty = null;
         [SerializeField] private TextMeshProUGUI _footer = null;
         [SerializeField] private SuggestionListView _popup = null;
+        [SerializeField] private ColorPickerView _picker = null;
 
         private readonly List<CheatRowView> _rows = new List<CheatRowView>();
         private readonly List<GroupHeaderView> _headers = new List<GroupHeaderView>();
@@ -48,6 +50,9 @@ namespace Lumera.ZRay
         private InputAction _confirm;
         private InputAction _tab;
         private InputAction _shift;
+        private CheatDefinition _pickerDefinitionOrNull;
+        private int _pickerParameterIndex;
+        private bool _bPickerApplying;
 
         public void Initialize(ZRayHost host, ZRayCanvas canvas)
         {
@@ -67,6 +72,10 @@ namespace Lumera.ZRay
             _openConsole.GetComponentInChildren<TextMeshProUGUI>(true).text = $"{host.ConsoleKeyLabel} 콘솔";
             _collapseAll.onClick.AddListener(ToggleAllGroups);
             _popup.Initialize(canvas.Create, OnPopupClicked);
+            if (_picker != null)
+            {
+                _picker.Initialize(canvas, OnPickerChanged, OnPickerReleased, ClosePicker);
+            }
         }
 
         public void Open()
@@ -89,12 +98,19 @@ namespace Lumera.ZRay
             _executeFocusOrNull = null;
             _deferredOrNull = null;
             HidePopup();
+            ClosePicker();
             _search.DeactivateInputField();
             gameObject.SetActive(false);
         }
 
         public bool HandleEscape()
         {
+            if (_pickerDefinitionOrNull != null)
+            {
+                ClosePicker();
+                return true;
+            }
+
             if (_popup.IsVisible)
             {
                 _bPopupDismissed = true;
@@ -175,6 +191,37 @@ namespace Lumera.ZRay
             _bPopupDismissed = false;
             _bPopupRequested = true;
             RefreshPopup(row, widget);
+            if (!_bPickerApplying && _pickerDefinitionOrNull == row.Definition && _pickerParameterIndex == widget.ParameterIndex
+                && ColorValueType.TryParseColor(widget.Text, out Color32 typed))
+            {
+                _picker.SetColor(typed);
+            }
+        }
+
+        public void TogglePicker(CheatRowView row, ValueWidget widget)
+        {
+            if (_picker == null)
+            {
+                return;
+            }
+
+            bool bSame = _pickerDefinitionOrNull == row.Definition && _pickerParameterIndex == widget.ParameterIndex;
+            ClosePicker();
+            if (bSame)
+            {
+                return;
+            }
+
+            HidePopup();
+            _pickerDefinitionOrNull = row.Definition;
+            _pickerParameterIndex = widget.ParameterIndex;
+            if (!ColorValueType.TryParseColor(widget.Text, out Color32 color))
+            {
+                color = new Color32(255, 255, 255, 255);
+            }
+
+            _picker.Show(color);
+            PlacePicker(widget.PickerAnchor);
         }
 
         public bool OnWidgetKey(CheatRowView row, ValueWidget widget, Event keyEvent)
@@ -452,6 +499,10 @@ namespace Lumera.ZRay
             HidePopup();
             RenderCategories();
             RenderEntries(highlighted);
+            if (_pickerDefinitionOrNull != null && FindPickerWidgetOrNull(out _) == null)
+            {
+                ClosePicker();
+            }
         }
 
         private void RenderCategories()
@@ -621,6 +672,66 @@ namespace Lumera.ZRay
             _popupSelected = -1;
             _bPopupDismissed = false;
             _bPopupRequested = false;
+        }
+
+        private void OnPickerChanged(Color32 color)
+        {
+            ValueWidget widget = FindPickerWidgetOrNull(out CheatRowView row);
+            if (widget == null)
+            {
+                ClosePicker();
+                return;
+            }
+
+            _bPickerApplying = true;
+            widget.SetText(ColorValueType.FormatColor(color));
+            row.OnWidgetChanged(widget);
+            _bPickerApplying = false;
+        }
+
+        private void OnPickerReleased()
+        {
+            ValueWidget widget = FindPickerWidgetOrNull(out CheatRowView row);
+            if (widget != null)
+            {
+                row.OnWidgetCommitted(widget);
+            }
+        }
+
+        private void ClosePicker()
+        {
+            _pickerDefinitionOrNull = null;
+            if (_picker != null)
+            {
+                _picker.Hide();
+            }
+        }
+
+        private ValueWidget FindPickerWidgetOrNull(out CheatRowView rowOrNull)
+        {
+            rowOrNull = _pickerDefinitionOrNull == null ? null : FindRowOrNull(_pickerDefinitionOrNull);
+            ValueWidget widget = rowOrNull == null ? null : rowOrNull.FindWidgetOrNull(_pickerParameterIndex);
+            return widget != null && widget.IsColor ? widget : null;
+        }
+
+        private void PlacePicker(RectTransform anchor)
+        {
+            Vector3[] corners = new Vector3[4];
+            anchor.GetWorldCorners(corners);
+            RectTransform panel = _picker.Panel;
+            RectTransform parent = (RectTransform)panel.parent;
+            Vector3 below = parent.InverseTransformPoint(corners[3]);
+            Vector3 above = parent.InverseTransformPoint(corners[2]);
+            Rect bounds = parent.rect;
+            Vector2 size = panel.rect.size;
+            float x = Mathf.Clamp(below.x, bounds.xMin + size.x, bounds.xMax);
+            float y = below.y - PICKER_GAP;
+            if (y - size.y < bounds.yMin)
+            {
+                y = above.y + PICKER_GAP + size.y;
+            }
+
+            panel.localPosition = new Vector3(Mathf.Round(x), Mathf.Round(Mathf.Min(y, bounds.yMax)), 0.0f);
         }
 
         private void PlacePopupUnder(RectTransform field)

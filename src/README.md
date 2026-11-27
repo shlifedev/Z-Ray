@@ -76,6 +76,17 @@ private void BindToggles(VisualElement root, ZRayHost host)
 
 패널을 연 채로 치트가 등록되거나 해제될 수 있다면 `host.Registry.Version`이 바뀔 때 목록을 갱신한다. 커스텀 패널의 열기·닫기와 게임 입력 차단은 뷰가 관리한다. `host.IsBlockingGameInput`은 기본 콘솔과 메뉴의 상태를 나타낸다.
 
+## 색 값
+
+`UnityEngine.Color`와 `Color32` 타입의 프로퍼티와 인자를 쓸 수 있다. 콘솔에서는 `#RRGGBB`나 `#RRGGBBAA`로 적는다. `#RGB`와 `#RGBA`도 받고 `#`은 빼도 된다. 값은 항상 `#RRGGBBAA`로 보인다.
+
+```csharp
+[CheatProperty("draw.grid.color", Category = "그리기", Name = "격자 색")]
+public Color GridColor { get; set; } = new Color32(255, 255, 255, 115);
+```
+
+치트 메뉴에서는 입력칸 옆에 색 상자가 생긴다. 상자를 누르면 색 선택기가 열리고, 색상·채도·명도와 투명도를 끌어서 고른다. 프로퍼티는 마우스를 뗄 때 한 번 적용하고, 메서드 인자는 "실행"을 누를 때 넘긴다. 선택기는 바깥을 누르거나 Esc, ×로 닫는다. 에디터의 ZRay 창에서는 Unity 색 필드로 고른다.
+
 ## License
 
 The bundled Galmuri11 font is licensed under the [SIL Open Font License 1.1](Runtime/Unity/Fonts/Galmuri-OFL.txt).

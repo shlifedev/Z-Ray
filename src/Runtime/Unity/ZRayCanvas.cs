@@ -21,6 +21,7 @@ namespace Lumera.ZRay
     {
         private const int ATLAS_SIZE = 1024;
         private const float EVENT_SYSTEM_CHECK_INTERVAL = 0.5f;
+        private const float CHECKER_CELL = 4.0f;
 
         [SerializeField] private ConsoleView _console = null;
         [SerializeField] private CheatMenuView _menu = null;
@@ -33,6 +34,7 @@ namespace Lumera.ZRay
         private float _nextEventSystemCheckAt;
         private CanvasScaler _scaler;
         private TMP_FontAsset _fontAssetOrNull;
+        private Texture2D _checkerOrNull;
         private EDebuggerOverlay _current = EDebuggerOverlay.None;
 
         public ConsoleView Console => _console;
@@ -40,12 +42,14 @@ namespace Lumera.ZRay
         public bool IsOpen => _current != EDebuggerOverlay.None;
         public EDebuggerOverlay Current => _current;
         public float Scale { get; private set; } = 1.0f;
+        public Texture CheckerTexture => _checkerOrNull;
 
         public void Initialize(ZRayHost host)
         {
             _host = host;
             _scaler = GetComponent<CanvasScaler>();
             _fontAssetOrNull = CreateFontAssetOrNull();
+            _checkerOrNull = CreateChecker();
             ApplyFont(gameObject);
             ApplyScale();
             _console.Initialize(host, this);
@@ -104,6 +108,11 @@ namespace Lumera.ZRay
             {
                 Show(EDebuggerOverlay.None);
             }
+        }
+
+        public Rect GetCheckerUV(Vector2 size)
+        {
+            return new Rect(0.0f, 0.0f, size.x / (CHECKER_CELL * 2.0f), size.y / (CHECKER_CELL * 2.0f));
         }
 
         public T Create<T>(T prefab, Transform parent) where T : Component
@@ -203,6 +212,8 @@ namespace Lumera.ZRay
 
         private void OnDestroy()
         {
+            Destroy(_checkerOrNull);
+            _checkerOrNull = null;
             if (_fontAssetOrNull == null)
             {
                 return;
@@ -233,6 +244,20 @@ namespace Lumera.ZRay
             {
                 atlas.filterMode = filter;
             }
+        }
+
+        private static Texture2D CreateChecker()
+        {
+            Texture2D checker = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+            {
+                name = "ZRayChecker",
+                filterMode = FilterMode.Point,
+                wrapMode = TextureWrapMode.Repeat,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            checker.SetPixels32(new Color32[] { ZRayTheme.CHECKER_LIGHT, ZRayTheme.CHECKER_DARK, ZRayTheme.CHECKER_DARK, ZRayTheme.CHECKER_LIGHT });
+            checker.Apply(false, true);
+            return checker;
         }
 
         private TMP_FontAsset CreateFontAssetOrNull()
