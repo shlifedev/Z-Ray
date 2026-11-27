@@ -42,6 +42,7 @@ namespace Lumera.ZRay
         public CommandHistory History { get; private set; }
         public FavoriteSet Favorites { get; private set; }
         public CheatDraftStore Drafts { get; private set; }
+        public CheatMenuState MenuState { get; private set; }
         public ConsoleTranscript Transcript { get; private set; }
 
         [CheatProperty("zray.scale", Category = "ZRay", Name = "UI 배율", Description = "ZRay 화면 배율(0.25 단위). 0이면 화면 높이에 맞춰 자동 정수 배율. Ctrl/⌘+휠로도 바꾼다.", Order = 0, Min = 0, Max = MAX_SCALE, Step = SCALE_STEP)]
@@ -89,6 +90,12 @@ namespace Lumera.ZRay
             PlayerPrefs.Save();
         }
 
+        public void SaveMenuState()
+        {
+            MenuState.Save(_store);
+            PlayerPrefs.Save();
+        }
+
         private void Awake()
         {
             if (CurrentOrNull != null && CurrentOrNull != this)
@@ -107,6 +114,8 @@ namespace Lumera.ZRay
             History.Load(_store);
             Favorites = new FavoriteSet();
             Favorites.Load(_store);
+            MenuState = new CheatMenuState();
+            MenuState.Load(_store);
             ValueTypeRegistry valueTypes = new ValueTypeRegistry();
             ColorValueType.Register(valueTypes);
             Registry = new CheatRegistry(valueTypes, static problem => Debug.LogWarning($"[ZRay] {problem}"));

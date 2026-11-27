@@ -58,7 +58,7 @@ namespace Lumera.ZRay
         {
             _host = host;
             _canvas = canvas;
-            _model = new CheatMenuModel(host.Registry, host.Favorites, host.History, host.Drafts);
+            _model = new CheatMenuModel(host.Registry, host.Favorites, host.History, host.Drafts, host.MenuState);
             _confirm = new InputAction("Confirm", InputActionType.Button);
             _confirm.AddBinding("<Keyboard>/space");
             _confirm.AddBinding("<Keyboard>/enter");
@@ -470,20 +470,8 @@ namespace Lumera.ZRay
 
         private void ToggleAllGroups()
         {
-            bool bAnyExpanded = false;
-            foreach (MenuEntry entry in _model.Entries)
-            {
-                bAnyExpanded |= entry.IsGroup && !entry.IsGroupCollapsed;
-            }
-
-            foreach (MenuEntry entry in new List<MenuEntry>(_model.Entries))
-            {
-                if (entry.IsGroup && entry.IsGroupCollapsed != bAnyExpanded)
-                {
-                    _model.ToggleCollapsed(entry.GroupKey);
-                }
-            }
-
+            _model.ToggleAllGroups();
+            _host.SaveMenuState();
             Rebuild();
         }
 
@@ -534,6 +522,7 @@ namespace Lumera.ZRay
         private void OnCategoryClicked(string key)
         {
             _model.Category = key;
+            _host.SaveMenuState();
             _highlight = -1;
             Rebuild();
             _listScroll.verticalNormalizedPosition = 1.0f;
@@ -543,6 +532,7 @@ namespace Lumera.ZRay
         private void OnHeaderClicked(string key)
         {
             _model.ToggleCollapsed(key);
+            _host.SaveMenuState();
             Rebuild();
         }
 

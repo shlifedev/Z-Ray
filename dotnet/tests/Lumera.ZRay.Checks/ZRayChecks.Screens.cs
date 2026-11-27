@@ -341,6 +341,72 @@ internal static partial class ZRayChecks
         Check(new CheatMenuModel(fixture.Registry, new FavoriteSet(), fixture.History).GetDrafts(again)[0] == "", "보관소를 주지 않은 모델은 자기 것만 쓴다.");
     }
 
+    private static void CheckMenuState()
+    {
+        Fixture fixture = new Fixture();
+        FavoriteSet favorites = new FavoriteSet();
+        favorites.Toggle("world.element");
+        CheatMenuState state = new CheatMenuState();
+        CheatMenuModel runtime = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, state);
+        CheatMenuModel editor = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, state);
+        runtime.Refresh();
+        editor.Refresh();
+
+        runtime.ToggleCollapsed("월드");
+        Check(editor.Refresh() && editor.Entries[FindGroup(editor, "월드")].IsGroupCollapsed, "상태를 함께 쓰는 메뉴는 접은 묶음을 같이 본다.");
+        runtime.Category = "플레이어";
+        Check(editor.Refresh() && editor.Category == "플레이어", "고른 분류도 같이 본다.");
+
+        runtime.Refresh();
+        runtime.ToggleAllGroups();
+        runtime.Refresh();
+        Check(CountGroups(runtime, true) == 2 && CountGroups(runtime, false) == 0, "펴진 묶음이 있으면 보이는 묶음을 모두 접는다.");
+        runtime.ToggleAllGroups();
+        runtime.Refresh();
+        Check(CountGroups(runtime, true) == 0 && CountGroups(runtime, false) == 2, "모두 접혀 있으면 모두 편다.");
+        Check(state.IsCollapsed("월드"), "보이지 않는 묶음은 그대로 둔다.");
+
+        runtime.ToggleCollapsed(CheatMenuModel.FAVORITES_KEY);
+        runtime.ToggleCollapsed("플레이어/재화");
+        runtime.Category = "플레이어/재화";
+        MemoryStore store = new MemoryStore();
+        state.Save(store);
+        Check(store.GetStringOrNull("Lumera.ZRay.CollapsedGroups.v1")!.IndexOf('\u0001') < 0, "저장한 글자에는 제어 문자가 없다.");
+
+        CheatMenuState loaded = new CheatMenuState();
+        loaded.Load(store);
+        Check(loaded.Category == "플레이어/재화" && loaded.IsCollapsed(CheatMenuModel.FAVORITES_KEY) && loaded.IsCollapsed("플레이어/재화") && loaded.IsCollapsed("월드") && !loaded.IsCollapsed("플레이어"),
+            "접은 묶음과 고른 분류를 저장하고 다시 읽는다.");
+        CheatMenuModel reopened = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, loaded);
+        Check(reopened.Refresh() && reopened.Category == "플레이어/재화", "다시 열면 고른 분류에서 시작한다.");
+        reopened.Category = CheatMenuModel.ALL_KEY;
+        reopened.Refresh();
+        Check(reopened.Entries[FindGroup(reopened, CheatMenuModel.FAVORITES_KEY)].IsGroupCollapsed && reopened.Entries[FindGroup(reopened, "월드")].IsGroupCollapsed
+            && !reopened.Entries[FindGroup(reopened, "플레이어")].IsGroupCollapsed, "다시 열어도 접은 묶음은 접혀 있다.");
+
+        CheatMenuState early = new CheatMenuState();
+        early.Load(store);
+        fixture.Registration.Dispose();
+        CheatMenuModel beforeRegister = new CheatMenuModel(fixture.Registry, favorites, fixture.History, null, early);
+        Check(beforeRegister.Refresh() && beforeRegister.Category == CheatMenuModel.ALL_KEY && early.Category == "플레이어/재화", "고른 분류의 치트가 아직 없으면 전체를 보이되 고른 분류는 잊지 않는다.");
+        fixture.Registry.Register(new TestCheats());
+        Check(beforeRegister.Refresh() && beforeRegister.Category == "플레이어/재화", "그 분류의 치트가 등록되면 다시 그 분류를 보인다.");
+    }
+
+    private static int CountGroups(CheatMenuModel model, bool bCollapsed)
+    {
+        int count = 0;
+        foreach (MenuEntry entry in model.Entries)
+        {
+            if (entry.IsGroup && entry.IsGroupCollapsed == bCollapsed)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     private static MenuCategory FindCategory(CheatMenuModel model, string key)
     {
         foreach (MenuCategory category in model.Categories)

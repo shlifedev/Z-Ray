@@ -76,6 +76,10 @@ private void BindToggles(VisualElement root, ZRayHost host)
 
 패널을 연 채로 치트가 등록되거나 해제될 수 있다면 `host.Registry.Version`이 바뀔 때 목록을 갱신한다. 커스텀 패널의 열기·닫기와 게임 입력 차단은 뷰가 관리한다. `host.IsBlockingGameInput`은 기본 콘솔과 메뉴의 상태를 나타낸다.
 
+## 메뉴 상태 기억
+
+치트 메뉴는 접은 묶음과 왼쪽에서 고른 분류를 PlayerPrefs에 저장한다. 메뉴를 닫았다 열거나 게임을 다시 시작해도 접은 묶음은 접힌 채로, 고른 분류는 그대로 보인다. 게임 안의 메뉴와 에디터의 ZRay 창은 이 상태를 함께 쓴다. 고른 분류의 치트가 아직 등록되지 않았으면 전체를 보이다가, 등록되면 그 분류로 돌아간다.
+
 ## 색 값
 
 `UnityEngine.Color`와 `Color32` 타입의 프로퍼티와 인자를 쓸 수 있다. 콘솔에서는 `#RRGGBB`나 `#RRGGBBAA`로 적는다. `#RGB`와 `#RGBA`도 받고 `#`은 빼도 된다. 값은 항상 `#RRGGBBAA`로 보인다.

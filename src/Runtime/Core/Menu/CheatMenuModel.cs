@@ -70,15 +70,16 @@ namespace Lumera.ZRay
         private readonly List<CheatDefinition> _shown = new List<CheatDefinition>();
         private readonly List<string> _paths = new List<string>();
         private readonly List<KeyValuePair<int, CheatDefinition>> _ranked = new List<KeyValuePair<int, CheatDefinition>>();
-        private readonly HashSet<string> _collapsed = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _expanded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private readonly CheatDraftStore _drafts;
-        private string _category = ALL_KEY;
+        private readonly CheatMenuState _state;
+        private string _category;
         private string _query = "";
         private bool _bDirty = true;
         private int _registryVersion = -1;
         private int _favoritesVersion = -1;
         private int _recentVersion = -1;
+        private int _stateVersion = -1;
 
         public IReadOnlyList<MenuCategory> Categories => _categories;
         public IReadOnlyList<MenuEntry> Entries => _entries;
@@ -89,11 +90,14 @@ namespace Lumera.ZRay
             get => _category;
             set
             {
-                if (_category != value)
+                string category = value ?? ALL_KEY;
+                if (_category != category)
                 {
-                    _category = value ?? ALL_KEY;
+                    _category = category;
                     _bDirty = true;
                 }
+
+                _state.Category = category;
             }
         }
 
@@ -113,17 +117,20 @@ namespace Lumera.ZRay
 
         public bool IsSearching => _query.Length > 0;
 
-        public CheatMenuModel(CheatRegistry registry, FavoriteSet favorites, CommandHistory history, CheatDraftStore? draftsOrNull = null)
+        public CheatMenuModel(CheatRegistry registry, FavoriteSet favorites, CommandHistory history, CheatDraftStore? draftsOrNull = null, CheatMenuState? stateOrNull = null)
         {
             _registry = registry ?? throw new ArgumentNullException(nameof(registry));
             _favorites = favorites ?? throw new ArgumentNullException(nameof(favorites));
             _history = history ?? throw new ArgumentNullException(nameof(history));
             _drafts = draftsOrNull ?? new CheatDraftStore();
+            _state = stateOrNull ?? new CheatMenuState();
+            _category = _state.Category;
         }
 
         public bool Refresh()
         {
-            if (!_bDirty && _registryVersion == _registry.Version && _favoritesVersion == _favorites.Version && _recentVersion == _history.RecentVersion)
+            if (!_bDirty && _registryVersion == _registry.Version && _favoritesVersion == _favorites.Version && _recentVersion == _history.RecentVersion
+                && _stateVersion == _state.Version)
             {
                 return false;
             }
@@ -132,6 +139,7 @@ namespace Lumera.ZRay
             _registryVersion = _registry.Version;
             _favoritesVersion = _favorites.Version;
             _recentVersion = _history.RecentVersion;
+            _stateVersion = _state.Version;
             BuildCategories();
             BuildEntries();
             Version++;
@@ -162,12 +170,24 @@ namespace Lumera.ZRay
 
         public void ToggleCollapsed(string groupKey)
         {
-            if (!_collapsed.Remove(groupKey))
+            _state.SetCollapsed(groupKey, !_state.IsCollapsed(groupKey));
+        }
+
+        public void ToggleAllGroups()
+        {
+            bool bAnyExpanded = false;
+            for (int index = 0; index < _entries.Count; index++)
             {
-                _collapsed.Add(groupKey);
+                bAnyExpanded |= _entries[index].IsGroup && !_entries[index].IsGroupCollapsed;
             }
 
-            _bDirty = true;
+            for (int index = 0; index < _entries.Count; index++)
+            {
+                if (_entries[index].IsGroup)
+                {
+                    _state.SetCollapsed(_entries[index].GroupKey, bAnyExpanded);
+                }
+            }
         }
 
         public string[] GetDrafts(CheatDefinition definition)
@@ -224,6 +244,7 @@ namespace Lumera.ZRay
             }
 
             _paths.Sort(string.CompareOrdinal);
+            _category = _state.Category;
             if (_category != ALL_KEY && _category != FAVORITES_KEY && _category != RECENT_KEY && _category != PROPERTIES_KEY && !_paths.Contains(_category))
             {
                 _category = ALL_KEY;
@@ -356,7 +377,7 @@ namespace Lumera.ZRay
                 return;
             }
 
-            bool bCollapsed = _collapsed.Contains(key);
+            bool bCollapsed = _state.IsCollapsed(key);
             _entries.Add(MenuEntry.Group(key, title, end - start, bCollapsed));
             if (bCollapsed)
             {

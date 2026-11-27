@@ -46,6 +46,7 @@ internal static partial class ZRayChecks
         Run(CheckMenuDrafts);
         Run(CheckNumericLimits);
         Run(CheckDraftStore);
+        Run(CheckMenuState);
     }
 
     private sealed class Fixture

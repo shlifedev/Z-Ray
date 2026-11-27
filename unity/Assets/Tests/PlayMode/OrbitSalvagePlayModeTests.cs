@@ -15,7 +15,12 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
     public sealed class OrbitSalvagePlayModeTests
     {
         private const string SCENE_PATH = "Assets/Scenes/OrbitSalvage.unity";
-        private static readonly string[] HISTORY_KEYS = { "Lumera.ZRay.History.v1", "Lumera.ZRay.RecentCheats.v1" };
+        private const string SAMPLE_GROUP = "궤도 구조";
+        private const int SAMPLE_CHEAT_COUNT = 4;
+        private static readonly string[] PREF_KEYS =
+        {
+            "Lumera.ZRay.History.v1", "Lumera.ZRay.RecentCheats.v1", "Lumera.ZRay.MenuCategory.v1", "Lumera.ZRay.CollapsedGroups.v1"
+        };
 
         private readonly Dictionary<string, string> _savedPrefs = new Dictionary<string, string>();
         private Scene _scene;
@@ -37,36 +42,20 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
             _previousHostOrNull = ZRayHost.CurrentOrNull;
             _previousKeyboardOrNull = Keyboard.current;
             _savedPrefs.Clear();
-            foreach (string key in HISTORY_KEYS)
+            foreach (string key in PREF_KEYS)
             {
                 if (PlayerPrefs.HasKey(key))
                 {
                     _savedPrefs.Add(key, PlayerPrefs.GetString(key));
+                    PlayerPrefs.DeleteKey(key);
                 }
             }
 
-            int buildIndex = SceneUtility.GetBuildIndexByScenePath(SCENE_PATH);
-            Assert.That(buildIndex, Is.GreaterThanOrEqualTo(0), "샘플 씬을 Build Settings에서 열 수 있어야 한다.");
             InputSystem.settings.editorInputBehaviorInPlayMode = InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
             InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
             _keyboard = InputSystem.AddDevice<Keyboard>();
             Time.captureDeltaTime = 1.0f / 30.0f;
-            yield return SceneManager.LoadSceneAsync(buildIndex, LoadSceneMode.Additive);
-            _scene = SceneManager.GetSceneByBuildIndex(buildIndex);
-            yield return null;
-
-            foreach (GameObject root in _scene.GetRootGameObjects())
-            {
-                _game = root.GetComponentInChildren<OrbitSalvageGame>();
-                if (_game != null)
-                {
-                    break;
-                }
-            }
-
-            Assert.That(_game, Is.Not.Null, "빌드에 포함된 씬에 게임 컴포넌트가 있어야 한다.");
-            _host = ZRayHost.CurrentOrNull;
-            Assert.That(_host, Is.Not.Null, "샘플 씬이 ZRay 호스트를 초기화해야 한다.");
+            yield return LoadScene();
         }
 
         [UnityTearDown]
@@ -97,7 +86,7 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
             InputSystem.settings.editorInputBehaviorInPlayMode = _previousEditorInputBehavior;
             InputSystem.settings.backgroundBehavior = _previousBackgroundBehavior;
             Time.captureDeltaTime = _previousCaptureDeltaTime;
-            foreach (string key in HISTORY_KEYS)
+            foreach (string key in PREF_KEYS)
             {
                 if (_savedPrefs.TryGetValue(key, out string value))
                 {
@@ -219,6 +208,79 @@ namespace Lumera.ZRay.Samples.OrbitSalvage.Tests
             Execute("salvage.restart");
             Assert.That(_game.IsLost, Is.False);
             Assert.That(_game.RemainingSeconds, Is.GreaterThan(0.0f));
+        }
+
+        [UnityTest]
+        public IEnumerator CollapsedMenuGroupsStayCollapsedAfterTheGameRestarts()
+        {
+            ZRayCanvas canvas = _host.GetComponentInChildren<ZRayCanvas>();
+            canvas.Show(EDebuggerOverlay.Menu);
+            yield return null;
+            int expandedRows = CountActiveRows(canvas);
+            Assert.That(FindHeaderLabel(canvas, SAMPLE_GROUP).text, Does.StartWith("▾"));
+
+            FindHeaderLabel(canvas, SAMPLE_GROUP).GetComponentInParent<Button>().onClick.Invoke();
+            yield return null;
+            Assert.That(FindHeaderLabel(canvas, SAMPLE_GROUP).text, Does.StartWith("▸"));
+            Assert.That(CountActiveRows(canvas), Is.EqualTo(expandedRows - SAMPLE_CHEAT_COUNT), "접은 묶음의 치트는 보이지 않는다.");
+
+            canvas.Show(EDebuggerOverlay.None);
+            ZRayHost previous = _host;
+            Object.Destroy(previous.gameObject);
+            yield return null;
+            yield return SceneManager.UnloadSceneAsync(_scene);
+            yield return LoadScene();
+            Assert.That(_host, Is.Not.SameAs(previous));
+
+            canvas = _host.GetComponentInChildren<ZRayCanvas>();
+            canvas.Show(EDebuggerOverlay.Menu);
+            yield return null;
+            Assert.That(FindHeaderLabel(canvas, SAMPLE_GROUP).text, Does.StartWith("▸"), "다시 시작해도 접은 묶음은 접혀 있다.");
+            Assert.That(CountActiveRows(canvas), Is.EqualTo(expandedRows - SAMPLE_CHEAT_COUNT));
+        }
+
+        private IEnumerator LoadScene()
+        {
+            int buildIndex = SceneUtility.GetBuildIndexByScenePath(SCENE_PATH);
+            Assert.That(buildIndex, Is.GreaterThanOrEqualTo(0), "샘플 씬을 Build Settings에서 열 수 있어야 한다.");
+            yield return SceneManager.LoadSceneAsync(buildIndex, LoadSceneMode.Additive);
+            _scene = SceneManager.GetSceneByBuildIndex(buildIndex);
+            yield return null;
+
+            _game = null;
+            foreach (GameObject root in _scene.GetRootGameObjects())
+            {
+                _game = root.GetComponentInChildren<OrbitSalvageGame>();
+                if (_game != null)
+                {
+                    break;
+                }
+            }
+
+            Assert.That(_game, Is.Not.Null, "빌드에 포함된 씬에 게임 컴포넌트가 있어야 한다.");
+            _host = ZRayHost.CurrentOrNull;
+            Assert.That(_host, Is.Not.Null, "샘플 씬이 ZRay 호스트를 초기화해야 한다.");
+        }
+
+        private static TextMeshProUGUI FindHeaderLabel(ZRayCanvas canvas, string title)
+        {
+            foreach (GroupHeaderView header in canvas.GetComponentsInChildren<GroupHeaderView>())
+            {
+                foreach (TextMeshProUGUI label in header.GetComponentsInChildren<TextMeshProUGUI>())
+                {
+                    if (label.text.EndsWith(title))
+                    {
+                        return label;
+                    }
+                }
+            }
+
+            throw new AssertionException($"치트 메뉴에서 묶음 {title}을 찾지 못했다.");
+        }
+
+        private static int CountActiveRows(ZRayCanvas canvas)
+        {
+            return canvas.GetComponentsInChildren<CheatRowView>().Length;
         }
 
         private IEnumerator FlyToNextCore()

@@ -68,7 +68,7 @@ namespace Lumera.ZRay.Editor
         public void Bind(ZRayHost hostOrNull)
         {
             _hostOrNull = hostOrNull;
-            _model = hostOrNull == null ? null : new CheatMenuModel(hostOrNull.Registry, hostOrNull.Favorites, hostOrNull.History, hostOrNull.Drafts);
+            _model = hostOrNull == null ? null : new CheatMenuModel(hostOrNull.Registry, hostOrNull.Favorites, hostOrNull.History, hostOrNull.Drafts, hostOrNull.MenuState);
             _model?.Refresh();
             if (_model != null)
             {
@@ -147,7 +147,7 @@ namespace Lumera.ZRay.Editor
                 row.Add(title);
                 row.Add(count);
                 string key = category.Key;
-                row.RegisterCallback<ClickEvent>(_ => Refresh(() => _model.Category = key));
+                row.RegisterCallback<ClickEvent>(_ => ChangeMenuState(() => _model.Category = key));
                 _categories.Add(row);
             }
         }
@@ -183,7 +183,7 @@ namespace Lumera.ZRay.Editor
             group.Add(title);
             group.Add(count);
             string key = entry.GroupKey;
-            group.RegisterCallback<ClickEvent>(_ => Refresh(() => _model.ToggleCollapsed(key)));
+            group.RegisterCallback<ClickEvent>(_ => ChangeMenuState(() => _model.ToggleCollapsed(key)));
             return group;
         }
 
@@ -481,25 +481,18 @@ namespace Lumera.ZRay.Editor
 
         private void ToggleAllGroups()
         {
+            ChangeMenuState(() => _model.ToggleAllGroups());
+        }
+
+        private void ChangeMenuState(System.Action change)
+        {
             if (_model == null)
             {
                 return;
             }
 
-            bool bAnyExpanded = false;
-            foreach (MenuEntry entry in _model.Entries)
-            {
-                bAnyExpanded |= entry.IsGroup && !entry.IsGroupCollapsed;
-            }
-
-            foreach (MenuEntry entry in new List<MenuEntry>(_model.Entries))
-            {
-                if (entry.IsGroup && entry.IsGroupCollapsed != bAnyExpanded)
-                {
-                    _model.ToggleCollapsed(entry.GroupKey);
-                }
-            }
-
+            change();
+            _hostOrNull.SaveMenuState();
             Refresh(() => { });
         }
 
