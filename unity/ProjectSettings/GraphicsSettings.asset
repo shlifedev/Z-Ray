@@ -79,7 +79,7 @@ GraphicsSettings:
     fastBuildMode: 0
   m_BuiltInRenderPipelineUsage: 2
   m_LightsUseLinearIntensity: 0
-  m_LightsUseColorTemperature: 0
+  m_LightsUseColorTemperature: 1
   m_LogWhenShaderIsCompiled: 0
   m_LightProbeOutsideHullStrategy: 1
   m_CameraRelativeLightCulling: 0
